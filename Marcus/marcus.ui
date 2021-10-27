@@ -1,0 +1,530 @@
+<?xml version='1.0' encoding='utf-8'?>
+<interface version="1.1">
+  <object class="tk.Toplevel" id="toplevel1">
+    <property name="container">false</property>
+    <property name="height">600</property>
+    <property name="width">800</property>
+    <child>
+      <object class="tk.Frame" id="frame3">
+        <property name="background">#f4f4f4</property>
+        <property name="borderwidth">2</property>
+        <property name="height">200</property>
+        <property name="relief">flat</property>
+        <property name="takefocus">true</property>
+        <property name="width">200</property>
+        <layout manager="place">
+          <property name="anchor">nw</property>
+          <property name="relwidth">1.0</property>
+          <property name="relx">0.0</property>
+          <property name="x">0</property>
+          <property name="y">0</property>
+        </layout>
+        <child>
+          <object class="tk.OptionMenu" id="optionmenu1">
+            <property name="value">File</property>
+            <layout manager="pack">
+              <property name="propagate">True</property>
+              <property name="side">left</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.OptionMenu" id="optionmenu2">
+            <property name="value">Help</property>
+            <layout manager="pack">
+              <property name="propagate">True</property>
+              <property name="side">left</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="tk.Frame" id="frame7">
+        <property name="height">200</property>
+        <property name="width">200</property>
+        <layout manager="place">
+          <property name="anchor">nw</property>
+          <property name="relheight">1.0</property>
+          <property name="relwidth">1.0</property>
+          <property name="relx">0.0</property>
+          <property name="y">30</property>
+        </layout>
+        <child>
+          <object class="tk.Frame" id="frame8">
+            <property name="height">400</property>
+            <property name="width">300</property>
+            <layout manager="place">
+              <property name="anchor">nw</property>
+              <property name="x">40</property>
+              <property name="y">10</property>
+            </layout>
+            <child>
+              <object class="tk.Label" id="DataEntryLabel">
+                <property name="compound">top</property>
+                <property name="font">{Arial Greek} 10 {bold}</property>
+                <property name="justify">left</property>
+                <property name="text" translatable="yes">Data Entry</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="relx">0.0</property>
+                  <property name="rely">0.0</property>
+                  <property name="x">100</property>
+                  <property name="y">20</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Label" id="RunTitle_Label">
+                <property name="compound">top</property>
+                <property name="cursor">arrow</property>
+                <property name="font">{Arial Greek} 9 {}</property>
+                <property name="justify">left</property>
+                <property name="takefocus">false</property>
+                <property name="text" translatable="yes">Run Title </property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="relx">0.0</property>
+                  <property name="y">50</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Label" id="React_1_Label">
+                <property name="compound">top</property>
+                <property name="font">{Arial Greek} 9 {}</property>
+                <property name="justify">left</property>
+                <property name="text" translatable="yes">Reactant-1(adiab)</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="y">80</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Label" id="React_2_label">
+                <property name="compound">top</property>
+                <property name="font">{Arial Greek} 9 {}</property>
+                <property name="justify">center</property>
+                <property name="text" translatable="yes">Reactant-2(adiab)</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="y">110</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Label" id="Prod_1_Label">
+                <property name="compound">top</property>
+                <property name="font">{Arial Greek} 9 {}</property>
+                <property name="justify">center</property>
+                <property name="text" translatable="yes">Product-1(adiab)</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="y">140</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Label" id="Prod_2_Label">
+                <property name="compound">top</property>
+                <property name="font">{Arial Greek} 9 {}</property>
+                <property name="justify">center</property>
+                <property name="takefocus">false</property>
+                <property name="text" translatable="yes">Product-2(adiab)</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="y">170</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Label" id="Prod_1_vent_Label">
+                <property name="compound">top</property>
+                <property name="font">{Arial Greek} 9 {}</property>
+                <property name="justify">center</property>
+                <property name="takefocus">false</property>
+                <property name="text" translatable="yes">Product-1(vent)</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="y">200</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Label" id="Prod2_vent_Label">
+                <property name="compound">top</property>
+                <property name="font">{Arial CE} 9 {}</property>
+                <property name="justify">center</property>
+                <property name="takefocus">false</property>
+                <property name="text" translatable="yes">Product-2(vent)</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="y">230</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Entry" id="title">
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="width">170</property>
+                  <property name="x">130</property>
+                  <property name="y">50</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Entry" id="R1">
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="width">100</property>
+                  <property name="x">130</property>
+                  <property name="y">80</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Entry" id="R2">
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="width">100</property>
+                  <property name="x">130</property>
+                  <property name="y">110</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Entry" id="P1">
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="width">100</property>
+                  <property name="x">130</property>
+                  <property name="y">140</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Entry" id="P2">
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="width">100</property>
+                  <property name="x">130</property>
+                  <property name="y">170</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Entry" id="P1v">
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="width">100</property>
+                  <property name="x">130</property>
+                  <property name="y">200</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Entry" id="p2v">
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="width">100</property>
+                  <property name="x">130</property>
+                  <property name="y">230</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Label" id="label15">
+                <property name="compound">top</property>
+                <property name="font">{Arial CE} 9 {}</property>
+                <property name="justify">center</property>
+                <property name="takefocus">false</property>
+                <property name="text" translatable="yes">Temperatura (K)</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="y">260</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Entry" id="temp">
+                <property name="text" translatable="yes">298.15</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="width">80</property>
+                  <property name="x">130</property>
+                  <property name="y">260</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Button" id="bR1">
+                <property name="text" translatable="yes">Browse</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="x">240</property>
+                  <property name="y">80</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Button" id="bR2">
+                <property name="text" translatable="yes">Browse</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="x">240</property>
+                  <property name="y">110</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Button" id="bP1">
+                <property name="text" translatable="yes">Browse</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="x">240</property>
+                  <property name="y">140</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Button" id="bP2">
+                <property name="text" translatable="yes">Browse</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="x">240</property>
+                  <property name="y">170</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Button" id="bPV1">
+                <property name="text" translatable="yes">Browse</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="x">240</property>
+                  <property name="y">200</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Button" id="bPV2">
+                <property name="text" translatable="yes">Browse</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="x">240</property>
+                  <property name="y">230</property>
+                </layout>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="tk.LabelFrame" id="labelframe3">
+            <property name="height">180</property>
+            <property name="width">260</property>
+            <layout manager="place">
+              <property name="anchor">nw</property>
+              <property name="x">110</property>
+              <property name="y">360</property>
+            </layout>
+            <child>
+              <object class="tk.Label" id="label16">
+                <property name="text" translatable="yes">Radius (in Angstroms) for:</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="x">10</property>
+                  <property name="y">10</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Frame" id="frame11">
+                <property name="height">90</property>
+                <property name="width">30</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="x">40</property>
+                  <property name="y">40</property>
+                </layout>
+                <child>
+                  <object class="tk.Label" id="label17">
+                    <property name="text" translatable="yes">Reactant-1</property>
+                    <layout manager="grid">
+                      <property name="column">0</property>
+                      <property name="propagate">True</property>
+                      <property name="row">0</property>
+                    </layout>
+                  </object>
+                </child>
+                <child>
+                  <object class="tk.Label" id="label18">
+                    <property name="text" translatable="yes">Reactant-2</property>
+                    <layout manager="grid">
+                      <property name="propagate">True</property>
+                      <property name="row">1</property>
+                    </layout>
+                  </object>
+                </child>
+                <child>
+                  <object class="tk.Entry" id="entry10">
+                    <layout manager="grid">
+                      <property name="column">1</property>
+                      <property name="propagate">True</property>
+                      <property name="row">0</property>
+                    </layout>
+                  </object>
+                </child>
+                <child>
+                  <object class="tk.Entry" id="entry11">
+                    <layout manager="grid">
+                      <property name="column">1</property>
+                      <property name="propagate">True</property>
+                      <property name="row">1</property>
+                    </layout>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Label" id="R_label">
+                <property name="text" translatable="yes">Reaction distance (in Angstroms)</property>
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="x">10</property>
+                  <property name="y">100</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="tk.Entry" id="entry14">
+                <layout manager="place">
+                  <property name="anchor">nw</property>
+                  <property name="x">70</property>
+                  <property name="y">130</property>
+                </layout>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="tk.Frame" id="frame10">
+        <property name="height">20</property>
+        <property name="width">460</property>
+        <layout manager="place">
+          <property name="anchor">nw</property>
+          <property name="width">350</property>
+          <property name="x">30</property>
+          <property name="y">360</property>
+        </layout>
+        <child>
+          <object class="tk.Label" id="Difussion_Label">
+            <property name="compound">top</property>
+            <property name="font">{Arial CE} 9 {}</property>
+            <property name="justify">center</property>
+            <property name="takefocus">false</property>
+            <property name="text" translatable="yes">Do you want to consider diffusion? </property>
+            <layout manager="grid">
+              <property name="column">1</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+              <property name="sticky">w</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Radiobutton" id="YesDifussion">
+            <property name="text" translatable="yes">Yes</property>
+            <layout manager="grid">
+              <property name="column">2</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+              <property name="sticky">e</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Radiobutton" id="NoDifussion">
+            <property name="text" translatable="yes">No</property>
+            <layout manager="grid">
+              <property name="column">3</property>
+              <property name="propagate">True</property>
+              <property name="row">0</property>
+              <property name="sticky">e</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="tk.Frame" id="frame13">
+        <property name="height">200</property>
+        <property name="width">200</property>
+        <layout manager="place">
+          <property name="anchor">nw</property>
+          <property name="height">600</property>
+          <property name="width">380</property>
+          <property name="x">400</property>
+          <property name="y">40</property>
+        </layout>
+        <child>
+          <object class="pygubu.builder.widgets.tkinterscrolledtext" id="tkinterscrolledtext1">
+            <property name="borderwidth">2</property>
+            <layout manager="place">
+              <property name="anchor">nw</property>
+              <property name="x">0</property>
+              <property name="y">60</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Button" id="button8">
+            <property name="text" translatable="yes">Data Ok, Run</property>
+            <layout manager="place">
+              <property name="anchor">nw</property>
+              <property name="x">150</property>
+              <property name="y">20</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="label23">
+            <property name="cursor">arrow</property>
+            <property name="justify">left</property>
+            <property name="relief">raised</property>
+            <property name="text" translatable="yes">Rate constant units:
+  -For bimolecular(M-1 s-1)
+ -For unimolecular reactions(s-1)</property>
+            <layout manager="place">
+              <property name="anchor">nw</property>
+              <property name="x">10</property>
+              <property name="y">480</property>
+            </layout>
+          </object>
+        </child>
+        <child>
+          <object class="tk.Label" id="label24">
+            <property name="cursor">based_arrow_down</property>
+            <property name="justify">center</property>
+            <property name="relief">groove</property>
+            <property name="takefocus">false</property>
+            <property name="text" translatable="yes">Plese note that pH is not
+considered here.
+
+Check for updates in 
+this topic</property>
+            <layout manager="place">
+              <property name="anchor">nw</property>
+              <property name="width">160</property>
+              <property name="x">210</property>
+              <property name="y">470</property>
+            </layout>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
