@@ -6,15 +6,14 @@ from tkinter.scrolledtext import ScrolledText
 
 class MarcusApp:
     def __init__(self, master=None):
-        
         self.toplevel1 =tk.Tk() if master is None else tk.Toplevel(master)
         self.frame3 = tk.Frame(master)
         self.__tkvar = tk.StringVar(value='File')
         __values = []
         self.optionmenu1 = tk.OptionMenu(self.frame3, self.__tkvar, 'File', *__values, command=None)
         self.optionmenu1.pack(side='left')
-        __values = []
-        self.optionmenu2 = tk.OptionMenu(self.frame3, self.__tkvar, 'Help', *__values, command=None)
+        __values2=[]
+        self.optionmenu2 = tk.OptionMenu(self.frame3, self.__tkvar, 'Help', *__values2, command=None)
         self.optionmenu2.pack(side='left')
         self.frame3.configure(background='#f4f4f4', borderwidth='2', height='200', relief='flat')
         self.frame3.configure(takefocus=True, width='200')

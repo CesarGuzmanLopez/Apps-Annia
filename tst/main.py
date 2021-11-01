@@ -3,12 +3,8 @@ import pathlib
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter.scrolledtext import ScrolledText
-
-PROJECT_PATH = pathlib.Path(__file__).parent
-PROJECT_UI = PROJECT_PATH / "a.ui"
-
-
 class AApp:
+    
     def __init__(self, master=None):
         # build ui
         self.toplevel1 =tk.Tk() if master is None else tk.Toplevel(master)
@@ -153,4 +149,6 @@ class AApp:
 if __name__ == '__main__':
     app = AApp()
     app.run()
+
+
 
