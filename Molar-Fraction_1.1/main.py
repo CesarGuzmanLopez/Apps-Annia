@@ -5,7 +5,6 @@ from tkinter.scrolledtext import ScrolledText
 import numpy as np
 from tkinter import *
 import matplotlib.pyplot as plt
-
 class Dato_pH:
     def __init__(self,ph) :
         self.ph = ph
@@ -114,9 +113,21 @@ class GraficaApp:
         #print(filedialog.askopenfilename(initialdir = "/",title = "Open file",filetypes = (("Python files","*.py;*.pyw"),("All files","*.*"))))
     
     def onSave(self):
-        pass
-        #print(filedialog.asksaveasfilename(initialdir = "/",title = "Save as",filetypes = (("Python files","*.py;*.pyw"),("All files","*.*"))))
-    
+        files = [('All Files', '*.*'), 
+             ('Python Files', '*.py'),
+             ('Text Document', '*.txt')]
+        file = tk.filedialog.asksaveasfile(filetypes = files, defaultextension = files)
+        if file is None: # asksaveasfile return `None` if dialog closed with "cancel".
+            return
+        text2save = str(self.tkinterscrolledtext3.get("1.0", END)) # starts from `1.0`, not `0.0`
+        file.write(text2save)
+        file.close() # `()` was missing.
+        
+        
+        
+     
+    def About(self):
+        tk.messagebox.showinfo(title="© 2021 Copyright", message=" Annia Galano's Group")
     def __init__(self, master=None):
         self.Principal = tk.Tk() if master is None else tk.Toplevel(master)
 
@@ -128,13 +139,13 @@ class GraficaApp:
 
         menubar = tk.Menu(self.Principal)
         filemenu = tk.Menu(menubar, tearoff=0)
-        filemenu.add_command(label="Save")
+        filemenu.add_command(label="Save",command=self.onSave)
         filemenu.add_command(label="Exit",command=self.Principal.quit)
        
         menubar.add_cascade(label="File", menu=filemenu)
         help = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="help", menu=help)
-        help.add_command(label="About")
+        help.add_command(label="About",command=self.About)
 
         self.Principal.config(menu=menubar)
 
@@ -235,6 +246,15 @@ class GraficaApp:
     def okGraficar(self):
         MF = Molar_fraction(self.getALLPKs(),.1,14,.1)
         result = MF.getvalues()
+        
+        ax = plt
+        texto =""
+        i=0
+        for pk in self.getALLPKs():
+            texto += "pk"+str(i)+": "+str(pk)+"\t "
+            i=i+1
+            
+        ax.figure(num=texto)
        
         pHs = np.arange(0,14,0.1)
 
@@ -242,15 +262,18 @@ class GraficaApp:
             le =""
             if(i>0):
                 le="H"+str(i+1)
-            plt.plot(pHs,MF.FK(pHs,i),'-', label=le+"A")
-        plt.xlabel('pH')
-        legend = plt.legend(loc='best', shadow=False, fontsize='large')
+            ax.plot(pHs,MF.FK(pHs,i),'-', label=le+"A")
+        ax.xlabel('pH')
+        legend = ax.legend(loc='best', shadow=False, fontsize='large')
         # Put a nicer background color on the legend.
         legend.get_frame().set_alpha(None)
         legend.get_frame().set_facecolor((0, 0, 1, 0.1))
 
-        plt.title('Molar Fractions Graphic')
-        plt.show()
+        ax.title('Molar Fractions Graphic')
+        
+
+    
+        ax.show()
 
 
     def getNumpks(self):
