@@ -251,7 +251,7 @@ class GraficaApp:
         texto =""
         i=0
         for pk in self.getALLPKs():
-            texto += "pk"+str(i)+": "+str(pk)+"\t "
+            texto += "pk"+str(1+i)+": "+str(pk)+"\t "
             i=i+1
             
         ax.figure(num=texto)
