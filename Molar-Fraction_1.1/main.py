@@ -110,10 +110,12 @@ class GraficaApp:
         for a in range(i):
             self.Entrada[a].configure(state="normal")  
     def onOpen(self):
-        print(filedialog.askopenfilename(initialdir = "/",title = "Open file",filetypes = (("Python files","*.py;*.pyw"),("All files","*.*"))))
+        pass
+        #print(filedialog.askopenfilename(initialdir = "/",title = "Open file",filetypes = (("Python files","*.py;*.pyw"),("All files","*.*"))))
     
     def onSave(self):
-        print(filedialog.asksaveasfilename(initialdir = "/",title = "Save as",filetypes = (("Python files","*.py;*.pyw"),("All files","*.*"))))
+        pass
+        #print(filedialog.asksaveasfilename(initialdir = "/",title = "Save as",filetypes = (("Python files","*.py;*.pyw"),("All files","*.*"))))
     
     def __init__(self, master=None):
         self.Principal = tk.Tk() if master is None else tk.Toplevel(master)
