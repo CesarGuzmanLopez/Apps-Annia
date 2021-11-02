@@ -7,6 +7,7 @@ from tkinter.scrolledtext import ScrolledText
 class MarcusApp:
     def __init__(self, master=None):
         self.toplevel1 =tk.Tk() if master is None else tk.Toplevel(master)
+        
         self.frame3 = tk.Frame(master)
         self.__tkvar = tk.StringVar(value='File')
         __values = []
@@ -18,6 +19,9 @@ class MarcusApp:
         self.frame3.configure(background='#f4f4f4', borderwidth='2', height='200', relief='flat')
         self.frame3.configure(takefocus=True, width='200')
         self.frame3.place(anchor='nw', relwidth='1.0', relx='0.0', x='0', y='0')
+        
+        
+        
         self.frame7 = tk.Frame(self.toplevel1)
         self.DataEntryLabel = tk.Label(self.frame7)
         self.DataEntryLabel.configure(compound='top', font='{Arial Greek} 10 {bold}', justify='left', text='Data Entry')
@@ -152,6 +156,7 @@ class MarcusApp:
     
     def run(self):
         self.mainwindow.mainloop()
+
 
 
 if __name__ == '__main__':
