@@ -1,165 +1,164 @@
+from tkinter import filedialog
 import tkinter as tk
+import tkinter
 import tkinter.ttk as ttk
 from tkinter.scrolledtext import ScrolledText
+import numpy as np
+from tkinter import *
+import matplotlib.pyplot as plt 
+class EntradaDato(tk.Frame) :
 
-
+    def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info=""):
+        self.dato=dato
+        self.Etiqueta =Etiqueta
+        self.textoButton=buttontext
+        self.labelEtiquetaNombre = tk.Label(self,text=self.Etiqueta,width=13,font = ('calibri', 10))
+        self.datoentrada = tk.Entry(self,width=6)
+        self.datoentrada.insert(0,str(self.dato))
+        self.botonActivo =tk.Button(self,text=self.textoButton,width=7)
+        self.grid(pady=5)
+        self.labelEtiquetaNombre.grid(row = 0, column = 1,padx=4)
+        self.datoentrada.grid(row = 0, column = 2,padx=4)
+        self.botonActivo.grid(row = 0, column = 3,padx=4)
+        
 
 class MarcusApp:
     def __init__(self, master=None):
-        self.toplevel1 =tk.Tk() if master is None else tk.Toplevel(master)
-        
-        self.frame3 = tk.Frame(master)
-        self.__tkvar = tk.StringVar(value='File')
-        __values = []
-        self.optionmenu1 = tk.OptionMenu(self.frame3, self.__tkvar, 'File', *__values, command=None)
-        self.optionmenu1.pack(side='left')
-        __values2=[]
-        self.optionmenu2 = tk.OptionMenu(self.frame3, self.__tkvar, 'Help', *__values2, command=None)
-        self.optionmenu2.pack(side='left')
-        self.frame3.configure(background='#f4f4f4', borderwidth='2', height='200', relief='flat')
-        self.frame3.configure(takefocus=True, width='200')
-        self.frame3.place(anchor='nw', relwidth='1.0', relx='0.0', x='0', y='0')
-        
-        
-        
-        self.frame7 = tk.Frame(self.toplevel1)
-        self.DataEntryLabel = tk.Label(self.frame7)
-        self.DataEntryLabel.configure(compound='top', font='{Arial Greek} 10 {bold}', justify='left', text='Data Entry')
-        self.DataEntryLabel.place(anchor='nw', relx='0.0', rely='0.0', x='100', y='20')
-        self.RunTitle_Label = tk.Label(self.frame7)
-        self.RunTitle_Label.configure(compound='top', cursor='arrow', font='{Arial Greek} 9 {}', justify='left')
-        self.RunTitle_Label.configure(takefocus=False, text='Run Title ')
-        self.RunTitle_Label.place(anchor='nw', relx='0.0', y='50')
-        self.React_1_Label = tk.Label(self.frame7)
-        self.React_1_Label.configure(compound='top', font='{Arial Greek} 9 {}', justify='left', text='Reactant-1(adiab)')
-        self.React_1_Label.place(anchor='nw', y='80')
-        self.React_2_label = tk.Label(self.frame7)
-        self.React_2_label.configure(compound='top', font='{Arial Greek} 9 {}', justify='center', text='Reactant-2(adiab)')
-        self.React_2_label.place(anchor='nw', y='110')
-        self.Prod_1_Label = tk.Label(self.frame7)
-        self.Prod_1_Label.configure(compound='top', font='{Arial Greek} 9 {}', justify='center', text='Product-1(adiab)')
-        self.Prod_1_Label.place(anchor='nw', y='140')
-        self.Prod_2_Label = tk.Label(self.frame7)
-        self.Prod_2_Label.configure(compound='top', font='{Arial Greek} 9 {}', justify='center', takefocus=False)
-        self.Prod_2_Label.configure(text='Product-2(adiab)')
-        self.Prod_2_Label.place(anchor='nw', y='170')
-        self.Prod_1_vent_Label = tk.Label(self.frame7)
-        self.Prod_1_vent_Label.configure(compound='top', font='{Arial Greek} 9 {}', justify='center', takefocus=False)
-        self.Prod_1_vent_Label.configure(text='Product-1(vent)')
-        self.Prod_1_vent_Label.place(anchor='nw', y='200')
-        self.Prod2_vent_Label = tk.Label(self.frame7)
-        self.Prod2_vent_Label.configure(compound='top', font='{Arial CE} 9 {}', justify='center', takefocus=False)
-        self.Prod2_vent_Label.configure(text='Product-2(vent)')
-        self.Prod2_vent_Label.place(anchor='nw', y='230')
-        self.title = tk.Entry(self.frame7)
-        self.title.place(anchor='nw', width='170', x='130', y='50')
-        self.R1 = tk.Entry(self.frame7)
-        self.R1.place(anchor='nw', width='100', x='130', y='80')
-        self.R2 = tk.Entry(self.frame7)
-        self.R2.place(anchor='nw', width='100', x='130', y='110')
-        self.P1 = tk.Entry(self.frame7)
-        self.P1.place(anchor='nw', width='100', x='130', y='140')
-        self.P2 = tk.Entry(self.frame7)
-        self.P2.place(anchor='nw', width='100', x='130', y='170')
-        self.P1v = tk.Entry(self.frame7)
-        self.P1v.place(anchor='nw', width='100', x='130', y='200')
-        self.p2v = tk.Entry(self.frame7)
-        self.p2v.place(anchor='nw', width='100', x='130', y='230')
-        self.label15 = tk.Label(self.frame7)
-        self.label15.configure(compound='top', font='{Arial CE} 9 {}', justify='center', takefocus=False)
-        self.label15.configure(text='Temperatura (K)')
-        self.label15.place(anchor='nw', y='260')
-        self.temp = tk.Entry(self.frame7)
-        _text_ = '''298.15'''
-        self.temp.delete('0', 'end')
-        self.temp.insert('0', _text_)
-        self.temp.place(anchor='nw', width='80', x='130', y='260')
-        self.bR1 = tk.Button(self.frame7)
-        self.bR1.configure(text='Browse')
-        self.bR1.place(anchor='nw', x='240', y='80')
-        self.bR2 = tk.Button(self.frame7)
-        self.bR2.configure(text='Browse')
-        self.bR2.place(anchor='nw', x='240', y='110')
-        self.bP1 = tk.Button(self.frame7)
-        self.bP1.configure(text='Browse')
-        self.bP1.place(anchor='nw', x='240', y='140')
-        self.bP2 = tk.Button(self.frame7)
-        self.bP2.configure(text='Browse')
-        self.bP2.place(anchor='nw', x='240', y='170')
-        self.bPV1 = tk.Button(self.frame7)
-        self.bPV1.configure(text='Browse')
-        self.bPV1.place(anchor='nw', x='240', y='200')
-        self.bPV2 = tk.Button(self.frame7)
-        self.bPV2.configure(text='Browse')
-        self.bPV2.place(anchor='nw', x='240', y='230')
-        self.frame7.configure(height='400', width='300')
-        self.frame7.place(anchor='nw', x='40', y='10')
-        self.labelframe3 = tk.LabelFrame(self.frame7)
-        self.label16 = tk.Label(self.labelframe3)
-        self.label16.configure(text='Radius (in Angstroms) for:')
-        self.label16.place(anchor='nw', x='10', y='10')
-        self.frame11 = tk.Frame(self.labelframe3)
-        self.label17 = tk.Label(self.frame11)
-        self.label17.configure(text='Reactant-1')
-        self.label17.grid(column='0', row='0')
-        self.label18 = tk.Label(self.frame11)
-        self.label18.configure(text='Reactant-2')
-        self.label18.grid(row='1')
-        self.entry10 = tk.Entry(self.frame11)
-        self.entry10.grid(column='1', row='0')
-        self.entry11 = tk.Entry(self.frame11)
-        self.entry11.grid(column='1', row='1')
-        self.frame11.configure(height='90', width='30')
-        self.frame11.place(anchor='nw', x='40', y='40')
-        self.R_label = tk.Label(self.labelframe3)
-        self.R_label.configure(text='Reaction distance (in Angstroms)')
-        self.R_label.place(anchor='nw', x='10', y='100')
-        self.entry14 = tk.Entry(self.labelframe3)
-        self.entry14.place(anchor='nw', x='70', y='130')
-        self.labelframe3.configure(height='180', width='260')
-        self.labelframe3.place(anchor='nw', x='110', y='360')
-        self.frame7.configure(height='200', width='200')
-        self.frame7.place(anchor='nw', relheight='1.0', relwidth='1.0', relx='0.0', y='30')
-        self.frame10 = tk.Frame(self.toplevel1)
-        self.Difussion_Label = tk.Label(self.frame10)
-        self.Difussion_Label.configure(compound='top', font='{Arial CE} 9 {}', justify='center', takefocus=False)
-        self.Difussion_Label.configure(text='Do you want to consider diffusion? ')
-        self.Difussion_Label.grid(column='1', row='0', sticky='w')
-        self.YesDifussion = tk.Radiobutton(self.frame10)
-        self.YesDifussion.configure(text='Yes')
-        self.YesDifussion.grid(column='2', row='0', sticky='e')
-        self.NoDifussion = tk.Radiobutton(self.frame10)
-        self.NoDifussion.configure(text='No')
-        self.NoDifussion.grid(column='3', row='0', sticky='e')
-        self.frame10.configure(height='20', width='460')
-        self.frame10.place(anchor='nw', width='350', x='30', y='360')
-        self.frame13 = tk.Frame(self.toplevel1)
-        self.tkinterscrolledtext1 = ScrolledText(self.frame13)
-        self.tkinterscrolledtext1.configure(borderwidth='2')
-        self.tkinterscrolledtext1.place(anchor='nw', x='0', y='60')
-        self.button8 = tk.Button(self.frame13)
-        self.button8.configure(text='Data Ok, Run')
-        self.button8.place(anchor='nw', x='150', y='20')
-        self.label23 = tk.Label(self.frame13)
-        self.label23.configure(cursor='arrow', justify='left', relief='raised', text='Rate constant units:\n -For bimolecular(M-1 s-1) \n -For unimolecular reactions(s-1)')
-        self.label23.place(anchor='nw', x='10', y='480')
-        self.label24 = tk.Label(self.frame13)
-        self.label24.configure(cursor='based_arrow_down', justify='center', relief='groove', takefocus=False)
-        self.label24.configure(text='Plese note that pH is not \n considered here.\n Check for updates in  this\n topic')
-        self.label24.place(anchor='nw', width='160', x='210', y='470')
-        self.frame13.configure(height='200', width='200')
-        self.frame13.place(anchor='nw', height='600', width='380', x='400', y='40')
-        self.toplevel1.configure(height='600', width='800')
+        self.Principal = tk.Tk() if master is None else tk.Toplevel(master)
+        self.FramePrincipal = tk.Frame(self.Principal, container='false')
+        self.Principal.title("Marcus 1.1")
+        self.Principal.resizable(False, False)
+        self.Principal.geometry("710x550")
 
-        # Main widget
-        self.mainwindow = self.toplevel1
+        self.menu()
+        
+        self.SeccionLeerArchivos()
+        self.SeecionTemperatura()
+        self.SeccionDifusion()
+        self.SeccionPantalla()
+    def menu(self):
+        menubar = tk.Menu(self.Principal)
+        filemenu = tk.Menu(menubar, tearoff=0)
+        filemenu.add_command(label="Save",command=self.onSave)
+        filemenu.add_command(label="Exit",command=self.Principal.quit)
+        menubar.add_cascade(label="File", menu=filemenu)
+        help = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="help", menu=help)
+        help.add_command(label="About",command=self.About)
+        
+        self.Principal.config(menu=menubar)
     
-    def run(self):
-        self.mainwindow.mainloop()
 
+    def SeccionLeerArchivos(self,pos_x=30,pos_y=40):
+        seccionLeerArchivos = tk.Frame(self.Principal)
+        seccionLeerArchivos.configure(width='230',height='270',highlightbackground='#000000', highlightcolor='#000000')
+
+        labelData_entry = tk.Label(self.Principal,text="Data entry",font = ('calibri', 11, 'bold'))
+        labelData_entry.place(x=str(pos_x), y=str(pos_y))
+        
+        seccionLeerArchivos.place(anchor='nw', bordermode='outside', x=str(pos_x), y=str(pos_y+10))
+
+        tabla =tk.Frame(seccionLeerArchivos)
+        tabla.place(anchor='nw', bordermode='outside', x='10', y='10')
+
+        labelEtiquetaNombre = tk.Label(tabla,text="Run title")
+        labelEtiquetaNombre.grid(row = 1, column = 1)
+
+        self.Title = tk.Entry(tabla)
+        self.Title.grid(row = 1, column = 2)
+        self.React_1        = EntradaDato(tabla)
+        self.React_1       .grid(row=2,column=1,columnspan = 3) 
+        self.React_1       .Activar(Etiqueta="React-1(adiab.)") 
+        self.React_2        = EntradaDato(tabla)
+        self.React_2       .grid(row=3,column=1,columnspan = 3) 
+        self.React_2       .Activar(Etiqueta="React-2(adiab.)")
+        self.Prduct_1_adiab = EntradaDato(tabla)
+        self.Prduct_1_adiab.grid(row=4,column=1,columnspan = 3) 
+        self.Prduct_1_adiab.Activar(Etiqueta="Product-1(adiab.)")
+        self.Prduct_2_adiab = EntradaDato(tabla)
+        self.Prduct_2_adiab.grid(row=5,column=1,columnspan = 3) 
+        self.Prduct_2_adiab.Activar(Etiqueta="Product-2(adiab.)")
+        self.Prduct_1_vert  = EntradaDato(tabla)
+        self.Prduct_1_vert .grid(row=6,column=1,columnspan = 3) 
+        self.Prduct_1_vert .Activar(Etiqueta="Product-1(vert.)")
+        self.Prduct_2_vert  = EntradaDato(tabla)
+        self.Prduct_2_vert .grid(row=7,column=1,columnspan = 3) 
+        self.Prduct_2_vert .Activar(Etiqueta="Product-2(vert.)")
+
+
+    def SeecionTemperatura(self,pos_x=30,pos_y=330): 
+        seccionTemperatura= tk.Frame(self.Principal)
+        seccionTemperatura.configure(width='200',height='50',highlightbackground='#333333', highlightcolor='#000000')
+        seccionTemperatura.place(x=str(pos_x),y=str(pos_y+15))
+        labelEtiquetaTemperatura = tk.Label(seccionTemperatura,text="Temperature(K)",font = ('calibri', 10, 'bold'))
+        labelEtiquetaTemperatura.grid(row = 1, column = 1)
+
+        self.Temperatura = tk.Entry(seccionTemperatura)
+        self.Temperatura.grid(row = 1, column = 2)
+        self.Temperatura.insert(0,"298.15")
+
+    def SeccionDifusion(self,pos_x=30,pos_y=370):
+        seccionDifusion= tk.Frame(self.Principal)
+        seccionDifusion.configure(width='290',height='400',highlightbackground='#333333', highlightcolor='#000000')
+        seccionDifusion.place(x=str(pos_x),y=str(pos_y))
+        frame1=tk.Frame(seccionDifusion)
+        frame1.place(x="1",y="10")
+        labelEtiquetaDifusion = tk.Label(frame1,text="Do you want to consider difusion?",font = ('calibri', 10, )).grid(column=0,row=0)
+        labelEtiquetaDifusion = tk.Label(frame1,text="no",font = ('calibri', 9, "bold")).grid(column=1,row=0)
+        self.difusion =tk.Radiobutton(frame1).grid(column=2,row=0)
+        labelEtiquetaDifusion = tk.Label(frame1,text="yes",font = ('calibri', 9,"bold" )).grid(column=3,row=0)
+        difusionfalse =tk.Radiobutton(frame1).grid(column=4,row=0)
+        frame2=tk.Frame(seccionDifusion)
+        frame2.place(x="30",y="30")
+        frame2.configure(width='200',height='200')
+        labelradius = tk.Label(frame2,text="Radius (in Angstroms) for:",font = ('calibri', 10 ))
+        labelradius.place(x="15",y="15")
+        labelreact1 = tk.Label(frame2,text="Reactant-1",font = ('calibri', 10 ))
+        labelreact1.place(x="30",y="35")
+        self.radius_react_1 = tk.Entry(frame2,width=15)
+        self.radius_react_1.place(x="95",y="35")
+    def SeccionPantalla(self,pos_x=360,pos_y=30):
+        seccionPantalla= tk.Frame(self.Principal)
+        seccionPantalla.configure(width='350',height='500',highlightbackground='#333333', highlightcolor='#000000')
+        seccionPantalla.place(x=str(pos_x),y=str(pos_y))
+       
+        boton = tk.Button(seccionPantalla,text="Data ok,Run",font = ('calibri', 10 ))
+        boton.place(x="75",y="15")
+
+        frame10 = tk.Frame(seccionPantalla)
+        frame10.place( x='0', y='45')
+
+
+        salida = ScrolledText(frame10, wrap = "none", width = 35, height = 20)
+        xsb = tk.Scrollbar(frame10,orient="horizontal", command=salida.xview)        
+        
+        salida.grid(row=1,column =0,columnspan=1)        
+        salida.focus()
+        salida.configure(xscrollcommand=xsb.set)
+        xsb.grid(row=2, column=0, columnspan=1,sticky=E+N+S+W)
+        
+        labelrate = tk.Label(seccionPantalla)
+        labelrate.configure(cursor='arrow', justify='left', relief='raised', text='Rate constant units:\n-For bimolecular(M-1 s-1)\n -For unimolecular reactions(s-1)')
+        labelrate.place(anchor='nw', x='0', y='400')
+
+        labelphpadvertence = tk.Label(seccionPantalla)
+        labelphpadvertence.configure(cursor='based_arrow_down', justify='center', relief='groove', takefocus=False)
+        labelphpadvertence.configure(text='Plese note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
+        labelphpadvertence.place(anchor='nw', width='140', x='200', y='400')
+
+
+
+
+
+
+    def About(self):
+        pass
+    def onSave(self):
+        files = [('All Files', '*.*')]
+    def run(self):
+        self.Principal.mainloop()
 
 
 if __name__ == '__main__':
- 
     app = MarcusApp()
     app.run()

@@ -1,6 +1,10 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\tst",
+    "\\tst\\build",
+    "\\tst\\dist"
   ],
+  "SelectedNode": "\\tst\\main.py",
   "PreviewInSolutionExplorer": false
 }
