@@ -1,12 +1,12 @@
 [submodule "read_log_gaussian"]
 	path = read_log_gaussian
 	url = https://github.com/CesarGuzmanLopez/read_log_gaussian
-    branch = origin/main
+    branch = main
 [submodule "Marcus/read_log_gaussian"]
 	path = Marcus/read_log_gaussian
 	url = https://github.com/CesarGuzmanLopez/read_log_gaussian
-    branch = origin/main
+    branch = main
 [submodule "tst/read_log_gaussian"]
 	path = tst/read_log_gaussian
 	url = https://github.com/CesarGuzmanLopez/read_log_gaussian
-    branch = origin/main
+    branch = main
