@@ -5,22 +5,42 @@ import tkinter.ttk as ttk
 from tkinter.scrolledtext import ScrolledText
 import numpy as np
 from tkinter import *
-import matplotlib.pyplot as plt 
-class EntradaDato(tk.Frame) :
+import matplotlib.pyplot as plt
+from tkinter.filedialog import askopenfilename
+import subprocess
+import read_log_gaussian
 
+class EntradaDato(tk.Frame) :
     def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info=""):
-        self.dato=dato
+        self.__dato=dato
         self.Etiqueta =Etiqueta
         self.textoButton=buttontext
         self.labelEtiquetaNombre = tk.Label(self,text=self.Etiqueta,width=13,font = ('calibri', 10))
         self.datoentrada = tk.Entry(self,width=6)
-        self.datoentrada.insert(0,str(self.dato))
-        self.botonActivo =tk.Button(self,text=self.textoButton,width=7)
+        self.datoentrada.insert(0,str(self.__dato))
+        self.botonActivo =tk.Button(self,text=self.textoButton,width=7,command=self.open)
         self.grid(pady=5)
         self.labelEtiquetaNombre.grid(row = 0, column = 1,padx=4)
         self.datoentrada.grid(row = 0, column = 2,padx=4)
         self.botonActivo.grid(row = 0, column = 3,padx=4)
-        
+        self.datoentrada.config(state='disabled')
+        self.Archivo:read_log_gaussian =None
+    def open(self):
+        filetypes = [ 
+            ("Python File", "*.log"), 
+            ("Image File", "*.txt"),
+            ("out file", ".out")
+            ]
+        p = askopenfilename(initialdir="../",
+                           filetypes =filetypes,
+                           title = "Choose a file.")
+        self.Archivo =read_log_gaussian.read_log_gaussian(filename=p)
+        print(self.Archivo)
+
+    def setDato(self,UnDato:float=0.0):
+        self.__dato=UnDato
+        self.datoentrada.insert(0,str(self.dato))
+
 
 class MarcusApp:
     def __init__(self, master=None):
@@ -29,13 +49,16 @@ class MarcusApp:
         self.Principal.title("Marcus 1.1")
         self.Principal.resizable(False, False)
         self.Principal.geometry("710x550")
-
         self.menu()
-        
+
         self.SeccionLeerArchivos()
         self.SeecionTemperatura()
         self.SeccionDifusion()
         self.SeccionPantalla()
+
+        self.visc = 8.91e-4 
+        self.kBoltz = 1.38E-23
+
     def menu(self):
         menubar = tk.Menu(self.Principal)
         filemenu = tk.Menu(menubar, tearoff=0)
@@ -66,24 +89,31 @@ class MarcusApp:
 
         self.Title = tk.Entry(tabla)
         self.Title.grid(row = 1, column = 2)
+        
         self.React_1        = EntradaDato(tabla)
         self.React_1       .grid(row=2,column=1,columnspan = 3) 
         self.React_1       .Activar(Etiqueta="React-1(adiab.)") 
+        
         self.React_2        = EntradaDato(tabla)
         self.React_2       .grid(row=3,column=1,columnspan = 3) 
         self.React_2       .Activar(Etiqueta="React-2(adiab.)")
+        
         self.Prduct_1_adiab = EntradaDato(tabla)
         self.Prduct_1_adiab.grid(row=4,column=1,columnspan = 3) 
         self.Prduct_1_adiab.Activar(Etiqueta="Product-1(adiab.)")
+        
         self.Prduct_2_adiab = EntradaDato(tabla)
         self.Prduct_2_adiab.grid(row=5,column=1,columnspan = 3) 
         self.Prduct_2_adiab.Activar(Etiqueta="Product-2(adiab.)")
+        
         self.Prduct_1_vert  = EntradaDato(tabla)
         self.Prduct_1_vert .grid(row=6,column=1,columnspan = 3) 
         self.Prduct_1_vert .Activar(Etiqueta="Product-1(vert.)")
+        
         self.Prduct_2_vert  = EntradaDato(tabla)
         self.Prduct_2_vert .grid(row=7,column=1,columnspan = 3) 
         self.Prduct_2_vert .Activar(Etiqueta="Product-2(vert.)")
+
 
 
     def SeecionTemperatura(self,pos_x=30,pos_y=330): 
@@ -145,10 +175,6 @@ class MarcusApp:
         labelphpadvertence.configure(cursor='based_arrow_down', justify='center', relief='groove', takefocus=False)
         labelphpadvertence.configure(text='Plese note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
         labelphpadvertence.place(anchor='nw', width='140', x='200', y='400')
-
-
-
-
 
 
     def About(self):
