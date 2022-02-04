@@ -1,0 +1,3 @@
+[submodule "read_log_gaussian"]
+	path = read_log_gaussian
+	url = https://github.com/CesarGuzmanLopez/read_log_gaussian
