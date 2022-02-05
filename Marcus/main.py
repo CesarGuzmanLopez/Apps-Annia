@@ -1,14 +1,15 @@
+from asyncio import sleep
 from tkinter import filedialog, messagebox
 import tkinter as tk
-import tkinter
-import tkinter.ttk as ttk
 from tkinter.scrolledtext import ScrolledText
 import numpy as np
 from tkinter import *
-import matplotlib.pyplot as plt
 from tkinter.filedialog import askopenfilename
-import subprocess
+from SeslectStructura import SelectStructure
+from viewStructure import ViewStructure
+from tkdialog import WaitAlert
 from read_log_gaussian.read_log_gaussian import *
+import threading
 
 class EntradaDato(tk.Frame) :
     def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info=""):
@@ -25,27 +26,51 @@ class EntradaDato(tk.Frame) :
         self.botonActivo.grid(row = 0, column = 3,padx=4)
         self.datoentrada.config(state='disabled')
         self.Archlog:read_log_gaussian =None
+        self.filname=""
+        self.esperar:int =0
+        self.botonverfile = tk.Button(self,text="view",width=5,command=self.view)
+        self.botonverfile.grid(row = 0, column = 4,padx=4)
+        self.botonverfile['state'] ="disabled"
+        self.mensajeEsperar:WaitAlert
+        self.EstructuraSeleccionada:Estructura
+    def view(self):
+        ViewStructure(master=self, estructure =self.EstructuraSeleccionada)
+
     def open(self):
         filetypes = [ 
             ("log Gaussian file",  "*.log"), 
             ("txt format Gaussian","*.txt"),
             ("out Gaussian file",  "*.out")
             ]
-        
-        p = askopenfilename(initialdir=".",
+        self.mensajeEsperar:WaitAlert
+        self.filename = askopenfilename(initialdir=".",
                            filetypes =filetypes,
                            title = "Choose a file.")
 
-        if(p ==""):return
-        
-        x = messagebox.showinfo(message="Analyzing...", title="Opening file")
-        self.Archlog =read_log_gaussian(filename=p)
-
-
+        if(self.filename ==""):return
+        read  = threading.Thread(target = self.readfile)
+        read.start()
+        while(self.Archlog == None):
+            self.esperar =1
+            self.mensajeEsperar =  WaitAlert(parent=self,
+                title='Reading the file', 
+                message='Please wait', 
+                pause=self.esperar) # show countdown. 
+        self.SeleccionarEstructura()
+            
+    def readfile(self):
+        self.Archlog =read_log_gaussian(self.filename)
+        self.botonverfile['state'] ="normal"
     def setDato(self,UnDato:float=0.0):
         self.__dato=UnDato
         self.datoentrada.insert(0,str(self.dato))
-
+    def SeleccionarEstructura(self):
+        if(len(self.Archlog.Estructuras)==1):
+            self.EstructuraSeleccionada =self.Archlog.Estructuras[0]
+        else: 
+            select = SelectStructure(parent=self,Estructuras=self.Archlog.Estructuras)
+            if(select == None):
+                self.EstructuraSeleccionada =self.Archlog.Estructuras[0]
 
 class MarcusApp:
     def __init__(self, master=None):
@@ -54,13 +79,11 @@ class MarcusApp:
         self.Principal.title("Marcus 1.1")
         self.Principal.resizable(False, False)
         self.Principal.geometry("710x550")
-        self.menu()
-
+        self.menu() 
         self.SeccionLeerArchivos()
         self.SeecionTemperatura()
         self.SeccionDifusion()
-        self.SeccionPantalla()
-
+        self.SeccionPantalla() 
         self.visc = 8.91e-4 
         self.kBoltz = 1.38E-23
 
@@ -79,7 +102,7 @@ class MarcusApp:
 
     def SeccionLeerArchivos(self,pos_x=30,pos_y=40):
         seccionLeerArchivos = tk.Frame(self.Principal)
-        seccionLeerArchivos.configure(width='230',height='270',highlightbackground='#000000', highlightcolor='#000000')
+        seccionLeerArchivos.configure(width='280',height='270',highlightbackground='#000000', highlightcolor='#000000')
 
         labelData_entry = tk.Label(self.Principal,text="Data entry",font = ('calibri', 11, 'bold'))
         labelData_entry.place(x=str(pos_x), y=str(pos_y))
@@ -152,6 +175,7 @@ class MarcusApp:
         labelreact1.place(x="30",y="35")
         self.radius_react_1 = tk.Entry(frame2,width=15)
         self.radius_react_1.place(x="95",y="35")
+    
     def SeccionPantalla(self,pos_x=360,pos_y=30):
         seccionPantalla= tk.Frame(self.Principal)
         seccionPantalla.configure(width='350',height='500',highlightbackground='#333333', highlightcolor='#000000')
@@ -188,7 +212,6 @@ class MarcusApp:
         files = [('All Files', '*.*')]
     def run(self):
         self.Principal.mainloop()
-
 
 if __name__ == '__main__':
     app = MarcusApp()
