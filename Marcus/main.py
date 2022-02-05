@@ -61,9 +61,11 @@ class EntradaDato(tk.Frame) :
     def readfile(self):
         self.Archlog =read_log_gaussian(self.filename)
         self.botonverfile['state'] ="normal"
+        print(len(self.Archlog.Estructuras))
     def setDato(self,UnDato:float=0.0):
         self.__dato=UnDato
         self.datoentrada.insert(0,str(self.dato))
+
     def SeleccionarEstructura(self):
         if(len(self.Archlog.Estructuras)==1):
             self.EstructuraSeleccionada =self.Archlog.Estructuras[0]

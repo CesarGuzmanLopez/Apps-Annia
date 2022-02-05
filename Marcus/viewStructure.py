@@ -10,7 +10,7 @@ from read_log_gaussian.Estructura import Estructura
 class ViewStructure:
     def __init__(self, master=None, estructure =Estructura ):
         self.Principal = tkinter.Tk() if master is None else tk.Toplevel(master)
-        self.Principal.title("View structure")
+        self.Principal.title("View")
         self.Principal.resizable(False, False)
         self.Principal.geometry("400x400")
         salida = scrolledtext.ScrolledText(self.Principal,wrap = "none",width=40,height=20)

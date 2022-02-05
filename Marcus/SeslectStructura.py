@@ -22,4 +22,19 @@ class SelectStructure(sd.Dialog):
         show_timer (boolean): Shows countdown."""
 
     def __init__(self, parent, Estructuras:"list[Estructura]" ):
+        self.sistema = platform.system()
         super().__init__(parent, title="Select a Structure")
+    
+    def body(self, master):
+        # For macOS, we can use the below command to achieve a window similar to an alert.
+        # Comment the below line if you are on windows.
+        if self.sistema == "Darwin":
+            self.tk.call("::tk::unsupported::MacWindowStyle", "style", self._w, "moveableAlert")
+    
+    def buttonbox(self):
+        box = Frame(self)
+        b1 = Button(box, text="OK", width=10, command=self.ok)
+        b1.pack(side=LEFT, padx=5, pady=5)        
+        self.bind("<Return>", self.ok)
+        box.pack()
+        
