@@ -1,4 +1,4 @@
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 import tkinter as tk
 import tkinter
 import tkinter.ttk as ttk
@@ -8,7 +8,7 @@ from tkinter import *
 import matplotlib.pyplot as plt
 from tkinter.filedialog import askopenfilename
 import subprocess
-import read_log_gaussian
+from read_log_gaussian.read_log_gaussian import *
 
 class EntradaDato(tk.Frame) :
     def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info=""):
@@ -24,18 +24,23 @@ class EntradaDato(tk.Frame) :
         self.datoentrada.grid(row = 0, column = 2,padx=4)
         self.botonActivo.grid(row = 0, column = 3,padx=4)
         self.datoentrada.config(state='disabled')
-        self.Archivo:read_log_gaussian =None
+        self.Archlog:read_log_gaussian =None
     def open(self):
         filetypes = [ 
-            ("Python File", "*.log"), 
-            ("Image File", "*.txt"),
-            ("out file", ".out")
+            ("log Gaussian file",  "*.log"), 
+            ("txt format Gaussian","*.txt"),
+            ("out Gaussian file",  "*.out")
             ]
-        p = askopenfilename(initialdir="../",
+        
+        p = askopenfilename(initialdir=".",
                            filetypes =filetypes,
                            title = "Choose a file.")
-        self.Archivo =read_log_gaussian.read_log_gaussian(filename=p)
-        print(self.Archivo)
+
+        if(p ==""):return
+        
+        x = messagebox.showinfo(message="Analyzing...", title="Opening file")
+        self.Archlog =read_log_gaussian(filename=p)
+
 
     def setDato(self,UnDato:float=0.0):
         self.__dato=UnDato
