@@ -2,14 +2,15 @@ from tkinter import *
 import tkinter as tk
 import tkinter
 from tkinter import scrolledtext
+from tkinter import ttk
 from tkinter.scrolledtext import *
 from tkinter.filedialog import *
 from pygubu import TkApplication
 from tkinter import *
 import tkinter.simpledialog as sd
 import platform
+from  read_log_gaussian.read_log_gaussian import *
 
-from read_log_gaussian import *
 
 class SelectStructure(sd.Dialog):
     """An alert which will wait for a given time before user can interact.
@@ -23,6 +24,8 @@ class SelectStructure(sd.Dialog):
 
     def __init__(self, parent, Estructuras:"list[Estructura]" ):
         self.sistema = platform.system()
+        self.Estructuras = Estructuras
+        self.result = None
         super().__init__(parent, title="Select a Structure")
     
     def body(self, master):
@@ -30,11 +33,27 @@ class SelectStructure(sd.Dialog):
         # Comment the below line if you are on windows.
         if self.sistema == "Darwin":
             self.tk.call("::tk::unsupported::MacWindowStyle", "style", self._w, "moveableAlert")
-    
+        
+
+        box = Frame(self)
+
+        labelTop = tk.Label(box,
+                    text = "Choose your structure")
+        labelTop.grid(column=0, row=0)
+        self.SelectStructure = ttk.Combobox(box,values=list(map(lambda a:" Job Title: "+  a.jobtitle.getValue ,self.Estructuras )) )
+        self.SelectStructure.grid(column=0, row=1)
+        self.SelectStructure.current(None)
+        self.SelectStructure.size = [1200,150]
+        box.pack()
+
+
     def buttonbox(self):
         box = Frame(self)
         b1 = Button(box, text="OK", width=10, command=self.ok)
         b1.pack(side=LEFT, padx=5, pady=5)        
         self.bind("<Return>", self.ok)
         box.pack()
-        
+
+    def apply(self):
+        self.result = self.Estructuras[0]
+        return super().apply()

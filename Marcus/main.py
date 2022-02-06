@@ -56,12 +56,16 @@ class EntradaDato(tk.Frame) :
                 title='Reading the file', 
                 message='Please wait', 
                 pause=self.esperar) # show countdown. 
+        if(self.Archlog == False):
+            self.Archlog =None
+            self.botonverfile['state'] ="disabled"
         self.SeleccionarEstructura()
             
     def readfile(self):
         self.Archlog =read_log_gaussian(self.filename)
         self.botonverfile['state'] ="normal"
-        print(len(self.Archlog.Estructuras))
+        if(self.Archlog ==None):
+            self.Archlog =False
     def setDato(self,UnDato:float=0.0):
         self.__dato=UnDato
         self.datoentrada.insert(0,str(self.dato))
@@ -70,10 +74,11 @@ class EntradaDato(tk.Frame) :
         if(len(self.Archlog.Estructuras)==1):
             self.EstructuraSeleccionada =self.Archlog.Estructuras[0]
         else: 
-            select = SelectStructure(parent=self,Estructuras=self.Archlog.Estructuras)
-            if(select == None):
-                self.EstructuraSeleccionada =self.Archlog.Estructuras[0]
-
+            self.a = SelectStructure(parent=self,Estructuras=self.Archlog.Estructuras)
+            if(self.a  == None):
+                self.EstructuraSeleccionada =None
+            else:
+                self.EstructuraSeleccionada  =self.a.result 
 class MarcusApp:
     def __init__(self, master=None):
         self.Principal = tk.Tk() if master is None else tk.Toplevel(master)
