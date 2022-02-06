@@ -12,7 +12,7 @@ from read_log_gaussian.read_log_gaussian import *
 import threading
 
 class EntradaDato(tk.Frame) :
-    def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info=""):
+    def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info="",command =None):
         self.__dato=dato
         self.Etiqueta =Etiqueta
         self.textoButton=buttontext
@@ -33,6 +33,7 @@ class EntradaDato(tk.Frame) :
         self.botonverfile['state'] ="disabled"
         self.mensajeEsperar:WaitAlert
         self.EstructuraSeleccionada:Estructura
+        self.comando=command
     def view(self):
         ViewStructure(master=self, estructure =self.EstructuraSeleccionada)
 
@@ -78,7 +79,10 @@ class EntradaDato(tk.Frame) :
             if(self.a  == None):
                 self.EstructuraSeleccionada =None
             else:
-                self.EstructuraSeleccionada  =self.a.result 
+                self.EstructuraSeleccionada  =self.a.result
+        if(self.EstructuraSeleccionada!=None):
+            self.comando(self.EstructuraSeleccionada)
+
 class MarcusApp:
     def __init__(self, master=None):
         self.Principal = tk.Tk() if master is None else tk.Toplevel(master)
@@ -87,10 +91,11 @@ class MarcusApp:
         self.Principal.resizable(False, False)
         self.Principal.geometry("710x550")
         self.menu() 
-        self.SeccionLeerArchivos()
+        
         self.SeecionTemperatura()
         self.SeccionDifusion()
         self.SeccionPantalla() 
+        self.SeccionLeerArchivos()
         self.visc = 8.91e-4 
         self.kBoltz = 1.38E-23
 
@@ -127,7 +132,7 @@ class MarcusApp:
         
         self.React_1        = EntradaDato(tabla)
         self.React_1       .grid(row=2,column=1,columnspan = 3) 
-        self.React_1       .Activar(Etiqueta="React-1(adiab.)") 
+        self.React_1       .Activar(Etiqueta="React-1(adiab.)",command=self.defineReact_1)
         
         self.React_2        = EntradaDato(tabla)
         self.React_2       .grid(row=3,column=1,columnspan = 3) 
@@ -149,7 +154,8 @@ class MarcusApp:
         self.Prduct_2_vert .grid(row=7,column=1,columnspan = 3) 
         self.Prduct_2_vert .Activar(Etiqueta="Product-2(vert.)")
 
-
+    def defineReact_1(self,Estruct:Estructura):
+            pass
 
     def SeecionTemperatura(self,pos_x=30,pos_y=330): 
         seccionTemperatura= tk.Frame(self.Principal)
@@ -157,7 +163,6 @@ class MarcusApp:
         seccionTemperatura.place(x=str(pos_x),y=str(pos_y+15))
         labelEtiquetaTemperatura = tk.Label(seccionTemperatura,text="Temperature(K)",font = ('calibri', 10, 'bold'))
         labelEtiquetaTemperatura.grid(row = 1, column = 1)
-
         self.Temperatura = tk.Entry(seccionTemperatura)
         self.Temperatura.grid(row = 1, column = 2)
         self.Temperatura.insert(0,"298.15")
@@ -168,11 +173,14 @@ class MarcusApp:
         seccionDifusion.place(x=str(pos_x),y=str(pos_y))
         frame1=tk.Frame(seccionDifusion)
         frame1.place(x="1",y="10")
-        labelEtiquetaDifusion = tk.Label(frame1,text="Do you want to consider difusion?",font = ('calibri', 10, )).grid(column=0,row=0)
-        labelEtiquetaDifusion = tk.Label(frame1,text="no",font = ('calibri', 9, "bold")).grid(column=1,row=0)
-        self.difusion =tk.Radiobutton(frame1).grid(column=2,row=0)
-        labelEtiquetaDifusion = tk.Label(frame1,text="yes",font = ('calibri', 9,"bold" )).grid(column=3,row=0)
-        difusionfalse =tk.Radiobutton(frame1).grid(column=4,row=0)
+        self.difusion=IntVar()
+        self.difusion.set(0)
+        tk.Label(frame1,text="Do you want to consider difusion?",font = ('calibri', 10, )).grid(column=0,row=0)
+        tk.Label(frame1,text="yes",font = ('calibri', 9, "bold")).grid(column=1,row=0)
+        tk.Radiobutton(frame1,value=1,variable=self.difusion).grid(column=2,row=0)
+        tk.Label(frame1,text="No",font = ('calibri', 9,"bold" )).grid(column=4,row=0)
+        tk.Radiobutton(frame1,value=0,variable=self.difusion).grid(column=5,row=0)
+
         frame2=tk.Frame(seccionDifusion)
         frame2.place(x="30",y="30")
         frame2.configure(width='200',height='200')
@@ -188,13 +196,10 @@ class MarcusApp:
         seccionPantalla.configure(width='350',height='500',highlightbackground='#333333', highlightcolor='#000000')
         seccionPantalla.place(x=str(pos_x),y=str(pos_y))
        
-        boton = tk.Button(seccionPantalla,text="Data ok,Run",font = ('calibri', 10 ))
+        boton = tk.Button(seccionPantalla,text="Data ok,Run",font = ('calibri', 10 ), command=self.run_calc)
         boton.place(x="75",y="15")
-
         frame10 = tk.Frame(seccionPantalla)
         frame10.place( x='0', y='45')
-
-
         salida = ScrolledText(frame10, wrap = "none", width = 35, height = 20)
         xsb = tk.Scrollbar(frame10,orient="horizontal", command=salida.xview)        
         
@@ -212,7 +217,8 @@ class MarcusApp:
         labelphpadvertence.configure(text='Plese note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
         labelphpadvertence.place(anchor='nw', width='140', x='200', y='400')
 
-
+    def run_calc(self):
+        print(self.difusion.get())
     def About(self):
         pass
     def onSave(self):

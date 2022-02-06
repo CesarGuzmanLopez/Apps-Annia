@@ -9,6 +9,7 @@ from pygubu import TkApplication
 from tkinter import *
 import tkinter.simpledialog as sd
 import platform
+from viewStructure import ViewStructure
 from  read_log_gaussian.read_log_gaussian import *
 
 
@@ -33,20 +34,24 @@ class SelectStructure(sd.Dialog):
         # Comment the below line if you are on windows.
         if self.sistema == "Darwin":
             self.tk.call("::tk::unsupported::MacWindowStyle", "style", self._w, "moveableAlert")
-        
 
         box = Frame(self)
 
         labelTop = tk.Label(box,
                     text = "Choose your structure")
         labelTop.grid(column=0, row=0)
-        self.SelectStructure = ttk.Combobox(box,values=list(map(lambda a:" Job Title: "+  a.jobtitle.getValue ,self.Estructuras )) )
+        self.SelectStructure = ttk.Combobox(box,values=list(map(lambda a:" Job Title: "+  a.jobtitle.getValue ,self.Estructuras )))
         self.SelectStructure.grid(column=0, row=1)
         self.SelectStructure.current(None)
         self.SelectStructure.size = [1200,150]
+        
+        b1 = Button(box, text="view", width=10, command=self.view)
+        b1.grid(column=1, row=1)
+
         box.pack()
 
-
+    def view(self):
+        ViewStructure(self,estructure =  self.Estructuras[self.SelectStructure.current()])
     def buttonbox(self):
         box = Frame(self)
         b1 = Button(box, text="OK", width=10, command=self.ok)
@@ -55,5 +60,5 @@ class SelectStructure(sd.Dialog):
         box.pack()
 
     def apply(self):
-        self.result = self.Estructuras[0]
+        self.result = self.Estructuras[self.SelectStructure.current()]
         return super().apply()
