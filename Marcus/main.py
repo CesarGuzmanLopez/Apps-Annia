@@ -132,30 +132,42 @@ class MarcusApp:
         
         self.React_1        = EntradaDato(tabla)
         self.React_1       .grid(row=2,column=1,columnspan = 3) 
-        self.React_1       .Activar(Etiqueta="React-1(adiab.)",command=self.defineReact_1)
+        self.React_1       .Activar(Etiqueta="React-1(adiab.)",command=self.defReact_1       )
         
         self.React_2        = EntradaDato(tabla)
         self.React_2       .grid(row=3,column=1,columnspan = 3) 
-        self.React_2       .Activar(Etiqueta="React-2(adiab.)")
+        self.React_2       .Activar(Etiqueta="React-2(adiab.)",command=self.defReact_2       )
         
         self.Prduct_1_adiab = EntradaDato(tabla)
         self.Prduct_1_adiab.grid(row=4,column=1,columnspan = 3) 
-        self.Prduct_1_adiab.Activar(Etiqueta="Product-1(adiab.)")
+        self.Prduct_1_adiab.Activar(Etiqueta="Product-1(adiab.)",command=self.defPrduct_1_adiab)
         
         self.Prduct_2_adiab = EntradaDato(tabla)
         self.Prduct_2_adiab.grid(row=5,column=1,columnspan = 3) 
-        self.Prduct_2_adiab.Activar(Etiqueta="Product-2(adiab.)")
+        self.Prduct_2_adiab.Activar(Etiqueta="Product-2(adiab.)",command=self.defPrduct_2_adiab)
         
         self.Prduct_1_vert  = EntradaDato(tabla)
         self.Prduct_1_vert .grid(row=6,column=1,columnspan = 3) 
-        self.Prduct_1_vert .Activar(Etiqueta="Product-1(vert.)")
+        self.Prduct_1_vert .Activar(Etiqueta="Product-1(vert.)",command=self.defPrduct_1_vert )
         
         self.Prduct_2_vert  = EntradaDato(tabla)
         self.Prduct_2_vert .grid(row=7,column=1,columnspan = 3) 
-        self.Prduct_2_vert .Activar(Etiqueta="Product-2(vert.)")
+        self.Prduct_2_vert .Activar(Etiqueta="Product-2(vert.)",command=self.defPrduct_2_vert )
 
-    def defineReact_1(self,Estruct:Estructura):
-            pass
+
+    def defReact_1       (self,Estruc:Estructura):
+        pass
+    def defReact_2       (self,Estruc:Estructura):
+        pass
+    def defPrduct_1_adiab(self,Estruc:Estructura):
+        pass
+    def defPrduct_2_adiab(self,Estruc:Estructura):
+        pass
+    def defPrduct_1_vert (self,Estruc:Estructura):
+        pass
+    def defPrduct_2_vert (self,Estruc:Estructura):
+        pass
+
 
     def SeecionTemperatura(self,pos_x=30,pos_y=330): 
         seccionTemperatura= tk.Frame(self.Principal)
