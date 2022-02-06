@@ -156,7 +156,10 @@ class MarcusApp:
 
 
     def defReact_1       (self,Estruc:Estructura):
-        pass
+        self.Temperatura.delete(0,END)
+        self.Temperatura.insert(0,str(Estruc.temp.getValue))
+        self.Temperatura['state'] ="disabled"
+
     def defReact_2       (self,Estruc:Estructura):
         pass
     def defPrduct_1_adiab(self,Estruc:Estructura):
@@ -189,9 +192,9 @@ class MarcusApp:
         self.difusion.set(0)
         tk.Label(frame1,text="Do you want to consider difusion?",font = ('calibri', 10, )).grid(column=0,row=0)
         tk.Label(frame1,text="yes",font = ('calibri', 9, "bold")).grid(column=1,row=0)
-        tk.Radiobutton(frame1,value=1,variable=self.difusion).grid(column=2,row=0)
+        tk.Radiobutton(frame1,value=1,variable=self.difusion, command=self.isDifusion).grid(column=2,row=0)
         tk.Label(frame1,text="No",font = ('calibri', 9,"bold" )).grid(column=4,row=0)
-        tk.Radiobutton(frame1,value=0,variable=self.difusion).grid(column=5,row=0)
+        tk.Radiobutton(frame1,value=0,variable=self.difusion, command=self.isDifusion).grid(column=5,row=0)
 
         frame2=tk.Frame(seccionDifusion)
         frame2.place(x="30",y="30")
@@ -200,9 +203,15 @@ class MarcusApp:
         labelradius.place(x="15",y="15")
         labelreact1 = tk.Label(frame2,text="Reactant-1",font = ('calibri', 10 ))
         labelreact1.place(x="30",y="35")
-        self.radius_react_1 = tk.Entry(frame2,width=15)
+        self.radius_react_1 = tk.Entry(frame2,width=15,state='disabled')
         self.radius_react_1.place(x="95",y="35")
-    
+
+    def isDifusion(self):
+        if(self.difusion.get()==1):
+            self.radius_react_1['state'] = 'normal'
+        else:
+            self.radius_react_1['state'] = 'disabled'
+
     def SeccionPantalla(self,pos_x=360,pos_y=30):
         seccionPantalla= tk.Frame(self.Principal)
         seccionPantalla.configure(width='350',height='500',highlightbackground='#333333', highlightcolor='#000000')
