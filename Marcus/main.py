@@ -1,4 +1,5 @@
 from asyncio import sleep
+import os
 from tkinter import filedialog, messagebox
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
@@ -24,6 +25,8 @@ class EntradaDato(tk.Frame) :
         self.labelEtiquetaNombre.grid(row = 0, column = 1,padx=4)
         self.datoentrada.grid(row = 0, column = 2,padx=4)
         self.botonActivo.grid(row = 0, column = 3,padx=4)
+        
+        
         self.datoentrada.config(state='disabled')
         self.Archlog:read_log_gaussian =None
         self.filname=""
@@ -31,6 +34,9 @@ class EntradaDato(tk.Frame) :
         self.botonverfile = tk.Button(self,text="view",width=5,command=self.view)
         self.botonverfile.grid(row = 0, column = 4,padx=4)
         self.botonverfile['state'] ="disabled"
+        self.labelEtiquetafilename = tk.Label(self,text="",width=13,font = ('calibri', 8))
+        self.labelEtiquetafilename.grid(row = 1, column = 3,padx=4)
+        
         self.mensajeEsperar:WaitAlert
         self.EstructuraSeleccionada:Estructura
         self.comando=command
@@ -82,6 +88,10 @@ class EntradaDato(tk.Frame) :
                 self.EstructuraSeleccionada  =self.a.result
         if(self.EstructuraSeleccionada!=None):
             self.comando(self.EstructuraSeleccionada)
+            self.labelEtiquetafilename.config(text  = os.path.basename(self.filename))
+        else:
+            self.labelEtiquetafilename.config(text  = "")
+            self.filename=""
 
 class MarcusApp:
     def __init__(self, master=None):
@@ -89,9 +99,8 @@ class MarcusApp:
         self.FramePrincipal = tk.Frame(self.Principal, container='false')
         self.Principal.title("Marcus 1.1")
         self.Principal.resizable(False, False)
-        self.Principal.geometry("710x550")
+        self.Principal.geometry("730x550")
         self.menu() 
-        
         self.SeecionTemperatura()
         self.SeccionDifusion()
         self.SeccionPantalla() 
@@ -114,7 +123,7 @@ class MarcusApp:
 
     def SeccionLeerArchivos(self,pos_x=30,pos_y=40):
         seccionLeerArchivos = tk.Frame(self.Principal)
-        seccionLeerArchivos.configure(width='280',height='270',highlightbackground='#000000', highlightcolor='#000000')
+        seccionLeerArchivos.configure(width='310',height='300',highlightbackground='#000000', highlightcolor='#000000')
 
         labelData_entry = tk.Label(self.Principal,text="Data entry",font = ('calibri', 11, 'bold'))
         labelData_entry.place(x=str(pos_x), y=str(pos_y))
@@ -172,7 +181,7 @@ class MarcusApp:
         pass
 
 
-    def SeecionTemperatura(self,pos_x=30,pos_y=330): 
+    def SeecionTemperatura(self,pos_x=30,pos_y=350): 
         seccionTemperatura= tk.Frame(self.Principal)
         seccionTemperatura.configure(width='200',height='50',highlightbackground='#333333', highlightcolor='#000000')
         seccionTemperatura.place(x=str(pos_x),y=str(pos_y+15))
@@ -182,7 +191,7 @@ class MarcusApp:
         self.Temperatura.grid(row = 1, column = 2)
         self.Temperatura.insert(0,"298.15")
 
-    def SeccionDifusion(self,pos_x=30,pos_y=370):
+    def SeccionDifusion(self,pos_x=30,pos_y=400):
         seccionDifusion= tk.Frame(self.Principal)
         seccionDifusion.configure(width='290',height='400',highlightbackground='#333333', highlightcolor='#000000')
         seccionDifusion.place(x=str(pos_x),y=str(pos_y))
@@ -214,14 +223,14 @@ class MarcusApp:
 
     def SeccionPantalla(self,pos_x=360,pos_y=30):
         seccionPantalla= tk.Frame(self.Principal)
-        seccionPantalla.configure(width='350',height='500',highlightbackground='#333333', highlightcolor='#000000')
+        seccionPantalla.configure(width='550',height='500',highlightbackground='#333333', highlightcolor='#000000')
         seccionPantalla.place(x=str(pos_x),y=str(pos_y))
        
         boton = tk.Button(seccionPantalla,text="Data ok,Run",font = ('calibri', 10 ), command=self.run_calc)
-        boton.place(x="75",y="15")
+        boton.place(x="120",y="10")
         frame10 = tk.Frame(seccionPantalla)
-        frame10.place( x='0', y='45')
-        salida = ScrolledText(frame10, wrap = "none", width = 35, height = 20)
+        frame10.place( x='0', y='55')
+        salida = ScrolledText(frame10, wrap = "none", width = 40, height = 20)
         xsb = tk.Scrollbar(frame10,orient="horizontal", command=salida.xview)        
         
         salida.grid(row=1,column =0,columnspan=1)        
