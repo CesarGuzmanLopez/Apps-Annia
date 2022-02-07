@@ -357,8 +357,8 @@ class MarcusApp:
         except FileNotFoundError:
             messagebox.showerror(   title  = "It is not possible to save",
                                     message= "Please contact to administrator")
-            return  
-   def run(self):
+            return
+    def run(self):
         self.Principal.mainloop()
 
 if __name__ == '__main__':
