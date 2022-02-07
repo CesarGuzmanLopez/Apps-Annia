@@ -25,8 +25,6 @@ class EntradaDato(tk.Frame) :
         self.labelEtiquetaNombre.grid(row = 0, column = 1,padx=4)
         self.datoentrada.grid(row = 0, column = 2,padx=4)
         self.botonActivo.grid(row = 0, column = 3,padx=4)
-        #self.datoentrada.config(state='disabled')
-        
         self.Archlog:read_log_gaussian =None
         self.filname=""
         self.esperar:int =0
