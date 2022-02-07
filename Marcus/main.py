@@ -31,8 +31,8 @@ class EntradaDato(tk.Frame) :
         self.botonverfile = tk.Button(self,text="view",width=5,command=self.view)
         self.botonverfile.grid(row = 0, column = 4,padx=4)
         self.botonverfile['state'] ="disabled"
-        self.labelEtiquetafilename = tk.Label(self,text="",width=13,font = ('calibri', 8), fg='#aaa')
-        self.labelEtiquetafilename.grid(row = 1, column = 3,padx=4)
+        self.labelEtiquetafilename = tk.Label(self,text="",font = ('calibri', 8), fg='#aaa')
+        self.labelEtiquetafilename.grid(row = 1, column = 3,columnspan = 2,padx=4)
         self.mensajeEsperar:WaitAlert
         self.EstructuraSeleccionada:Estructura
         self.comando=command
