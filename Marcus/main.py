@@ -260,7 +260,7 @@ class MarcusApp:
         boton.place(x="120",y="10")
         frame10 = tk.Frame(seccionPantalla)
         frame10.place( x='0', y='55')
-        self.salida = ScrolledText(frame10, wrap = "none", width = 40, height = 20)
+        self.salida = ScrolledText(frame10, wrap = "none", width = 51, height = 20,font=('bold', 10))
         xsb = tk.Scrollbar(frame10,orient="horizontal", command=self.salida.xview)        
         
         self.salida.grid(row=1,column =0,columnspan=1)        
@@ -321,6 +321,7 @@ class MarcusApp:
             kDiff     :float  = 1000 * 4 * 3.14159 * diffCoefAB * reactDist * 6.02e23
             kCorrDiff :float  = (kDiff * rateCte) / (kDiff + rateCte)    
         title =self.Title.get()
+        self.salida.delete('1.0', END)
         self.salida.insert(END,("Pathway:  " + title + "\n") )
         self.salida.insert(END,("Adiabatic energy (G) of reaction (kcal/mol):  " + str(round(aEnergy_round,2)) + "\n") )
         self.salida.insert(END,("Vertical energy (E) of reaction (kcal/mol):  " + str(round(vEnergy_round,2)) + "\n") )
@@ -333,6 +334,7 @@ class MarcusApp:
         self.salida.insert(END, "\n\n-----------------------------------------------------\n\n\n")
     def About(self):
         pass
+    
     def onSave(self):
         file_path:string=None
         if file_path is None:
