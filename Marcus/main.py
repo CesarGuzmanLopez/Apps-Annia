@@ -1,6 +1,6 @@
 import math
 import os
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 import numpy as np
@@ -102,6 +102,11 @@ class EntradaDato(tk.Frame) :
 class MarcusApp:
     def __init__(self, master=None):
         self.Principal = tk.Tk() if master is None else tk.Toplevel(master)
+        ttk.setup_master(self.Principal)
+        s=ttk.Style()
+        s.theme_use('clam')
+        print(s.theme_use())
+        self.Principal.pack_propagate(True)
         self.FramePrincipal = tk.Frame(self.Principal, container='false')
         self.Principal.title("Marcus 1.1")
         self.Principal.resizable(False, False)
@@ -127,7 +132,7 @@ class MarcusApp:
         self.Principal.config(menu=menubar)
     
 
-    def SeccionLeerArchivos(self,pos_x=30,pos_y=40):
+    def SeccionLeerArchivos(self,pos_x=10,pos_y=10):
         seccionLeerArchivos = tk.Frame(self.Principal)
         seccionLeerArchivos.configure(width='310',height='355',highlightbackground='#000000', highlightcolor='#000000')
 
