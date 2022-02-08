@@ -99,7 +99,7 @@ class EntradaDato(tk.Frame) :
             self.labelEtiquetafilename.config(text  = "")
             self.filename=""
 
-class MarcusApp:
+class TST_App:
     def __init__(self, master=None):
         self.Principal = tk.Tk() if master is None else tk.Toplevel(master)
         self.FramePrincipal = tk.Frame(self.Principal, container='false')
@@ -361,5 +361,5 @@ class MarcusApp:
         self.Principal.mainloop()
 
 if __name__ == '__main__':
-    app = MarcusApp()
+    app = TST_App()
     app.run()

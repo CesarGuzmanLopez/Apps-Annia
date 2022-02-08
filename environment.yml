@@ -3,18 +3,18 @@ channels:
   - anaconda
   - defaults
 dependencies:
-  - ca-certificates=2021.10.26=haa95532_4
-  - certifi=2021.10.8=py37haa95532_2
-  - openssl=1.1.1m=h2bbff1b_0
-  - pip=20.2.4=py37_0
-  - python=3.7.9=h60c2a47_0
-  - setuptools=50.3.0=py37h9490d1a_1
-  - sqlite=3.33.0=h2a8f88b_0
-  - vc=14.1=h0510ff6_4
-  - vs2015_runtime=14.16.27012=hf0eaf9b_3
-  - wheel=0.35.1=py_0
-  - wincertstore=0.2=py37_0
-  - zlib=1.2.11=vc14h1cdd9ab_1
+  - ca-certificates=2021.10.26
+  - certifi=2021.10.8
+  - openssl=1.1.1m
+  - pip=20.2.4
+  - python=3.7.9
+  - setuptools=50.3.0
+  - sqlite=3.33.0
+  - vc=14.1
+  - vs2015_runtime=14.16.27012
+  - wheel=0.35.1
+  - wincertstore=0.2
+  - zlib=1.2.11
   - pip:
     - altgraph==0.17.2
     - appdirs==1.4.4
