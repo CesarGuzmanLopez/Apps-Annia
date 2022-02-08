@@ -103,16 +103,20 @@ class EntradaDato(ttk.Frame) :
 
 class MarcusApp:
     def __init__(self, master=None):
-        self.Principal = tk.Tk() if master is None else tk.Toplevel(master)
-        ttk.setup_master(self.Principal)
+        self.master = tk.Tk() if master is None else tk.Toplevel(master)
+        self.Principal = ttk.Frame(self.master)
+        ttk.setup_master(self.master)
+
         s=ttk.Style()
         s.theme_use('alt')
         print(s.theme_use())
         self.Principal.pack_propagate(True)
+        self.Principal.place(anchor='nw', bordermode='outside', x=str(0), y=str(0))
         self.FramePrincipal = ttk.Frame(self.Principal)
-        self.Principal.title("Marcus 1.1")
-        self.Principal.resizable(False, False)
-        self.Principal.geometry("900x610")
+        self.master.title("Marcus 1.1")
+        self.master.resizable(False, False)
+        self.master.geometry("900x610")
+        self.Principal.configure(width='960',height='605')
         self.menu() 
         self.SeecionTemperatura()
         self.SeccionDifusion()
@@ -122,7 +126,7 @@ class MarcusApp:
         self.kBoltz = 1.38E-23
 
     def menu(self):
-        menubar = tk.Menu(self.Principal)
+        menubar = tk.Menu(self.master)
         filemenu = tk.Menu(menubar, tearoff=0)
         filemenu.add_command(label="Save",command=self.onSave)
         filemenu.add_command(label="Exit",command=self.Principal.quit)
@@ -131,7 +135,7 @@ class MarcusApp:
         menubar.add_cascade(label="help", menu=help)
         help.add_command(label="About",command=self.About)
         
-        self.Principal.config(menu=menubar)
+        self.master.config(menu=menubar)
     
 
     def SeccionLeerArchivos(self,pos_x=10,pos_y=10):
@@ -275,12 +279,12 @@ class MarcusApp:
         self.salida.bind("<Key>", lambda e: "break")
         labelrate = ttk.Label(seccionPantalla)
         labelrate.configure(cursor='arrow', justify='left', relief='raised', text='Rate constant units:\n-For bimolecular(M-1 s-1)\n -For unimolecular reactions(s-1)')
-        labelrate.place(anchor='nw', x='0', y='430')
+        labelrate.place(anchor='nw', x='0', y='480')
 
         labelphpadvertence = ttk.Label(seccionPantalla)
         labelphpadvertence.configure(cursor='based_arrow_down', justify='center', relief='groove', takefocus=False)
         labelphpadvertence.configure(text='Please note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
-        labelphpadvertence.place(anchor='nw', width='200', x='320', y='430')
+        labelphpadvertence.place(anchor='nw', width='180', x='320', y='480')
 
     def run_calc(self):
         c =self.radius_react_1.get()
