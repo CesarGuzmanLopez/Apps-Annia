@@ -14,8 +14,6 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedStyle
- 
-
 class EntradaDato(ttk.Frame) :
     def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info="",command =None):
         self.__dato=dato
@@ -42,7 +40,6 @@ class EntradaDato(ttk.Frame) :
         self.comando=command
     def view(self):
         ViewStructure(master=self, estructure =self.EstructuraSeleccionada)
-
     def open(self):
         filetypes = [ 
             ("log Gaussian file",  "*.log"), 
