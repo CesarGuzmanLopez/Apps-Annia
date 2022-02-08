@@ -13,6 +13,8 @@ from read_log_gaussian.read_log_gaussian import *
 import threading
 import tkinter as tk
 from tkinter import ttk
+from ttkthemes import ThemedStyle
+ 
 
 class EntradaDato(ttk.Frame) :
     def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info="",command =None):
@@ -20,7 +22,7 @@ class EntradaDato(ttk.Frame) :
         self.Etiqueta =Etiqueta
         self.textoButton=buttontext
         self.labelEtiquetaNombre = ttk.Label(self,text=self.Etiqueta,width=20,font = ('consolas', 10))
-        self.datoentrada = tk.Entry(self,width=6)
+        self.datoentrada = tk.Entry(self,width=10)
         self.datoentrada.insert(0,str(self.__dato))
         self.botonActivo =ttk.Button(self,text=self.textoButton,width=7,command=self.open)
         self.grid(pady=5)
@@ -106,16 +108,15 @@ class MarcusApp:
         self.master = tk.Tk() if master is None else tk.Toplevel(master)
         self.Principal = ttk.Frame(self.master)
         ttk.setup_master(self.master)
-
-        s=ttk.Style()
-        s.theme_use('alt')
-        print(s.theme_use())
+        style = ThemedStyle(self.master )
         self.Principal.pack_propagate(True)
         self.Principal.place(anchor='nw', bordermode='outside', x=str(0), y=str(0))
-        self.FramePrincipal = ttk.Frame(self.Principal)
+       
         self.master.title("Marcus 1.1")
         self.master.resizable(False, False)
-        self.master.geometry("900x610")
+        self.master.geometry("890x600")
+
+        self.FramePrincipal = ttk.Frame(self.Principal)
         self.Principal.configure(width='960',height='605')
         self.menu() 
         self.SeecionTemperatura()
@@ -124,7 +125,12 @@ class MarcusApp:
         self.SeccionLeerArchivos()
         self.visc = 8.91e-4 
         self.kBoltz = 1.38E-23
-
+        style.set_theme('winxpblue')
+        style.configure('.', background= '#f0f0f0')
+        '''while(True):
+          for a in style.get_themes() :
+            style.set_theme(a)
+            input("pon algo: " + a )'''
     def menu(self):
         menubar = tk.Menu(self.master)
         filemenu = tk.Menu(menubar, tearoff=0)
@@ -260,7 +266,7 @@ class MarcusApp:
             self.radius_react_2['state'] = 'disabled'
             self.ReactionDistance['state'] ='disabled'
 
-    def SeccionPantalla(self,pos_x=360,pos_y=30):
+    def SeccionPantalla(self,pos_x=360,pos_y=10):
         seccionPantalla= ttk.Frame(self.Principal)
         seccionPantalla.configure(width='700',height='700')
         seccionPantalla.place(x=str(pos_x),y=str(pos_y))
@@ -279,12 +285,12 @@ class MarcusApp:
         self.salida.bind("<Key>", lambda e: "break")
         labelrate = ttk.Label(seccionPantalla)
         labelrate.configure(cursor='arrow', justify='left', relief='raised', text='Rate constant units:\n-For bimolecular(M-1 s-1)\n -For unimolecular reactions(s-1)')
-        labelrate.place(anchor='nw', x='0', y='480')
+        labelrate.place(anchor='nw', x='0', y='500')
 
         labelphpadvertence = ttk.Label(seccionPantalla)
         labelphpadvertence.configure(cursor='based_arrow_down', justify='center', relief='groove', takefocus=False)
         labelphpadvertence.configure(text='Please note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
-        labelphpadvertence.place(anchor='nw', width='180', x='320', y='480')
+        labelphpadvertence.place(anchor='nw', x='320', y='500')
 
     def run_calc(self):
         c =self.radius_react_1.get()
