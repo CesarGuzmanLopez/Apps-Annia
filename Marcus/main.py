@@ -1,6 +1,6 @@
 import math
 import os
-from tkinter import filedialog, messagebox, ttk
+from tkinter import filedialog, font, messagebox, ttk
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 import numpy as np
@@ -21,7 +21,7 @@ class EntradaDato(ttk.Frame) :
         self.__dato=dato
         self.Etiqueta =Etiqueta
         self.textoButton=buttontext
-        self.labelEtiquetaNombre = ttk.Label(self,text=self.Etiqueta,width=20,font = ('consolas', 10))
+        self.labelEtiquetaNombre = ttk.Label(self,text=self.Etiqueta,width=20)
         self.datoentrada = tk.Entry(self,width=10)
         self.datoentrada.insert(0,str(self.__dato))
         self.botonActivo =ttk.Button(self,text=self.textoButton,width=7,command=self.open)
@@ -35,7 +35,7 @@ class EntradaDato(ttk.Frame) :
         self.botonverfile = ttk.Button(self,text="view",width=5,command=self.view)
         self.botonverfile.grid(row = 0, column = 4,padx=4)
         self.botonverfile['state'] ="disabled"
-        self.labelEtiquetafilename = ttk.Label(self,text="",font = ('calibri', 8))
+        self.labelEtiquetafilename = ttk.Label(self,text="")
         self.labelEtiquetafilename.grid(row = 1, column = 3,columnspan = 2,padx=4)
         self.mensajeEsperar:WaitAlert
         self.EstructuraSeleccionada:Estructura
@@ -126,7 +126,7 @@ class MarcusApp:
         self.visc = 8.91e-4 
         self.kBoltz = 1.38E-23
         style.set_theme('winxpblue')
-        style.configure('.', background= '#f0f0f0')
+        style.configure('.', background= '#f0f0f0', font=('calibri', 9))
         '''while(True):
           for a in style.get_themes() :
             style.set_theme(a)
@@ -148,7 +148,7 @@ class MarcusApp:
         seccionLeerArchivos = ttk.Frame(self.Principal)
         seccionLeerArchivos.configure(width='310',height='355')
 
-        labelData_entry = ttk.Label(self.Principal,text="Data entry",font = ('calibri', 11, 'bold'))
+        labelData_entry = ttk.Label(self.Principal,text="Data entry")
         labelData_entry.place(x=str(pos_x), y=str(pos_y))
         
         seccionLeerArchivos.place(anchor='nw', bordermode='outside', x=str(pos_x), y=str(pos_y+10))
@@ -216,7 +216,7 @@ class MarcusApp:
         seccionTemperatura= ttk.Frame(self.Principal)
         seccionTemperatura.configure(width='200',height='50')
         seccionTemperatura.place(x=str(pos_x),y=str(pos_y+15))
-        labelEtiquetaTemperatura = ttk.Label(seccionTemperatura,text="Temperature(K)",font = ('calibri', 10, 'bold'))
+        labelEtiquetaTemperatura = ttk.Label(seccionTemperatura,text="Temperature(K)" )
         labelEtiquetaTemperatura.grid(row = 1, column = 1)
         self.Temperatura = tk.Entry(seccionTemperatura)
         self.Temperatura.grid(row = 1, column = 2)
@@ -230,27 +230,27 @@ class MarcusApp:
         frame1.place(x="1",y="10")
         self.difusion=IntVar()
         self.difusion.set(0)
-        ttk.Label(frame1,text="Do you want to consider difusion?",font = ('consolas', 8)).grid(column=0,row=0)
-        ttk.Label(frame1,text="yes",font = ('consolas', 8)).grid(column=1,row=0)
+        ttk.Label(frame1,text="Do you want to consider difusion?").grid(column=0,row=0)
+        ttk.Label(frame1,text="yes").grid(column=1,row=0)
         ttk.Radiobutton(frame1,value=1,variable=self.difusion, command=self.isDifusion).grid(column=2,row=0)
-        ttk.Label(frame1,text="No",font = ('consolas', 8)).grid(column=4,row=0)
+        ttk.Label(frame1,text="No").grid(column=4,row=0)
         ttk.Radiobutton(frame1,value=0,variable=self.difusion, command=self.isDifusion).grid(column=5,row=0)
 
         frame2=ttk.Frame(seccionDifusion)
         frame2.place(x="30",y="30")
         frame2.configure(width='900',height='200')
-        labelradius = ttk.Label(frame2,text="Radius (in Angstroms) for:",font = ('calibri', 10 ))
+        labelradius = ttk.Label(frame2,text="Radius (in Angstroms) for:")
         labelradius.place(x="15",y="15")
-        labelreact1 = ttk.Label(frame2,text="Reactant-1",font = ('calibri', 10 ))
+        labelreact1 = ttk.Label(frame2,text="Reactant-1")
         labelreact1.place(x="30",y="35")
         self.radius_react_1 = tk.Entry(frame2,width=15,state='disabled')
         self.radius_react_1.place(x="95",y="35")
-        labelreact1 = ttk.Label(frame2,text="Reactant-2",font = ('calibri', 10 ))
+        labelreact1 = ttk.Label(frame2,text="Reactant-2")
         labelreact1.place(x="30",y="55")
         self.radius_react_2 = tk.Entry(frame2,width=15,state='disabled')
         self.radius_react_2.place(x="95",y="55")
 
-        labelreact1 = ttk.Label(frame2,text="Reaction distance (in Angstroms)",font = ('calibri', 10 ))
+        labelreact1 = ttk.Label(frame2,text="Reaction distance (in Angstroms)")
         labelreact1.place(x="30",y="75")
         self.ReactionDistance = tk.Entry(frame2,width=15,state='disabled')
         self.ReactionDistance.place(x="70",y="95")
@@ -275,7 +275,7 @@ class MarcusApp:
         boton.place(x="200",y="10")
         frame10 = ttk.Frame(seccionPantalla)
         frame10.place( x='0', y='55')
-        self.salida = ScrolledText(frame10, wrap = "none", width = 68, height = 25,font=('bold', 10))
+        self.salida = ScrolledText(frame10, wrap = "none", width = 68, height = 25)
         xsb = tk.Scrollbar(frame10,orient="horizontal", command=self.salida.xview)        
         
         self.salida.grid(row=1,column =0,columnspan=1)        
