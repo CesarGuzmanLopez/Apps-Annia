@@ -112,7 +112,7 @@ class MarcusApp:
         self.FramePrincipal = ttk.Frame(self.Principal)
         self.Principal.title("Marcus 1.1")
         self.Principal.resizable(False, False)
-        self.Principal.geometry("750x610")
+        self.Principal.geometry("900x610")
         self.menu() 
         self.SeecionTemperatura()
         self.SeccionDifusion()
@@ -258,14 +258,14 @@ class MarcusApp:
 
     def SeccionPantalla(self,pos_x=360,pos_y=30):
         seccionPantalla= ttk.Frame(self.Principal)
-        seccionPantalla.configure(width='550',height='500')
+        seccionPantalla.configure(width='700',height='700')
         seccionPantalla.place(x=str(pos_x),y=str(pos_y))
        
-        boton = ttk.Button(seccionPantalla,text="Data ok,Run", command=self.run_calc)
-        boton.place(x="120",y="10")
+        boton = ttk.Button(seccionPantalla,text="Data ok, Run", command=self.run_calc)
+        boton.place(x="200",y="10")
         frame10 = ttk.Frame(seccionPantalla)
         frame10.place( x='0', y='55')
-        self.salida = ScrolledText(frame10, wrap = "none", width = 51, height = 20,font=('bold', 10))
+        self.salida = ScrolledText(frame10, wrap = "none", width = 68, height = 25,font=('bold', 10))
         xsb = tk.Scrollbar(frame10,orient="horizontal", command=self.salida.xview)        
         
         self.salida.grid(row=1,column =0,columnspan=1)        
@@ -275,12 +275,12 @@ class MarcusApp:
         self.salida.bind("<Key>", lambda e: "break")
         labelrate = ttk.Label(seccionPantalla)
         labelrate.configure(cursor='arrow', justify='left', relief='raised', text='Rate constant units:\n-For bimolecular(M-1 s-1)\n -For unimolecular reactions(s-1)')
-        labelrate.place(anchor='nw', x='0', y='400')
+        labelrate.place(anchor='nw', x='0', y='430')
 
         labelphpadvertence = ttk.Label(seccionPantalla)
         labelphpadvertence.configure(cursor='based_arrow_down', justify='center', relief='groove', takefocus=False)
-        labelphpadvertence.configure(text='Plese note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
-        labelphpadvertence.place(anchor='nw', width='140', x='200', y='400')
+        labelphpadvertence.configure(text='Please note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
+        labelphpadvertence.place(anchor='nw', width='200', x='320', y='430')
 
     def run_calc(self):
         c =self.radius_react_1.get()
