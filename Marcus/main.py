@@ -11,27 +11,29 @@ from viewStructure import ViewStructure
 from tkdialog import WaitAlert
 from read_log_gaussian.read_log_gaussian import *
 import threading
+import tkinter as tk
+from tkinter import ttk
 
-class EntradaDato(tk.Frame) :
+class EntradaDato(ttk.Frame) :
     def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info="",command =None):
         self.__dato=dato
         self.Etiqueta =Etiqueta
         self.textoButton=buttontext
-        self.labelEtiquetaNombre = tk.Label(self,text=self.Etiqueta,width=13,font = ('calibri', 10))
+        self.labelEtiquetaNombre = ttk.Label(self,text=self.Etiqueta,width=20,font = ('consolas', 10))
         self.datoentrada = tk.Entry(self,width=6)
         self.datoentrada.insert(0,str(self.__dato))
-        self.botonActivo =tk.Button(self,text=self.textoButton,width=7,command=self.open)
+        self.botonActivo =ttk.Button(self,text=self.textoButton,width=7,command=self.open)
         self.grid(pady=5)
-        self.labelEtiquetaNombre.grid(row = 0, column = 1,padx=4)
-        self.datoentrada.grid(row = 0, column = 2,padx=4)
-        self.botonActivo.grid(row = 0, column = 3,padx=4)
+        self.labelEtiquetaNombre.grid(row = 0, column = 1)
+        self.datoentrada.grid(row = 0, column = 2)
+        self.botonActivo.grid(row = 0, column = 3)
         self.Archlog:read_log_gaussian =None
         self.filname=""
         self.esperar:int =0
-        self.botonverfile = tk.Button(self,text="view",width=5,command=self.view)
+        self.botonverfile = ttk.Button(self,text="view",width=5,command=self.view)
         self.botonverfile.grid(row = 0, column = 4,padx=4)
         self.botonverfile['state'] ="disabled"
-        self.labelEtiquetafilename = tk.Label(self,text="",font = ('calibri', 8), fg='#aaa')
+        self.labelEtiquetafilename = ttk.Label(self,text="",font = ('calibri', 8))
         self.labelEtiquetafilename.grid(row = 1, column = 3,columnspan = 2,padx=4)
         self.mensajeEsperar:WaitAlert
         self.EstructuraSeleccionada:Estructura
@@ -104,10 +106,10 @@ class MarcusApp:
         self.Principal = tk.Tk() if master is None else tk.Toplevel(master)
         ttk.setup_master(self.Principal)
         s=ttk.Style()
-        s.theme_use('clam')
+        s.theme_use('alt')
         print(s.theme_use())
         self.Principal.pack_propagate(True)
-        self.FramePrincipal = tk.Frame(self.Principal, container='false')
+        self.FramePrincipal = ttk.Frame(self.Principal)
         self.Principal.title("Marcus 1.1")
         self.Principal.resizable(False, False)
         self.Principal.geometry("750x610")
@@ -133,18 +135,18 @@ class MarcusApp:
     
 
     def SeccionLeerArchivos(self,pos_x=10,pos_y=10):
-        seccionLeerArchivos = tk.Frame(self.Principal)
-        seccionLeerArchivos.configure(width='310',height='355',highlightbackground='#000000', highlightcolor='#000000')
+        seccionLeerArchivos = ttk.Frame(self.Principal)
+        seccionLeerArchivos.configure(width='310',height='355')
 
-        labelData_entry = tk.Label(self.Principal,text="Data entry",font = ('calibri', 11, 'bold'))
+        labelData_entry = ttk.Label(self.Principal,text="Data entry",font = ('calibri', 11, 'bold'))
         labelData_entry.place(x=str(pos_x), y=str(pos_y))
         
         seccionLeerArchivos.place(anchor='nw', bordermode='outside', x=str(pos_x), y=str(pos_y+10))
 
-        tabla =tk.Frame(seccionLeerArchivos)
+        tabla =ttk.Frame(seccionLeerArchivos)
         tabla.place(anchor='nw', bordermode='outside', x='10', y='10')
 
-        labelEtiquetaNombre = tk.Label(tabla,text="Run title")
+        labelEtiquetaNombre = ttk.Label(tabla,text="Run title")
         labelEtiquetaNombre.grid(row = 1, column = 1)
 
         self.Title = tk.Entry(tabla)
@@ -201,44 +203,44 @@ class MarcusApp:
 
 
     def SeecionTemperatura(self,pos_x=30,pos_y=400): 
-        seccionTemperatura= tk.Frame(self.Principal)
-        seccionTemperatura.configure(width='200',height='50',highlightbackground='#333333', highlightcolor='#000000')
+        seccionTemperatura= ttk.Frame(self.Principal)
+        seccionTemperatura.configure(width='200',height='50')
         seccionTemperatura.place(x=str(pos_x),y=str(pos_y+15))
-        labelEtiquetaTemperatura = tk.Label(seccionTemperatura,text="Temperature(K)",font = ('calibri', 10, 'bold'))
+        labelEtiquetaTemperatura = ttk.Label(seccionTemperatura,text="Temperature(K)",font = ('calibri', 10, 'bold'))
         labelEtiquetaTemperatura.grid(row = 1, column = 1)
         self.Temperatura = tk.Entry(seccionTemperatura)
         self.Temperatura.grid(row = 1, column = 2)
         self.Temperatura.insert(0,"298.15")
 
     def SeccionDifusion(self,pos_x=30,pos_y=440):
-        seccionDifusion= tk.Frame(self.Principal)
-        seccionDifusion.configure(width='290',height='400',highlightbackground='#333333', highlightcolor='#000000')
+        seccionDifusion= ttk.Frame(self.Principal)
+        seccionDifusion.configure(width='290',height='400')
         seccionDifusion.place(x=str(pos_x),y=str(pos_y))
-        frame1=tk.Frame(seccionDifusion)
+        frame1=ttk.Frame(seccionDifusion)
         frame1.place(x="1",y="10")
         self.difusion=IntVar()
         self.difusion.set(0)
-        tk.Label(frame1,text="Do you want to consider difusion?",font = ('calibri', 10, )).grid(column=0,row=0)
-        tk.Label(frame1,text="yes",font = ('calibri', 9, "bold")).grid(column=1,row=0)
-        tk.Radiobutton(frame1,value=1,variable=self.difusion, command=self.isDifusion).grid(column=2,row=0)
-        tk.Label(frame1,text="No",font = ('calibri', 9,"bold" )).grid(column=4,row=0)
-        tk.Radiobutton(frame1,value=0,variable=self.difusion, command=self.isDifusion).grid(column=5,row=0)
+        ttk.Label(frame1,text="Do you want to consider difusion?",font = ('consolas', 8)).grid(column=0,row=0)
+        ttk.Label(frame1,text="yes",font = ('consolas', 8)).grid(column=1,row=0)
+        ttk.Radiobutton(frame1,value=1,variable=self.difusion, command=self.isDifusion).grid(column=2,row=0)
+        ttk.Label(frame1,text="No",font = ('consolas', 8)).grid(column=4,row=0)
+        ttk.Radiobutton(frame1,value=0,variable=self.difusion, command=self.isDifusion).grid(column=5,row=0)
 
-        frame2=tk.Frame(seccionDifusion)
+        frame2=ttk.Frame(seccionDifusion)
         frame2.place(x="30",y="30")
         frame2.configure(width='900',height='200')
-        labelradius = tk.Label(frame2,text="Radius (in Angstroms) for:",font = ('calibri', 10 ))
+        labelradius = ttk.Label(frame2,text="Radius (in Angstroms) for:",font = ('calibri', 10 ))
         labelradius.place(x="15",y="15")
-        labelreact1 = tk.Label(frame2,text="Reactant-1",font = ('calibri', 10 ))
+        labelreact1 = ttk.Label(frame2,text="Reactant-1",font = ('calibri', 10 ))
         labelreact1.place(x="30",y="35")
         self.radius_react_1 = tk.Entry(frame2,width=15,state='disabled')
         self.radius_react_1.place(x="95",y="35")
-        labelreact1 = tk.Label(frame2,text="Reactant-2",font = ('calibri', 10 ))
+        labelreact1 = ttk.Label(frame2,text="Reactant-2",font = ('calibri', 10 ))
         labelreact1.place(x="30",y="55")
         self.radius_react_2 = tk.Entry(frame2,width=15,state='disabled')
         self.radius_react_2.place(x="95",y="55")
 
-        labelreact1 = tk.Label(frame2,text="Reaction distance (in Angstroms)",font = ('calibri', 10 ))
+        labelreact1 = ttk.Label(frame2,text="Reaction distance (in Angstroms)",font = ('calibri', 10 ))
         labelreact1.place(x="30",y="75")
         self.ReactionDistance = tk.Entry(frame2,width=15,state='disabled')
         self.ReactionDistance.place(x="70",y="95")
@@ -255,13 +257,13 @@ class MarcusApp:
             self.ReactionDistance['state'] ='disabled'
 
     def SeccionPantalla(self,pos_x=360,pos_y=30):
-        seccionPantalla= tk.Frame(self.Principal)
-        seccionPantalla.configure(width='550',height='500',highlightbackground='#333333', highlightcolor='#000000')
+        seccionPantalla= ttk.Frame(self.Principal)
+        seccionPantalla.configure(width='550',height='500')
         seccionPantalla.place(x=str(pos_x),y=str(pos_y))
        
-        boton = tk.Button(seccionPantalla,text="Data ok,Run",font = ('calibri', 10 ), command=self.run_calc)
+        boton = ttk.Button(seccionPantalla,text="Data ok,Run", command=self.run_calc)
         boton.place(x="120",y="10")
-        frame10 = tk.Frame(seccionPantalla)
+        frame10 = ttk.Frame(seccionPantalla)
         frame10.place( x='0', y='55')
         self.salida = ScrolledText(frame10, wrap = "none", width = 51, height = 20,font=('bold', 10))
         xsb = tk.Scrollbar(frame10,orient="horizontal", command=self.salida.xview)        
@@ -271,11 +273,11 @@ class MarcusApp:
         self.salida.configure(xscrollcommand=xsb.set)
         xsb.grid(row=2, column=0, columnspan=1,sticky=E+N+S+W)
         self.salida.bind("<Key>", lambda e: "break")
-        labelrate = tk.Label(seccionPantalla)
+        labelrate = ttk.Label(seccionPantalla)
         labelrate.configure(cursor='arrow', justify='left', relief='raised', text='Rate constant units:\n-For bimolecular(M-1 s-1)\n -For unimolecular reactions(s-1)')
         labelrate.place(anchor='nw', x='0', y='400')
 
-        labelphpadvertence = tk.Label(seccionPantalla)
+        labelphpadvertence = ttk.Label(seccionPantalla)
         labelphpadvertence.configure(cursor='based_arrow_down', justify='center', relief='groove', takefocus=False)
         labelphpadvertence.configure(text='Plese note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
         labelphpadvertence.place(anchor='nw', width='140', x='200', y='400')
