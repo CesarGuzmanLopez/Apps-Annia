@@ -127,10 +127,7 @@ class MarcusApp:
         self.kBoltz = 1.38E-23
         style.set_theme('winxpblue')
         style.configure('.', background= '#f0f0f0', font=('calibri', 9))
-        '''while(True):
-          for a in style.get_themes() :
-            style.set_theme(a)
-            input("pon algo: " + a )'''
+        
     def menu(self):
         menubar = tk.Menu(self.master)
         filemenu = tk.Menu(menubar, tearoff=0)
@@ -148,7 +145,7 @@ class MarcusApp:
         seccionLeerArchivos = ttk.Frame(self.Principal)
         seccionLeerArchivos.configure(width='310',height='355')
 
-        labelData_entry = ttk.Label(self.Principal,text="Data entry")
+        labelData_entry = ttk.Label(self.Principal,text="Data entry", font=('calibri', 9,"bold"))
         labelData_entry.place(x=str(pos_x), y=str(pos_y))
         
         seccionLeerArchivos.place(anchor='nw', bordermode='outside', x=str(pos_x), y=str(pos_y+10))
@@ -268,14 +265,14 @@ class MarcusApp:
 
     def SeccionPantalla(self,pos_x=360,pos_y=10):
         seccionPantalla= ttk.Frame(self.Principal)
-        seccionPantalla.configure(width='700',height='700')
+        seccionPantalla.configure(width='600',height='700')
         seccionPantalla.place(x=str(pos_x),y=str(pos_y))
        
         boton = ttk.Button(seccionPantalla,text="Data ok, Run", command=self.run_calc)
         boton.place(x="200",y="10")
         frame10 = ttk.Frame(seccionPantalla)
         frame10.place( x='0', y='55')
-        self.salida = ScrolledText(frame10, wrap = "none", width = 68, height = 25)
+        self.salida = ScrolledText(frame10, wrap = "none", width = 60, height = 25)
         xsb = tk.Scrollbar(frame10,orient="horizontal", command=self.salida.xview)        
         
         self.salida.grid(row=1,column =0,columnspan=1)        
