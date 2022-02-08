@@ -19,7 +19,7 @@ class EntradaDato(ttk.Frame) :
         self.__dato=dato
         self.Etiqueta =Etiqueta
         self.textoButton=buttontext
-        self.labelEtiquetaNombre = ttk.Label(self,text=self.Etiqueta,width=20)
+        self.labelEtiquetaNombre = ttk.Label(self,text=self.Etiqueta,width=17)
         self.datoentrada = tk.Entry(self,width=10)
         self.datoentrada.insert(0,str(self.__dato))
         self.botonActivo =ttk.Button(self,text=self.textoButton,width=7,command=self.open)
@@ -122,6 +122,11 @@ class MarcusApp:
         self.SeccionLeerArchivos()
         self.visc = 8.91e-4 
         self.kBoltz = 1.38E-23
+        while(True):
+          for i in style.get_themes():
+            style.set_theme(i)
+            style.configure('.', background= '#f0f0f0', font=('calibri', 9))
+            input("inserta: "+ i)
         style.set_theme('winxpblue')
         style.configure('.', background= '#f0f0f0', font=('calibri', 9))
         
@@ -140,7 +145,7 @@ class MarcusApp:
 
     def SeccionLeerArchivos(self,pos_x=10,pos_y=10):
         seccionLeerArchivos = ttk.Frame(self.Principal)
-        seccionLeerArchivos.configure(width='310',height='355')
+        seccionLeerArchivos.configure(width='360',height='355')
 
         labelData_entry = ttk.Label(self.Principal,text="Data entry", font=('calibri', 9,"bold"))
         labelData_entry.place(x=str(pos_x), y=str(pos_y))
@@ -218,7 +223,7 @@ class MarcusApp:
 
     def SeccionDifusion(self,pos_x=30,pos_y=440):
         seccionDifusion= ttk.Frame(self.Principal)
-        seccionDifusion.configure(width='290',height='400')
+        seccionDifusion.configure(width='400',height='400')
         seccionDifusion.place(x=str(pos_x),y=str(pos_y))
         frame1=ttk.Frame(seccionDifusion)
         frame1.place(x="1",y="10")
@@ -260,7 +265,7 @@ class MarcusApp:
             self.radius_react_2['state'] = 'disabled'
             self.ReactionDistance['state'] ='disabled'
 
-    def SeccionPantalla(self,pos_x=360,pos_y=10):
+    def SeccionPantalla(self,pos_x=400,pos_y=10):
         seccionPantalla= ttk.Frame(self.Principal)
         seccionPantalla.configure(width='600',height='700')
         seccionPantalla.place(x=str(pos_x),y=str(pos_y))
@@ -284,7 +289,7 @@ class MarcusApp:
         labelphpadvertence = ttk.Label(seccionPantalla)
         labelphpadvertence.configure(cursor='based_arrow_down', justify='center', relief='groove', takefocus=False)
         labelphpadvertence.configure(text='Please note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
-        labelphpadvertence.place(anchor='nw', x='320', y='500')
+        labelphpadvertence.place(anchor='nw', x='300', y='500')
 
     def run_calc(self):
         c =self.radius_react_1.get()
