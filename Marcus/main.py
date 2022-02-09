@@ -14,7 +14,6 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedStyle
-import PySimpleGUI as sg
 class EntradaDato(ttk.Frame) :
     def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info="",command =None):
         self.__dato=dato
@@ -48,25 +47,9 @@ class EntradaDato(ttk.Frame) :
             ("out Gaussian file",  "*.out")
             ]
         self.mensajeEsperar:WaitAlert
-        sg.theme("DarkTeal2")
-        layout = [[sg.T("")], [sg.Text("Choose a folder: "), sg.Input(key="-IN2-" ,change_submits=True), sg.FolderBrowse(key="-IN-")],[sg.Button("Submit")]]
-
-        ###Building Window
-        window = sg.Window('My File Browser', layout, size=(600,150))
-            
-        while True:
-            event, values = window.read()
-            print(values["-IN2-"])
-            if event == sg.WIN_CLOSED or event=="Exit":
-                break
-            elif event == "Submit":
-                print(values["-IN-"])
-                '''askopenfilename(initialdir=".",
-                                filetypes =filetypes,
-                                title = "Choose a file.")
-                '''
-
-
+        self.filename = askopenfilename(initialdir=".",
+                           filetypes =filetypes,
+                           title = "Choose a file.")
 
         if(self.filename ==""):return
         read  = threading.Thread(target = self.readfile)
