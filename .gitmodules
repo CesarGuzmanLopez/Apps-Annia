@@ -2,7 +2,8 @@
 	path = Marcus/read_log_gaussian
 	url = https://github.com/CesarGuzmanLopez/read_log_gaussian
     branch = main
-[submodule "tst/read_log_gaussian"]
+
+[submodule "Easy-rate/read_log_gaussian"]
 	path = Easy-rate/read_log_gaussian
 	url = https://github.com/CesarGuzmanLopez/read_log_gaussian
     branch = main
