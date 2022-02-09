@@ -1,3 +1,4 @@
+from lib2to3.pytree import WildcardPattern
 import math
 import os
 from tkinter import filedialog, font, messagebox, ttk
@@ -14,6 +15,7 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedStyle
+import wx
 class EntradaDato(ttk.Frame) :
     def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info="",command =None):
         self.__dato=dato
@@ -47,9 +49,10 @@ class EntradaDato(ttk.Frame) :
             ("out Gaussian file",  "*.out")
             ]
         self.mensajeEsperar:WaitAlert
-        self.filename = askopenfilename(initialdir=".",
+        self.filename  =self.__on_open()
+        '''self.filename = askopenfilename(initialdir=".",
                            filetypes =filetypes,
-                           title = "Choose a file.")
+                           title = "Choose a file.")'''
 
         if(self.filename ==""):return
         read  = threading.Thread(target = self.readfile)
@@ -76,7 +79,41 @@ class EntradaDato(ttk.Frame) :
     @property
     def getTextValue(self)->float:
         return float(self.datoentrada.get())
+    class MyForm(wx.Frame):
     
+        #----------------------------------------------------------------------
+        def __init__(self):
+            wx.Frame.__init__(self, None, wx.ID_ANY,
+                            "Multi-file type wx.FileDialog Tutorial")
+            panel = wx.Panel(self, wx.ID_ANY)
+            
+            btn = wx.Button(panel, label="Open File Dialog")
+            btn.Bind(wx.EVT_BUTTON, self.onOpenFile)
+            
+        #----------------------------------------------------------------------
+        def onOpenFile(self, event):
+            """
+            Create and show the Open FileDialog
+            """
+            dlg = wx.FileDialog(
+                self, message="Choose a file",
+                defaultFile=""
+                )
+            if dlg.ShowModal() == wx.ID_OK:
+                paths = dlg.GetPaths()
+                print ("You chose the following file(s):")
+            dlg.Destroy()
+
+
+    def __on_open(self):
+        app = wx.App(False)
+        frame = self.MyForm()
+        frame.Show()
+        app.MainLoop()
+
+
+
+
     def setDato(self,UnDato:float=0.0):
         self.__dato=UnDato
         self.datoentrada.config(state='normal')
