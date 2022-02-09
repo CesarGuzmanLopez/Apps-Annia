@@ -326,7 +326,9 @@ class MarcusApp:
         try:
             rateCte:float = 2.08e10 * temp * math.exp(-1.0*barrier * 1000 / (1.987 * temp))
         except:
-            print("Math error please check your data.")
+            messagebox.showerror(   title  = "Math range error.",
+                                    message= "Please check you data.")
+            rateCte:float = nan                        
         
         if self.difusion.get() == 1:
             radMolA   :float  = float(self.radius_react_1.get())
