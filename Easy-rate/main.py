@@ -3,7 +3,6 @@ import os
 from tkinter import filedialog, font, messagebox, ttk
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
-import numpy as np
 from tkinter import *
 from tkinter.filedialog import askopenfilename
 from SeslectStructura import SelectStructure
@@ -100,7 +99,7 @@ class EntradaDato(ttk.Frame) :
             self.labelEtiquetafilename.config(text  = "")
             self.filename=""
 
-class Tst:
+class EasyRate:
     def __init__(self, master=None):
         self.master = tk.Tk() if master is None else tk.Toplevel(master)
         self.Principal = ttk.Frame(self.master)
@@ -111,7 +110,7 @@ class Tst:
        
         self.master.title("Marcus 1.1")
         self.master.resizable(False, False)
-        self.master.geometry("890x600")
+        self.master.geometry("975x600")
 
         self.FramePrincipal = ttk.Frame(self.Principal)
         self.Principal.configure(width='960',height='605')
@@ -187,10 +186,6 @@ class Tst:
         self.Prduct_1_vert .Activar(Etiqueta="Product-1(vert.)"
                             ,command=self.defPrduct_1_vert )
         
-        self.Prduct_2_vert  = EntradaDato(tabla)
-        self.Prduct_2_vert .grid(row=7,column=1,columnspan = 3) 
-        self.Prduct_2_vert .Activar(Etiqueta="Product-2(vert.)"
-                            ,command=self.defPrduct_2_vert )
 
 
     def defReact_1       (self,Estruc:Estructura):
@@ -207,8 +202,7 @@ class Tst:
         self.Prduct_2_adiab.setDato(UnDato=Estruc.free_engergy.getValue)
     def defPrduct_1_vert (self,Estruc:Estructura):
         self.Prduct_1_vert.setDato(UnDato=Estruc.scf.getValue)
-    def defPrduct_2_vert (self,Estruc:Estructura):
-        self.Prduct_2_vert.setDato(UnDato=Estruc.scf.getValue)
+
 
 
     def SeecionTemperatura(self,pos_x=30,pos_y=400): 
@@ -265,23 +259,18 @@ class Tst:
             self.radius_react_2['state'] = 'disabled'
             self.ReactionDistance['state'] ='disabled'
 
-    def SeccionPantalla(self,pos_x=400,pos_y=10):
+    def SeccionPantalla(self,pos_x=370,pos_y=10):
         seccionPantalla= ttk.Frame(self.Principal)
         seccionPantalla.configure(width='600',height='700')
         seccionPantalla.place(x=str(pos_x),y=str(pos_y))
        
         boton = ttk.Button(seccionPantalla,text="Data ok, Run", command=self.run_calc)
-        boton.place(x="200",y="10")
-        frame10 = ttk.Frame(seccionPantalla)
-        frame10.place( x='0', y='55')
-        self.salida = ScrolledText(frame10, wrap = "none", width = 50, height = 25)
-        xsb = tk.Scrollbar(frame10,orient="horizontal", command=self.salida.xview)        
+        boton.place(x="250",y="10")
         
-        self.salida.grid(row=1,column =0,columnspan=1)        
-        self.salida.focus()
-        self.salida.configure(xscrollcommand=xsb.set)
-        xsb.grid(row=2, column=0, columnspan=1,sticky=E+N+S+W)
-        self.salida.bind("<Key>", lambda e: "break")
+        self.ScrollePantalla(seccionPantalla)
+
+
+
         labelrate = ttk.Label(seccionPantalla)
         labelrate.configure(cursor='arrow', justify='left', relief='raised', text='Rate constant units:\n-For bimolecular(M-1 s-1)\n -For unimolecular reactions(s-1)')
         labelrate.place(anchor='nw', x='0', y='500')
@@ -291,6 +280,25 @@ class Tst:
         labelphpadvertence.configure(text='Please note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
         labelphpadvertence.place(anchor='nw', x='300', y='500')
 
+    def ScrollePantalla(self, seccionPantalla):
+        FrameResultados = ttk.Frame(seccionPantalla)
+        FrameResultados.place( x='0', y='55')
+        self.salida = ScrolledText(FrameResultados, wrap = "none", width = 35, height = 23)
+        xsb = tk.Scrollbar(FrameResultados,orient="horizontal", command=self.salida.xview)        
+        self.salida.grid(row=1,column =0,columnspan=1)       
+        self.salida.focus()
+        self.salida.configure(xscrollcommand=xsb.set)
+        self.salida.bind("<Key>", lambda e: "break")
+        xsb.grid(row=2, column=0, columnspan=1,sticky=E+N+S+W)
+
+        self.salida2 = ScrolledText(FrameResultados, wrap = "none", width = 32, height = 23)
+        xsb2 = tk.Scrollbar(FrameResultados,orient="horizontal", command=self.salida2.xview)        
+        self.salida2.grid(row=1,column =1,columnspan=1)        
+        self.salida2.focus()
+        self.salida2.configure(xscrollcommand=xsb2.set)
+        self.salida2.bind("<Key>", lambda e: "break")
+        xsb2.grid(row=2, column=1, columnspan=1,sticky=E+N+S+W)
+        
     def run_calc(self):
         c =self.radius_react_1.get()
         b =self.radius_react_2.get()
@@ -383,5 +391,5 @@ class Tst:
         self.Principal.mainloop()
 
 if __name__ == '__main__':
-    app = MarcusApp()
+    app = EasyRate()
     app.run()

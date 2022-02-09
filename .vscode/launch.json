@@ -26,10 +26,10 @@
             "console": "externalTerminal"
         },
         {
-            "name": "Python: tst",
+            "name": "Python: Easy-rate",
             "type": "python",
             "request": "launch",
-            "program": "tst/main.py",
+            "program": "Easy-rate/main.py",
             "console": "externalTerminal"
         }
     ]
