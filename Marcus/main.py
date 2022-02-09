@@ -122,11 +122,11 @@ class MarcusApp:
         self.SeccionLeerArchivos()
         self.visc = 8.91e-4 
         self.kBoltz = 1.38E-23
-        while(True):
+        ''' while(True):
           for i in style.get_themes():
             style.set_theme(i)
             style.configure('.', background= '#f0f0f0', font=('calibri', 9))
-            input("inserta: "+ i)
+            input("inserta: "+ i)'''
         style.set_theme('winxpblue')
         style.configure('.', background= '#f0f0f0', font=('calibri', 9))
         
@@ -274,7 +274,7 @@ class MarcusApp:
         boton.place(x="200",y="10")
         frame10 = ttk.Frame(seccionPantalla)
         frame10.place( x='0', y='55')
-        self.salida = ScrolledText(frame10, wrap = "none", width = 60, height = 25)
+        self.salida = ScrolledText(frame10, wrap = "none", width = 50, height = 25)
         xsb = tk.Scrollbar(frame10,orient="horizontal", command=self.salida.xview)        
         
         self.salida.grid(row=1,column =0,columnspan=1)        
@@ -323,7 +323,10 @@ class MarcusApp:
         barrier:float = ((lam / 4) * (1 + (aEnergy / lam)) * (1 + (aEnergy / lam)))
         barrier_round = round(barrier, 2)
         temp          =  float(self.Temperatura.get())
-        rateCte:float = 2.08e10 * temp * math.exp(-1.0*barrier * 1000 / (1.987 * temp))
+        try:
+            rateCte:float = 2.08e10 * temp * math.exp(-1.0*barrier * 1000 / (1.987 * temp))
+        except:
+            print("Math error please check your data.")
         
         if self.difusion.get() == 1:
             radMolA   :float  = float(self.radius_react_1.get())
