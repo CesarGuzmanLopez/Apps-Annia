@@ -16,7 +16,7 @@ class Tunnel:
         ttk.setup_master(self.master)
         style = ThemedStyle(self.master ) 
         self.Principal.place(anchor='nw', bordermode='outside', x=str(0), y=str(0)) 
-        self.master.title("Marcus 1.1")
+        self.master.title("Tunnel")
         self.master.resizable(False, False)
         self.master.geometry("500x300") 
         self.FramePrincipal = ttk.Frame(self.Principal)
@@ -79,9 +79,12 @@ class Tunnel:
         self.master.config(menu=menubar)
 
     def onSave(self):
-        pass
+         master = tk.Tk() if self.master is None else tk.Toplevel(self.master)
+         Principal = ttk.Frame(self.master)
     def About(self):
-        pass
+        master = tk.Tk() if self.master is None else tk.Toplevel(self.master)
+        Principal = ttk.Frame(self.master)
+
     def Salida(self,pos_x=200,pos_y=10): 
         SeccionDatos= ttk.Frame(self.Principal)
         SeccionDatos.configure(width='200',height='50')
@@ -93,17 +96,8 @@ class Tunnel:
         self.salida.configure(xscrollcommand=xsb.set)
         xsb.grid(row=2, column=0, columnspan=1,sticky=E+N+S+W)
         self.salida.bind("<Key>", lambda e: "break")
-
-
-
-
-    
     def run(self):
         self.master.mainloop()
-
-
-
-
 
 
 if __name__ == '__main__':
