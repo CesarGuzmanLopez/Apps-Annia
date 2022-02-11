@@ -4,6 +4,8 @@
     // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
+
         {
             "name": "Python: Archivo actual",
             "type": "python",
@@ -31,6 +33,14 @@
             "request": "launch",
             "program": "Easy-rate/main.py",
             "console": "externalTerminal"
+        },
+        {
+            "name": "Python: Tunnel",
+            "type": "python",
+            "request": "launch",
+            "program": "Tunnel/main.py",
+            "console": "externalTerminal"
         }
+
     ]
 }
