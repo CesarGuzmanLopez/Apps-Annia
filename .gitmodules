@@ -7,3 +7,6 @@
 	path = Easy-rate/read_log_gaussian
 	url = https://github.com/CesarGuzmanLopez/read_log_gaussian
     branch = main
+[submodule "Tunnel/Chemical-Kinetics"]
+	path = Tunnel/Chemical-Kinetics
+	url = https://github.com/Eduardo-Gabriel-Guzman-Lopez/Chemical-Kinetics.git
