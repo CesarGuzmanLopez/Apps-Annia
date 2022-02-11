@@ -8,3 +8,6 @@
 	url = https://github.com/CesarGuzmanLopez/read_log_gaussian
     branch = main
 
+[submodule "Tunnel/CK"]
+	path = Tunnel/CK
+	url = https://github.com/Eduardo-Gabriel-Guzman-Lopez/Chemical-Kinetics.git
