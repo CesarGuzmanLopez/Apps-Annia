@@ -1,3 +1,4 @@
+from tkinter import filedialog, messagebox
 from CK.tst import *
 from tkinter import  ttk
 import tkinter as tk
@@ -74,25 +75,55 @@ class Tunnel:
         menubar.add_cascade(label="help", menu=help)
         help.add_command(label="About",command=self.About)
         self.master.config(menu=menubar)
-
     def onSave(self):
-        pass
+        if file_path_save is None:
+            file_path_save = filedialog.asksaveasfilename(
+                filetypes=( ("Text files", "*.txt"),("All files", "*.*"))) 
+        try:
+            with open(file_path_save, "w+") as file: 
+                file.write(
+                    "Entry Values: \n\n"+
+                    "Reaction barrier ZPE (kcal/mol): "+str(self.entry_R_B_ZPE.get())+"\n"+
+                    "Imaginary frequency (cm-1): "+str(self.entryIma.get())+"\n"+
+                    "Reaction Energy ZPE (kcal/mol): "+str(self.entry_Re_En_ZPE.get())+"\n"+
+                    "Temperature (K):  "+str(self.entry_Temp.get())+"\n\nResult:\n"
+                )
+                file.write(
+                
+                    self.salida.get("1.0", END)+
+                    "\n"
+                )
+                file.close()
+        except FileNotFoundError:
+            messagebox.showerror(   title  = "It is not possible to save",
+                            message= "Please contact to administrator")
 
 
     def About(self):
         VentanaAbout = tk.Tk() if self.master is None else tk.Toplevel(self.master)
-        self.VentanaAbout = ttk.Frame(VentanaAbout)
+        Frame_VentanaAbout = ttk.Frame(VentanaAbout)
         ttk.setup_master(VentanaAbout)
-        style = ThemedStyle(VentanaAbout) 
-        self.VentanaAbout.place(anchor='nw', bordermode='outside', x=str(0), y=str(0))
-        VentanaAbout.title('VentanaAbout.title')
+        style = ThemedStyle(VentanaAbout )
+        Frame_VentanaAbout.place(anchor='nw', bordermode='outside', x=str(0), y=str(0)) 
+        VentanaAbout.title('Fram')
         VentanaAbout.resizable(False, False)
-        VentanaAbout.geometry('500x300') 
-        self.FramePrincipal = ttk.Frame(self.VentanaAbout)
-        self.VentanaAbout.configure(width='960',height='605') 
+        VentanaAbout.geometry("400x300") 
+        Frame_VentanaAbout.configure(width='960',height='605') 
         style.set_theme('winxpblue')
         style.configure('.', background= '#f0f0f0', font=('calibri', 9))
-        
+
+        SeccionDatos= ttk.Frame(Frame_VentanaAbout)
+        SeccionDatos.configure(width='200',height='50')
+        SeccionDatos.place(x=str(0),y=str(0+15))
+        textoScrollBar = ScrolledText(SeccionDatos, wrap = "none", width = 33, height = 15)
+        xsb = tk.Scrollbar(SeccionDatos,orient="horizontal", command=textoScrollBar.xview)
+        textoScrollBar.grid(row=1,column =0,columnspan=1)
+        textoScrollBar.focus()
+        textoScrollBar.configure(xscrollcommand=xsb.set)
+        xsb.grid(row=2, column=0, columnspan=1,sticky=E+N+S+W)
+        textoScrollBar.bind("<Key>", lambda e: "break")
+        textoScrollBar['state'] = "disabled"
+        textoScrollBar.insert(END,"")
 
     def Salida(self,pos_x=200,pos_y=10): 
         SeccionDatos= ttk.Frame(self.Principal)

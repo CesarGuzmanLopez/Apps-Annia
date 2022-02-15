@@ -363,7 +363,7 @@ class MarcusApp:
             # Write the Prolog rule editor contents to the file location
             with open(file_path, "w+") as file: 
                 file.write(
-                    "Entry Values: \n\n"
+                    "Entry Values: \n\n"+
                     "\t\tReact-1(adiab.): "  +str(self.React_1       .getTextValue) + "\n"+
                     "\t\tReact-2(adiab.): "  +str(self.React_2       .getTextValue) + "\n"+
                     "\t\tProduct-1(adiab.): "+str(self.Prduct_1_adiab.getTextValue) + "\n"+
