@@ -76,14 +76,23 @@ class Tunnel:
         self.master.config(menu=menubar)
 
     def onSave(self):
-         master = tk.Tk() if self.master is None else tk.Toplevel(self.master)
-         Principal = ttk.Frame(self.master)
+        pass
 
 
     def About(self):
-        master = tk.Tk() if self.master is None else tk.Toplevel(self.master)
-        Principal = ttk.Frame(self.master)
-
+        VentanaAbout = tk.Tk() if self.master is None else tk.Toplevel(self.master)
+        self.VentanaAbout = ttk.Frame(VentanaAbout)
+        ttk.setup_master(VentanaAbout)
+        style = ThemedStyle(VentanaAbout) 
+        self.VentanaAbout.place(anchor='nw', bordermode='outside', x=str(0), y=str(0))
+        VentanaAbout.title('VentanaAbout.title')
+        VentanaAbout.resizable(False, False)
+        VentanaAbout.geometry('500x300') 
+        self.FramePrincipal = ttk.Frame(self.VentanaAbout)
+        self.VentanaAbout.configure(width='960',height='605') 
+        style.set_theme('winxpblue')
+        style.configure('.', background= '#f0f0f0', font=('calibri', 9))
+        
 
     def Salida(self,pos_x=200,pos_y=10): 
         SeccionDatos= ttk.Frame(self.Principal)
