@@ -8,8 +8,7 @@ from tkinter.filedialog import askopenfilename
 import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedStyle
-
-class Tunnel:
+class Tunnel: 
     def __init__(self, master=None):
         self.master = tk.Tk() if master is None else tk.Toplevel(master)
         self.Principal = ttk.Frame(self.master)
@@ -25,12 +24,10 @@ class Tunnel:
         style.configure('.', background= '#f0f0f0', font=('calibri', 9))
         self.menu()
         self.Datos()
-    
         self.Salida()
     '''DELZPE ->REaction energy plus ZPE Energy'''
     def Datos(self,pos_x=10,pos_y=10): 
         SeccionDatos= ttk.Frame(self.Principal)
-        
         SeccionDatos.configure(width='200',height='50')
         SeccionDatos.place(x=str(pos_x),y=str(pos_y+15))
         label_R_B_ZPE = ttk.Label(SeccionDatos,text="Reaction barrier ZPE (kcal/mol): " )
@@ -81,9 +78,12 @@ class Tunnel:
     def onSave(self):
          master = tk.Tk() if self.master is None else tk.Toplevel(self.master)
          Principal = ttk.Frame(self.master)
+
+
     def About(self):
         master = tk.Tk() if self.master is None else tk.Toplevel(self.master)
         Principal = ttk.Frame(self.master)
+
 
     def Salida(self,pos_x=200,pos_y=10): 
         SeccionDatos= ttk.Frame(self.Principal)
@@ -97,9 +97,7 @@ class Tunnel:
         xsb.grid(row=2, column=0, columnspan=1,sticky=E+N+S+W)
         self.salida.bind("<Key>", lambda e: "break")
     def run(self):
-        self.master.mainloop()
-
-
+        self.master.mainloop() #Todo fix this
 if __name__ == '__main__':
     app = Tunnel()
     app.run()
