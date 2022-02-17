@@ -11,3 +11,6 @@
 [submodule "Tunnel/CK"]
 	path = Tunnel/CK
 	url = https://github.com/Eduardo-Gabriel-Guzman-Lopez/Chemical-Kinetics.git
+[submodule "Easy-rate/CK"]
+	path = Easy-rate/CK
+	url = https://github.com/Eduardo-Gabriel-Guzman-Lopez/Chemical-Kinetics.git

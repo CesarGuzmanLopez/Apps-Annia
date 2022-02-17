@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 from tkinter import *
 from tkinter.filedialog import askopenfilename
+from webbrowser import get
 from SeslectStructura import SelectStructure
 from viewStructure import ViewStructure
 from tkdialog import WaitAlert
@@ -41,6 +42,7 @@ class EntradaDato(ttk.Frame):
         self.labelEtiquetafilename = ttk.Label(self, text="")
         self.labelEtiquetafilename.grid(row=1, column=3, columnspan=2, padx=4)
         self.comando = command
+        self.EstructuraSeleccionada = None
 
     def view(self):
         ViewStructure(master=self, estructure=self.EstructuraSeleccionada)
@@ -85,6 +87,9 @@ class EntradaDato(ttk.Frame):
     def getTextValue(self) -> float:
         return float(self.datoentrada.get())
 
+    def get_Estructura_Seleccionada(self):
+        return self.EstructuraSeleccionada
+
     def setDato(self, UnDato: float = 0.0):
         self.__dato = UnDato
         self.datoentrada.config(state='normal')
@@ -111,18 +116,38 @@ class EntradaDato(ttk.Frame):
             self.filename = ""
 
 
-'''
-    Guarda la informacion de una ejecucion
-'''
-
 
 class Ejecucion:
+    '''
+    Guarda la informacion de una ejecucion y se hacen los calculos
+    '''
     def __init__(self,  title: string = "Title",
-                 React_1: EntradaDato = None,
-                 React_2: EntradaDato = None,
-                 Transition_Rate: EntradaDato = None,
-                 Product_1: EntradaDato = None,
-                 Product_2: EntradaDato = None):
+                 React_1: Estructura = None,
+                 React_2: Estructura = None,
+                 Transition_Rate: Estructura = None,
+                 Product_1: Estructura = None,
+                 Product_2: Estructura = None,
+                 Cage_efects: bool = False,
+                 Difusion: bool = False,
+                 Solvent: string = "",
+                 Radius_1: float = nan,
+                 Radius_2: float = nan,
+                 ReactionDistance: float = nan
+                 ):
+
+        self.title = title
+        self.React_1: Estructura = React_1
+        self.React_2: Estructura = React_2
+        self.Transition_Rate: Estructura = Transition_Rate
+        self.Product_1: Estructura = Product_1
+        self.Product_2: Estructura = Product_2
+
+        self.Cage_efects: bool = Cage_efects
+        self.Difusion: bool = Difusion
+        self.Solvent: string = Solvent
+        self.Radius_1: float = Radius_1
+        self.Radius_2: float = Radius_2
+        self.ReactionDistance: float = ReactionDistance
         self.Zreact: float = nan
         self.Zact: float = nan
         self.Zreact_round: float = nan
@@ -136,12 +161,27 @@ class Ejecucion:
         self.Greact_round: float = nan
         self.Gact_round: float = nan
         self.rateCte_write: float = nan
-        self.title = title
-        self.React_1: EntradaDato = React_1 
-        self.React_2: EntradaDato = React_2 
-        self.Transition_Rate: EntradaDato = Transition_Rate
-        self.Product_1: EntradaDato = Product_1 
-        self.Product_2: EntradaDato = Product_2
+   
+    def Run(self) -> None:
+        """
+            Run(self) -> None Aqui se hacen los calculos matematicos
+            Logica del negocio
+        """
+        self.Zreact = 627.5095 * (self.Product_2.zpe.getValue() + self.Product_1.zpe.getValue()
+                                  - self.React_1.zpe.getValue()-self.React_2.zpe.getValue())
+        self.Zact = 627.5095 * (self.Transition_Rate.zpe.getValue() 
+                                  -self.React_1.zpe.getValue() - self.React_2.zpe.getValue())
+
+        self.Zreact_round = round(self.Zreact, 2)
+        self.Zact_round = round(self.Zact, 2)
+
+        self.Hreact = 627.5095 *(self.Product_1.eH_ts.getValue() + self.Product_2.eH_ts.getValue() 
+                        - self.React_1.eH_ts.getValue() - self.React_2.eH_ts.getValue())
+        self.Hact = 627.5095 * (self.Transition_Rate.eH_ts.getValue() 
+                                -self.React_1.eH_ts.getValue() - self.React_2.eH_ts.getValue())
+        
+        self.Hreact_round = round(self.Hreact, 2)
+        self.Hact_round = round(self.Hact, 2)
 
 
 class EasyRate:
@@ -149,11 +189,11 @@ class EasyRate:
     K_BOLTZ = 1.38E-23
 
     def __init__(self, master=None):
-        self.Ejecucion: list[Ejecucion] = list()
+        self.Ejecuciones: list[Ejecucion] = list()
         self.master = tk.Tk() if master is None else tk.Toplevel(master)
         self.Principal = ttk.Frame(self.master)
         ttk.setup_master(self.master)
-        style = ThemedStyle(self.master)
+        self.style = ThemedStyle(self.master)
         self.Principal.pack_propagate(True)
         self.Principal.place(
             anchor='nw', bordermode='outside', x=str(0), y=str(0))
@@ -167,8 +207,9 @@ class EasyRate:
         self.SeccionDifusion()
         self.SeccionPantalla()
         self.SeccionLeerArchivos()
-        style.set_theme('winxpblue')
-        style.configure('.', background='#f0f0f0', font=('calibri', 9))
+        self.style.set_theme('winxpblue')
+        self.style.configure('.', background='#f0f0f0', font=('calibri', 9))
+        self.style.configure('TCombobox', fieldbackground='#f0f0f0')
 
     def menu(self):
         menubar = tk.Menu(self.master)
@@ -285,11 +326,12 @@ class EasyRate:
         frame2a.place(x="0", y="30")
         frame2a.configure(width='200', height='200')
         ttk.Label(frame2a, text="Solvent").grid(row=0, column=0)
-        self.combo = ttk.Combobox(frame2a)
-        self.combo.configure(width="14")
-        self.combo.grid(row=1, column=0)
-        values = list(self.combo["values"])
-        self.combo["values"] = values + [""] + ["Benzene"] + \
+
+        self.Solvent = ttk.Combobox(frame2a, state='disabled')
+        self.Solvent.configure(width="14")
+        self.Solvent.grid(row=1, column=0)
+        values = list(self.Solvent["values"])
+        self.Solvent["values"] = values + [""] + ["Benzene"] + \
             ["Gas phase (Air)"] + ["Pentyl ethanoate"]+["Water"]
         frame2 = ttk.Frame(seccionDifusion)
         frame2.place(x="110", y="30")
@@ -312,10 +354,14 @@ class EasyRate:
             self.ReactionDistance['state'] = 'normal'
             self.radius_react_1['state'] = 'normal'
             self.radius_react_2['state'] = 'normal'
+            self.Solvent['state'] = 'normal'
+            self.style.configure('TCombobox', fieldbackground='white')
         else:
             self.radius_react_1['state'] = 'disabled'
             self.radius_react_2['state'] = 'disabled'
             self.ReactionDistance['state'] = 'disabled'
+            self.Solvent['state'] = 'disabled'
+            self.style.configure('TCombobox', fieldbackground='#f0f0f0')
 
     def SeccionPantalla(self, pos_x=370, pos_y=20):
         seccionPantalla = ttk.Frame(self.Principal)
@@ -324,7 +370,7 @@ class EasyRate:
         self.Cage_efects = IntVar()
         self.Cage_efects.set(0)
         ttk.Label(seccionPantalla, text="Cage Effects?").place(
-            anchor='nw', x='100', y='10')
+            anchor='nw', x='80', y='10')
         ttk.Label(seccionPantalla, text="yes").place(
             anchor='nw', x='170', y='10')
         ttk.Radiobutton(seccionPantalla, value=1, variable=self.Cage_efects).place(
@@ -336,7 +382,7 @@ class EasyRate:
         self.PrintData = IntVar()
         self.PrintData.set(0)
         ttk.Label(seccionPantalla, text="Print data input?").place(
-            anchor='nw', x='300', y='10')
+            anchor='nw', x='270', y='10')
         ttk.Label(seccionPantalla, text="yes").place(
             anchor='nw', x='370', y='10')
         ttk.Radiobutton(seccionPantalla, value=1, variable=self.PrintData).place(
@@ -386,8 +432,14 @@ class EasyRate:
         xsb2.grid(row=2, column=1, columnspan=1, sticky=E+N+S+W)
 
     def run_calc(self):
-        if(not True):
+        if(not True):  # TODO #1 Verificar si los datos son correcotoss  Verificarlos
             return
+        EjecucionActual = Ejecucion(
+            self.Title, self.React_1.get_Estructura_Seleccionada(), self.React_2.get_Estructura_Seleccionada(), self.Transition_Rate.get_Estructura_Seleccionada(), self.Product_1.get_Estructura_Seleccionada(
+            ), self.Product_2.get_Estructura_Seleccionada(), self.Cage_efects.get() == 1, self.difusion.get() == 1, self.Solvent.get(), float(self.radius_react_1.get()), float(self.radius_react_2.get()), float(self.ReactionDistance.get())
+        )
+        EjecucionActual.Run()
+        self.Ejecuciones.append(EjecucionActual)
 
     def About(self):
         pass
