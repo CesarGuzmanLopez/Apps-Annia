@@ -223,7 +223,8 @@ class Ejecucion:
             return 0.000862;
         elif(self.Solvent is "Water"):
             return 0.000891;
-        
+        else:
+            return nan 
      
 class EasyRate:
     VISC = 8.91e-4
