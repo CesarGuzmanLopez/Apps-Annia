@@ -132,7 +132,8 @@ class Ejecucion:
                  Solvent: string = "",
                  Radius_1: float = nan,
                  Radius_2: float = nan,
-                 ReactionDistance: float = nan
+                 ReactionDistance: float = nan,
+                 degen: float = nan,  
                  ):
 
         self.title = title
@@ -148,20 +149,17 @@ class Ejecucion:
         self.Radius_1: float = Radius_1
         self.Radius_2: float = Radius_2
         self.ReactionDistance: float = ReactionDistance
+        self.degeneracy:float =degen
         self.Zreact: float = nan
         self.Zact: float = nan
-        self.Zreact_round: float = nan
-        self.Zact_round: float = nan
         self.Hreact: float = nan
         self.Hact: float = nan
-        self.Hreact_round: float = nan
-        self.Hact_round: float = nan
         self.CalcularTunel: float = nan
         self.pathway: float = nan
-        self.Greact_round: float = nan
-        self.Gact_round: float = nan
-        self.rateCte_write: float = nan
-   
+        self.Greact   :float = nan
+        self.Gact     :float = nan
+        self.rateCte: float = nan
+        self.TST:tst = tst()
     def Run(self) -> None:
         """
             Run(self) -> None Aqui se hacen los calculos matematicos
@@ -172,9 +170,6 @@ class Ejecucion:
         self.Zact:float = 627.5095 * (self.Transition_Rate.zpe.getValue() 
                                   -self.React_1.zpe.getValue() - self.React_2.zpe.getValue())
 
-        self.Zreact_round:float = round(self.Zreact, 2)
-        self.Zact_round:float = round(self.Zact, 2)
-
         self.Hreact:float = 627.5095 *(self.Product_1.eH_ts.getValue + self.Product_2.eH_ts.getValue 
                         - self.React_1.eH_ts.getValue - self.React_2.eH_ts.getValue)
         self.Hact:float = 627.5095 * (self.Transition_Rate.eH_ts.getValue 
@@ -182,20 +177,54 @@ class Ejecucion:
         
         self.Hreact_round:float = round(self.Hreact, 2)
         self.Hact_round:float = round(self.Hact, 2)
-
-        Resultados = tst()
-        Resultados.calculate(BARRZPE=self.Zact_round,
-                            DELZPE=self.Zreact_round,
+        temp= self.Product_1.temp.getValue
+        self.TST.calculate(BARRZPE=self.Zact,
+                            DELZPE=self.Zreact,
                             FREQ=self.Transition_Rate.frecNeg.getValue ,
-                            TEMP= self.Product_1.temp.getValue)
-        gibbsR1 = self.tb_react1;
-        gibbsR2 = self.tb_react2;
-        gibbsTS = self.tb_ts;
-        gibbsP1 = self.tb_prod1;
-        gibbsP2 = self.tb_prod2;
+                            TEMP=temp)
+        gibbsR1  :float = self.React_1.thermalCorrectionToGibbs.getValue
+        gibbsR2  :float = self.React_2.thermalCorrectionToGibbs.getValue
+        gibbsTS  :float = self.Transition_Rate.thermalCorrectionToGibbs.getValue
+        gibbsP1  :float = self.Product_1.thermalCorrectionToGibbs.getValue
+        gibbsP2  :float = self.Product_2.thermalCorrectionToGibbs.getValue
+        molarV   :float = 0.08206 * temp
+        self.Greact   :float = 0.0
+        self.Gact     :float = 0.0
+        countR   :int   = 1 if gibbsR1 == 0.0 or gibbsR2 == 0.0  else 2
+        countP   :int   = 1 if (gibbsP1 == 0.0 or gibbsP2 == 0.0) else 2
+        deltaNr  :int   = countP - countR
+        deltaNt  :int   = 1 - countR
+        cageCorr :float = (1.987 / 1000) * temp * ((math.Log(countR * math.Pow(10, 2 * countR - 2))) - (countR - 1));
+        corr1Mr  :float = (1.987 / 1000) * temp * math.Log(math.Pow(molarV, deltaNr));
+        corr1Mt  :float = (1.987 / 1000) * temp * math.Log(math.Pow(molarV, deltaNt));
+        if (self.Cage_efects  ):
+            self.Greact = -cageCorr + corr1Mr + 627.5095 * (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
+            self.Gact = -cageCorr + corr1Mt + 627.5095 * (gibbsTS - gibbsR1 - gibbsR2)
+        else:
+            self.Greact = corr1Mr + 627.5095 * (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
+            self.Gact = corr1Mt + 627.5095 * (gibbsTS - gibbsR1 - gibbsR2)
 
 
+        self.rateCte = self.degeneracy * self.TST.G * (2.08e10 * temp * math.Exp(-self.Gact * 1000 / (1.987 * temp)));
+        if(self.Difusion):
+            diffCoefA =  (1.38E-23 * temp) / (6 * 3.14159 * self.Visc * self.Radius_1);
+            diffCoefB = (1.38E-23 * temp) / (6 * 3.14159 * self.Visc * self.Radius_1);
+            diffCoefAB = diffCoefA + diffCoefB;
+            kDiff = 1000 * 4 * 3.14159 * diffCoefAB * self.ReactionDistance * 6.02e23;
+            self.rateCte = (kDiff * self.rateCte) / (kDiff + self.rateCte);
 
+    @property
+    def Visc(self)->float:
+        if(self.Solvent is "Benzene"):
+            return 0.000604;
+        elif(self.Solvent is "Gas phase (Air)"):
+            return 0.000018;
+        elif(self.Solvent is "Pentyl ethanoate"):
+            return 0.000862;
+        elif(self.Solvent is "Water"):
+            return 0.000891;
+        
+     
 class EasyRate:
     VISC = 8.91e-4
     K_BOLTZ = 1.38E-23
@@ -285,16 +314,16 @@ class EasyRate:
         self.Temperatura.delete(0, END)
         self.Temperatura.insert(0, str(Estruc.temp.getValue))
         self.Temperatura['state'] = "disabled"
-        self.React_1.setDato(UnDato=Estruc.free_engergy.getValue)
+        self.React_1.setDato(UnDato=Estruc.zpe.getValue)
 
     def defReact_2(self, Estruc: Estructura):
-        self.React_2.setDato(UnDato=Estruc.free_engergy.getValue)
+        self.React_2.setDato(UnDato=Estruc.zpe.getValue)
 
     def defTransition_Rate(self, Estruc: Estructura):
-        self.Transition_Rate.setDato(UnDato=Estruc.free_engergy.getValue)
+        self.Transition_Rate.setDato(UnDato=Estruc.zpe.getValue)
 
     def defProduct_1(self, Estruc: Estructura):
-        self.Product_1.setDato(UnDato=Estruc.free_engergy.getValue)
+        self.Product_1.setDato(UnDato=Estruc.zpe.getValue)
 
     def defProduct_2(self, Estruc: Estructura):
         self.Product_2.setDato(UnDato=Estruc.scf.getValue)
@@ -447,8 +476,19 @@ class EasyRate:
         if(not True):  # TODO #1 Verificar si los datos son correcotoss  Verificarlos
             return
         EjecucionActual = Ejecucion(
-            self.Title, self.React_1.get_Estructura_Seleccionada(), self.React_2.get_Estructura_Seleccionada(), self.Transition_Rate.get_Estructura_Seleccionada(), self.Product_1.get_Estructura_Seleccionada(
-            ), self.Product_2.get_Estructura_Seleccionada(), self.Cage_efects.get() == 1, self.difusion.get() == 1, self.Solvent.get(), float(self.radius_react_1.get()), float(self.radius_react_2.get()), float(self.ReactionDistance.get())
+            self.Title, 
+            self.React_1.get_Estructura_Seleccionada(),
+            self.React_2.get_Estructura_Seleccionada(), 
+            self.Transition_Rate.get_Estructura_Seleccionada(), 
+            self.Product_1.get_Estructura_Seleccionada(),
+            self.Product_2.get_Estructura_Seleccionada(),
+            self.Cage_efects.get() == 1,
+            self.difusion.get() == 1,
+            self.Solvent.get(), 
+            float(self.radius_react_1.get()), 
+            float(self.radius_react_2.get()), 
+            float(self.ReactionDistance.get()), 
+            float(self.Reaction_path_degeneracy.get())
         )
         EjecucionActual.Run()
         self.Ejecuciones.append(EjecucionActual)
