@@ -35,6 +35,7 @@ class EntradaDato(ttk.Frame) :
         self.labelEtiquetafilename = ttk.Label(self,text="")
         self.labelEtiquetafilename.grid(row = 1, column = 3,columnspan = 2,padx=4)
         self.comando=command
+
     def view(self):
         ViewStructure(master=self, estructure =self.EstructuraSeleccionada)
     def open(self):
@@ -98,6 +99,8 @@ class EntradaDato(ttk.Frame) :
             self.filename=""
 
 class EasyRate:
+    VISC = 8.91e-4 
+    K_BOLTZ = 1.38E-23
     def __init__(self, master=None):
         self.master = tk.Tk() if master is None else tk.Toplevel(master)
         self.Principal = ttk.Frame(self.master)
@@ -105,7 +108,7 @@ class EasyRate:
         style = ThemedStyle(self.master )
         self.Principal.pack_propagate(True)
         self.Principal.place(anchor='nw', bordermode='outside', x=str(0), y=str(0))
-        self.master.title("Marcus 1.1")
+        self.master.title("Easy Rate 1.1")
         self.master.resizable(False, False)
         self.master.geometry("975x600")
         self.FramePrincipal = ttk.Frame(self.Principal)
@@ -115,13 +118,6 @@ class EasyRate:
         self.SeccionDifusion()
         self.SeccionPantalla() 
         self.SeccionLeerArchivos()
-        self.visc = 8.91e-4 
-        self.kBoltz = 1.38E-23
-        ''' while(True):
-          for i in style.get_themes():
-            style.set_theme(i)
-            style.configure('.', background= '#f0f0f0', font=('calibri', 9))
-            input("inserta: "+ i)'''
         style.set_theme('winxpblue')
         style.configure('.', background= '#f0f0f0', font=('calibri', 9))
         
@@ -201,16 +197,15 @@ class EasyRate:
         SeccionDatos2.place(x=str(pos_x),y=str(pos_y+15))
         labelEtiquetaTemperatura = ttk.Label(SeccionDatos2,text="Temperature(K)" )
         labelEtiquetaTemperatura.grid(row = 1, column = 0)
-       
         self.Temperatura = tk.Entry(SeccionDatos2)
         self.Temperatura.grid(row = 1, column = 1)
         self.Temperatura.insert(0,"298.15")
-        ttk.Label(SeccionDatos2,text="Texto var uno").grid(column=0,row=0)
-        self.Var_uno=ttk.Entry(SeccionDatos2).grid(column=1,row=0)
-        ttk.Label(SeccionDatos2,text="Texto var uno").grid(column=0,row=2)
-        self.Var_2=ttk.Entry(SeccionDatos2).grid(column=1,row=2)
+        ttk.Label(SeccionDatos2,text="Tunneling").grid(column=0,row=0, padx=1,pady=5)
+        self.Tunneling=ttk.Entry(SeccionDatos2).grid(column=1,row=0, padx=1,pady=5)
+        ttk.Label(SeccionDatos2,text="Reaction path degeneracy").grid(column=0,row=2, padx=1,pady=5)
+        self.Reaction_path_degeneracy= ttk.Entry(SeccionDatos2).grid(column=1,row=2, padx=1,pady=5)
 
-    def SeccionDifusion(self,pos_x=30,pos_y=440):
+    def     SeccionDifusion(self,pos_x=30,pos_y=440):
         seccionDifusion= ttk.Frame(self.Principal)
         seccionDifusion.configure(width='400',height='400')
         seccionDifusion.place(x=str(pos_x),y=str(pos_y))
@@ -223,58 +218,62 @@ class EasyRate:
         ttk.Radiobutton(frame1,value=1,variable=self.difusion, command=self.isDifusion).grid(column=2,row=0)
         ttk.Label(frame1,text="No").grid(column=4,row=0)
         ttk.Radiobutton(frame1,value=0,variable=self.difusion, command=self.isDifusion).grid(column=5,row=0)
-
+        frame2a=ttk.Frame(seccionDifusion)
+        frame2a.place(x="0",y="30")
+        frame2a.configure(width='200',height='200')
+        ttk.Label(frame2a,text="Solvent").grid(row = 0, column =0)
+        self.combo = ttk.Combobox(frame2a)
+        self.combo.configure(width="14")
+        self.combo.grid(row = 1, column =0)
+        values = list(self.combo["values"])
+        self.combo["values"] = values + [""] +["Benzene"]+ ["Gas phase (Air)"]+ ["Pentyl ethanoate"]+["Water"];
         frame2=ttk.Frame(seccionDifusion)
-        frame2.place(x="30",y="30")
-        frame2.configure(width='900',height='200')
-        labelradius = ttk.Label(frame2,text="Radius (in Angstroms) for:")
-        labelradius.place(x="15",y="15")
-        labelreact1 = ttk.Label(frame2,text="Reactant-1")
-        labelreact1.place(x="30",y="35")
-        self.radius_react_1 = tk.Entry(frame2,width=15,state='disabled')
-        self.radius_react_1.place(x="95",y="35")
-        labelreact1 = ttk.Label(frame2,text="Reactant-2")
-        labelreact1.place(x="30",y="55")
-        self.radius_react_2 = tk.Entry(frame2,width=15,state='disabled')
-        self.radius_react_2.place(x="95",y="55")
-        labelreact1 = ttk.Label(frame2,text="Reaction distance (in Angstroms)")
-        labelreact1.place(x="30",y="75")
-        self.ReactionDistance = tk.Entry(frame2,width=15,state='disabled')
-        self.ReactionDistance.place(x="70",y="95")
-
+        frame2.place(x="110",y="30")
+        frame2.configure(width='200',height='200')
+        ttk.Label(frame2,text="Radius (in Angstroms) for:").grid(row = 0, column = 0, columnspan=2)
+        ttk.Label(frame2,text="Reactant-1").grid(row = 1, column = 0)
+        self.radius_react_1 = tk.Entry(frame2,width=7,state='disabled')
+        self.radius_react_1.grid(row = 1, column =1)
+        ttk.Label(frame2,text="Reactant-2").grid(row = 2, column = 0)
+        self.radius_react_2 = tk.Entry(frame2,width=7,state='disabled')
+        self.radius_react_2.grid(row = 2, column =1)
+        ttk.Label(frame2,text="Reaction distance\n  (in Angstroms)").grid(row = 3, column = 0)
+        self.ReactionDistance = tk.Entry(frame2,width=7,state='disabled')
+        self.ReactionDistance.grid(row = 3, column =1)
+        
 
     def isDifusion(self):
         if(self.difusion.get()==1):
             self.ReactionDistance['state'] = 'normal'
-            self.radius_react_1  ['state'] = 'normal'
-            self.radius_react_2  ['state'] = 'normal'
+            self.radius_react_1  ['state'] = 'normal' 
+            self.radius_react_2['state']   = 'normal'
         else:
             self.radius_react_1['state'] = 'disabled'
             self.radius_react_2['state'] = 'disabled'
             self.ReactionDistance['state'] ='disabled'
 
-    def SeccionPantalla(self,pos_x=370,pos_y=0):
+    def SeccionPantalla(self,pos_x=370,pos_y=20):
         seccionPantalla= ttk.Frame(self.Principal)
         seccionPantalla.configure(width='600',height='700')
         seccionPantalla.place(x=str(pos_x),y=str(pos_y))
-        self.Var_3=IntVar()
-        self.Var_3.set(0)
-        ttk.Label(seccionPantalla,text="Texto var uno").place(anchor='nw', x='100', y='0')
-        ttk.Label(seccionPantalla,text="yes").place(anchor='nw', x='170', y='0')
-        ttk.Radiobutton(seccionPantalla,value=1,variable=self.Var_3).place(anchor='nw', x='190', y='0')
-        ttk.Label(seccionPantalla,text="No").place(anchor='nw', x='210', y='0')
-        ttk.Radiobutton(seccionPantalla,value=0,variable=self.Var_3).place(anchor='nw', x='230', y='0')
-        self.Var_4=IntVar()
-        self.Var_4.set(0)
-        ttk.Label(seccionPantalla,text="Texto var uno").place(anchor='nw', x='300', y='0')
-        ttk.Label(seccionPantalla,text="yes").place(anchor='nw', x='370', y='0')
-        ttk.Radiobutton(seccionPantalla,value=1,variable=self.Var_4).place(anchor='nw', x='390', y='0')
-        ttk.Label(seccionPantalla,text="No").place(anchor='nw', x='410', y='0')
-        ttk.Radiobutton(seccionPantalla,value=0,variable=self.Var_4).place(anchor='nw', x='430', y='0')
+        self.Cage_efects=IntVar()
+        self.Cage_efects.set(0)
+        ttk.Label(seccionPantalla,text="Cage Effects?").place(anchor='nw', x='100', y='10')
+        ttk.Label(seccionPantalla,text="yes").place(anchor='nw', x='170', y='10')
+        ttk.Radiobutton(seccionPantalla,value=1,variable=self.Cage_efects).place(anchor='nw', x='190', y='10')
+        ttk.Label(seccionPantalla,text="No").place(anchor='nw', x='210', y='10')
+        ttk.Radiobutton(seccionPantalla,value=0,variable=self.Cage_efects).place(anchor='nw', x='230', y='10')
+        self.PrintData=IntVar()
+        self.PrintData.set(0)
+        ttk.Label(seccionPantalla,text="Print data input?").place(anchor='nw', x='300', y='10')
+        ttk.Label(seccionPantalla,text="yes").place(anchor='nw', x='370', y='10')
+        ttk.Radiobutton(seccionPantalla,value=1,variable=self.PrintData).place(anchor='nw', x='390', y='10')
+        ttk.Label(seccionPantalla,text="No").place(anchor='nw', x='410', y='10')
+        ttk.Radiobutton(seccionPantalla,value=0,variable=self.PrintData).place(anchor='nw', x='430', y='10')
 
 
         boton = ttk.Button(seccionPantalla,text="Data ok, Run", command=self.run_calc)
-        boton.place(x="250",y="20")
+        boton.place(x="250",y="40")
         self.ScrollePantalla(seccionPantalla)
         labelrate = ttk.Label(seccionPantalla)
         labelrate.configure(cursor='arrow', justify='left', relief='raised', text='Rate constant units:\n-For bimolecular(M-1 s-1)\n -For unimolecular reactions(s-1)')
@@ -287,7 +286,7 @@ class EasyRate:
 
     def ScrollePantalla(self, seccionPantalla):
         FrameResultados = ttk.Frame(seccionPantalla)
-        FrameResultados.place( x='0', y='55')
+        FrameResultados.place( x='0', y='70')
         self.salida = ScrolledText(FrameResultados, wrap = "none", width = 35, height = 23)
         xsb = tk.Scrollbar(FrameResultados,orient="horizontal", command=self.salida.xview)        
         self.salida.grid(row=1,column =0,columnspan=1)       
@@ -313,7 +312,7 @@ class EasyRate:
         file_path:string=None
         if file_path is None:
             file_path = filedialog.asksaveasfilename(
-                 filetypes=( ("Text files", "*.txt"),("All files", "*.*"))) 
+                    filetypes=( ("Text files", "*.txt"),("All files", "*.*"))) 
         try:
             # Write the Prolog rule editor contents to the file location
             with open(file_path, "w+") as file: 
