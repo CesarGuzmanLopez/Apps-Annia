@@ -1,7 +1,7 @@
-import math
 import os
-from tkinter import filedialog, font, messagebox, ttk
+from tkinter import filedialog, messagebox, ttk
 import tkinter as tk
+from CK.tst import *
 from tkinter.scrolledtext import ScrolledText
 from tkinter import *
 from tkinter.filedialog import askopenfilename
@@ -167,21 +167,33 @@ class Ejecucion:
             Run(self) -> None Aqui se hacen los calculos matematicos
             Logica del negocio
         """
-        self.Zreact = 627.5095 * (self.Product_2.zpe.getValue() + self.Product_1.zpe.getValue()
+        self.Zreact:float = 627.5095 * (self.Product_2.zpe.getValue() + self.Product_1.zpe.getValue()
                                   - self.React_1.zpe.getValue()-self.React_2.zpe.getValue())
-        self.Zact = 627.5095 * (self.Transition_Rate.zpe.getValue() 
+        self.Zact:float = 627.5095 * (self.Transition_Rate.zpe.getValue() 
                                   -self.React_1.zpe.getValue() - self.React_2.zpe.getValue())
 
-        self.Zreact_round = round(self.Zreact, 2)
-        self.Zact_round = round(self.Zact, 2)
+        self.Zreact_round:float = round(self.Zreact, 2)
+        self.Zact_round:float = round(self.Zact, 2)
 
-        self.Hreact = 627.5095 *(self.Product_1.eH_ts.getValue() + self.Product_2.eH_ts.getValue() 
-                        - self.React_1.eH_ts.getValue() - self.React_2.eH_ts.getValue())
-        self.Hact = 627.5095 * (self.Transition_Rate.eH_ts.getValue() 
-                                -self.React_1.eH_ts.getValue() - self.React_2.eH_ts.getValue())
+        self.Hreact:float = 627.5095 *(self.Product_1.eH_ts.getValue + self.Product_2.eH_ts.getValue 
+                        - self.React_1.eH_ts.getValue - self.React_2.eH_ts.getValue)
+        self.Hact:float = 627.5095 * (self.Transition_Rate.eH_ts.getValue 
+                                -self.React_1.eH_ts.getValue - self.React_2.eH_ts.getValue)
         
-        self.Hreact_round = round(self.Hreact, 2)
-        self.Hact_round = round(self.Hact, 2)
+        self.Hreact_round:float = round(self.Hreact, 2)
+        self.Hact_round:float = round(self.Hact, 2)
+
+        Resultados = tst()
+        Resultados.calculate(BARRZPE=self.Zact_round,
+                            DELZPE=self.Zreact_round,
+                            FREQ=self.Transition_Rate.frecNeg.getValue ,
+                            TEMP= self.Product_1.temp.getValue)
+        gibbsR1 = self.tb_react1;
+        gibbsR2 = self.tb_react2;
+        gibbsTS = self.tb_ts;
+        gibbsP1 = self.tb_prod1;
+        gibbsP2 = self.tb_prod2;
+
 
 
 class EasyRate:

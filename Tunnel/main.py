@@ -99,7 +99,7 @@ class Tunnel:
                             message= "Please contact to administrator")
 
 
-    def About(self):
+    def About(self):#TODO #2 poner texto del about
         VentanaAbout = tk.Tk() if self.master is None else tk.Toplevel(self.master)
         Frame_VentanaAbout = ttk.Frame(VentanaAbout)
         ttk.setup_master(VentanaAbout)
