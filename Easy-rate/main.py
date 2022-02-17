@@ -15,14 +15,21 @@ import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedStyle
 
+'''
+    Python 3.7.9
+    @author: Cesar Gerardo Guzman Lopez
+    @Description:  Programa para calcula ThemedStyle
+'''
 
 class EntradaDato(ttk.Frame):
+    '''
+    Analiza los datos que obtenidos del log gaussian
+    '''
     def Activar(self, Etiqueta="Sin nombre", buttontext="Browse", dato=0.0, info="", command=None):
         self.__dato = dato
         self.Etiqueta = Etiqueta
         self.textoButton = buttontext
-        self.labelEtiquetaNombre = ttk.Label(
-            self, text=self.Etiqueta, width=17)
+        self.labelEtiquetaNombre = ttk.Label(self, text=self.Etiqueta, width=17)
         self.datoentrada = tk.Entry(self, width=10)
         self.datoentrada.insert(0, str(self.__dato))
         self.datoentrada["state"] = "disabled"

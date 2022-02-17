@@ -197,14 +197,14 @@ class MarcusApp:
         self.Temperatura.delete(0,END)
         self.Temperatura.insert(0,str(Estruc.temp.getValue))
         self.Temperatura['state'] ="disabled"
-        self.React_1.setDato(UnDato=Estruc.free_engergy.getValue)
+        self.React_1.setDato(UnDato=Estruc.zpe.getValue)
         
     def defReact_2       (self,Estruc:Estructura):
-        self.React_2.setDato(UnDato=Estruc.free_engergy.getValue)
+        self.React_2.setDato(UnDato=Estruc.zpe.getValue)
     def defPrduct_1_adiab(self,Estruc:Estructura):
-        self.Prduct_1_adiab.setDato(UnDato=Estruc.free_engergy.getValue)
+        self.Prduct_1_adiab.setDato(UnDato=Estruc.zpe.getValue)
     def defPrduct_2_adiab(self,Estruc:Estructura):
-        self.Prduct_2_adiab.setDato(UnDato=Estruc.free_engergy.getValue)
+        self.Prduct_2_adiab.setDato(UnDato=Estruc.zpe.getValue)
     def defPrduct_1_vert (self,Estruc:Estructura):
         self.Prduct_1_vert.setDato(UnDato=Estruc.scf.getValue)
     def defPrduct_2_vert (self,Estruc:Estructura):
