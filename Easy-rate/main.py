@@ -156,7 +156,10 @@ class Ejecucion:
         self.Greact: float = nan
         self.Gact: float = nan
         self.rateCte: float = nan
-        self.CalcularTunel: tst = tst()
+        self.CalcularTunel: tst = tst(BARRZPE=self.Zact,
+                                     DELZPE=self.Zreact,
+                                     FREQ=abs(self.Transition_Rate.frecNeg.getValue),
+                                     TEMP=self.temp)
         self.Ejecutable = False
     def Run(self) -> None:
         self.Ejecutable = True
@@ -174,7 +177,7 @@ class Ejecucion:
                                        - self.React_1.eH_ts.getValue - self.React_2.eH_ts.getValue)
         self.CalcularTunel.calculate(BARRZPE=self.Zact,
                                      DELZPE=self.Zreact,
-                                     FREQ=self.Transition_Rate.frecNeg.getValue,
+                                     FREQ=abs( self.Transition_Rate.frecNeg.getValue),
                                      TEMP=self.temp)
         gibbsR1: float = self.React_1.thermalCorrectionToGibbs.getValue
         gibbsR2: float = self.React_2.thermalCorrectionToGibbs.getValue
@@ -445,7 +448,7 @@ class EasyRate:
         if(not True):  # TODO #1 Verificar si los datos son correcotoss  Verificarlos
             return
         EjecucionActual = Ejecucion(
-            self.Title,
+            str(self.Title.get()),
             self.React_1.get_Estructura_Seleccionada(),
             self.React_2.get_Estructura_Seleccionada(),
             self.Transition_Rate.get_Estructura_Seleccionada(),
@@ -461,13 +464,13 @@ class EasyRate:
         )
         EjecucionActual.Run()
         self.salida.insert(
-            END, ("Pathway:  " + str(round(EjecucionActual.pathway)) + "\n"))
+            END, ("Pathway:  " + EjecucionActual.pathway + "\n"))
         self.salida.insert(END, ("Gibbs Free Energy of reaction (kcal/mol):   "
                                  + str(round(EjecucionActual.Greact, 2)) + "\n"))
         self.salida.insert(END, ("Gibbs Free Energy of activation (kcal/mol):   "
                                  + str(round(EjecucionActual.Gact, 2)) + "\n"))
         self.salida.insert(END, ("Rate Constant:    "
-                                 + string.Format("{0:E3}", str(round(EjecucionActual.rateCte), 2)) + "\n\n"))
+                                 +  str(round(EjecucionActual.rateCte, 2))+ "\n\n"))
         self.salida.insert(
             END, ("ALPH1:" + str(round(EjecucionActual.CalcularTunel.ALPH1, 2)) + "\n"))
         self.salida.insert(
@@ -478,7 +481,7 @@ class EasyRate:
             END, ("G:" + str(round(EjecucionActual.CalcularTunel.G, 2)) + "\n"))
         self.salida.insert(END, ("\n\n\n_____________________________\n"))
         self.salida2.insert(
-            END, ("Pathway:  " + str(round(EjecucionActual.pathway, 2)) + "\n"))
+            END, ("Pathway:  " + str(EjecucionActual.pathway) + "\n"))
         self.salida2.insert(END, ("Imag. Freq. (cm-1):  \t\t\t"
                                   + str(round(EjecucionActual.frequency_negative, 2)) + "\n\n"))
         self.salida2.insert(END, ("Reaction enthalpies (dH)" + "\n"))
