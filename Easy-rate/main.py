@@ -18,7 +18,7 @@ from webbrowser import get
 '''
     Python 3.7.9
     @author: Cesar Gerardo Guzman Lopez
-    @Description:  Programa para calcula ThemedStyle
+    @Description:  Programa easy rate
 '''
 class EntradaDato(ttk.Frame):
     '''
@@ -156,11 +156,10 @@ class Ejecucion:
         self.Greact: float = nan
         self.Gact: float = nan
         self.rateCte: float = nan
-        self.CalcularTunel: tst = tst(BARRZPE=self.Zact,
-                                     DELZPE=self.Zreact,
-                                     FREQ=abs(self.Transition_Rate.frecNeg.getValue),
-                                     TEMP=self.temp)
+        self.CalcularTunel: tst = tst()
         self.Ejecutable = False
+    def gela(self):
+        stat = Lineregress()
     def Run(self) -> None:
         self.Ejecutable = True
         """
@@ -226,7 +225,8 @@ class Ejecucion:
             return 0.000891
         else:
             return nan
-class EasyRate:
+
+class  EasyRate:
     def __init__(self, master=None):
         self.Ejecuciones: list[Ejecucion] = list()
         self.master = tk.Tk() if master is None else tk.Toplevel(master)
@@ -259,6 +259,7 @@ class EasyRate:
         menubar.add_cascade(label="help", menu=help)
         help.add_command(label="About", command=self.About)
         self.master.config(menu=menubar)
+
     def SeccionLeerArchivos(self, pos_x=10, pos_y=10):
         seccionLeerArchivos = ttk.Frame(self.Principal)
         seccionLeerArchivos.configure(width='360', height='290')
@@ -369,6 +370,9 @@ class EasyRate:
         self.ReactionDistance = tk.Entry(frame2, width=7, state='disabled')
         self.ReactionDistance.grid(row=3, column=1)
     def isDifusion(self):
+        """
+        
+        """
         if(self.difusion.get() == 1):
             self.ReactionDistance['state'] = 'normal'
             self.radius_react_1['state'] = 'normal'
@@ -462,6 +466,9 @@ class EasyRate:
             float(self.ReactionDistance.get()if self.ReactionDistance.get()  is not "" else "0"),
             float(self.Reaction_path_degeneracy.get()if self.Reaction_path_degeneracy.get()  is not "" else "0")
         )
+
+
+
         EjecucionActual.Run()
         self.salida.insert(
             END, ("Pathway:  " + EjecucionActual.pathway + "\n"))
@@ -499,33 +506,36 @@ class EasyRate:
         self.salida2.insert(END, ("______________________________________\n"))
         self.Ejecuciones.append(EjecucionActual)
     def About(self):
-        pass
+        """
+            show a windows with aabout information
+            with data:
+            autrhor
+            licence
+        """
+        window = tk.Toplevel()
+        window.title("About")
+        window.geometry("300x200")
+        window.resizable(0, 0)
+        Label = tk.Label(window, text="About", font=("Helvetica", 16))
+        Label.grid(row=0, column=0, columnspan=2)
+        Label = tk.Label(window, text="Author:", font=("Helvetica", 12))
+        Label.grid(row=1, column=0)
+        Label = tk.Label(window, text="Annia Galano", font=("Helvetica", 12))
+        Label.grid(row=1, column=1)
+        def close():
+            window.destroy()
+        Button = tk.Button(window, text="Close", command=close)
+        Button.grid(row=3, column=0, columnspan=2)
+
     def onSave(self):
         file_path: string = None
         if file_path is None:
             file_path = filedialog.asksaveasfilename(
                 filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
-        try:
-            # Write the Prolog rule editor contents to the file location
-            with open(file_path, "w+") as file:
-                file.write(
-                    "Entry Values: \n\n"
-                    "\t\tReact-1(adiab.): " + str(self.React_1       .getTextValue) + "\n" +
-                    "\t\tReact-2(adiab.): " + str(self.React_2       .getTextValue) + "\n" +
-                    "\t\tProduct-1(adiab.): "+str(self.Transition_Rate.getTextValue) + "\n" +
-                    "\t\tProduct-2(adiab.): "+str(self.Product_1.getTextValue) + "\n" +
-                    "\t\tProduct-1(vert.): " +
-                    str(self.Product_2 .getTextValue) + "\n"
-                )
-                file.write(
-                    self.salida.get("1.0", END)+"\n")
-                file.close()
-        except FileNotFoundError:
-            messagebox.showerror(title="It is not possible to save",
-                                 message="Please contact to administrator")
-            return
+        file = open(file_path, "w+")
     def run(self):
         self.Principal.mainloop()
 if __name__ == '__main__':
     app = EasyRate()
-    app.run()
+    app.run() 
+
