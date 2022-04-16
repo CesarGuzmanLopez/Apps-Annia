@@ -158,8 +158,7 @@ class Ejecucion:
         self.rateCte: float = nan
         self.CalcularTunel: tst = tst()
         self.Ejecutable = False
-    def gela(self):
-        stat = Lineregress()
+ 
     def Run(self) -> None:
         self.Ejecutable = True
         """
