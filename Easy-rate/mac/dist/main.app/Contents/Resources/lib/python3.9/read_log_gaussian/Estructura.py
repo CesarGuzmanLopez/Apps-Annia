@@ -61,9 +61,9 @@ class Estructura(object):
         self.Atributos.append(self.comand)
         self.jobtitle = JobTitle()#   Frequencies --
         self.Atributos.append(self.jobtitle)
-        self.frecNeg = FrecuenciaNegativa()#   Sum of electronic and thermal Free Energies
+        self.frecNeg = FrecuenciaNegativa()#   
         self.Atributos.append(self.frecNeg)
-        self.zpe = Zero_point_Energies()#   Sum of electronic and thermal Free Energies=
+        self.zpe = Zero_point_Energies()#   
         self.Atributos.append(self.zpe)
         self.eH_ts = Thermal_Enthalpies()#   Sum of electronic and thermal Enthalpies
         self.Atributos.append(self.eH_ts)
@@ -73,6 +73,10 @@ class Estructura(object):
         self.Atributos.append(self.isAnOptFreq)
         self.scf = SCF()#   SCF Done:
         self.Atributos.append(self.scf)
+        
+        self.Thermal_Free_Enthalpies = Thermal_Free_Enthalpies()#   Sum of electronic and thermal Free Energies
+        self.Atributos.append(self.Thermal_Free_Enthalpies)
+
         self.zeroPointCorrection = ZeroPointCorrection()#   Zero-point correction=
         self.Atributos.append(self.zeroPointCorrection)
         self.thermalCorrectionToEnergy = ThermalCorrectionToEnergy()#   thermalCorrectionToEnergy

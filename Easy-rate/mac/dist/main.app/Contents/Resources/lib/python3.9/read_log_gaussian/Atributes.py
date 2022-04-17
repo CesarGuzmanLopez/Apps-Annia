@@ -144,8 +144,36 @@ class Thermal_Enthalpies(AtributoGeneric):
             return "Sum of electronic and thermal Enthalpies : "+str(self._Value)
         else:
             return ""
-        
+
+
+
+
+'''
+    A class represent
+    Attributes
+    ----------
+    getValue
+        the value of the attribute
     
+'''
+class Thermal_Free_Enthalpies(AtributoGeneric):
+    def __init__(self, PalabraABuscar: string = None, Separator: string = None):
+        super().__init__(PalabraABuscar, Separator)
+    def Revision_condition(self, line: string, Actual: object =None) -> bool:
+        if("Sum of electronic and thermal Free Energies=" in line):
+            return True
+        return False
+    def Definir(self, line: string, multiline: bool = False, brakword: bool = False) -> None:
+        self._Value = self.Num_extract(line=line)
+        self._Active=False
+        self._Found =True
+    
+    def __str__(self):
+        if(self._Found):
+            return "Sum of electronic and thermal Free Energies: "+str(self._Value)
+        else:
+            return ""
+        
 
 '''
     A class represent

@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 from abc import abstractmethod
 from cmath import nan
@@ -105,6 +106,18 @@ class AtributoGeneric(Atributo):
     @property
     def getValue(self):
         return self._Value
+    
+    @property
+    def no_nan_value(self)->float:
+        """
+        return of _Value if not nan else 0
+        """
+        if(math.isnan(self._Value)):
+            return 0
+        return self._Value
+
+
+
 
 class AtributoString(object):
     def __init__(self,NombreAtributo:string,Separador:string):
