@@ -1,8 +1,11 @@
+from asyncio import sleep
 import os
 import threading
 import tkinter as tk
 import tkinter as tk
 from CK.tst import *
+
+import time
 from SeslectStructura import SelectStructure
 from read_log_gaussian.read_log_gaussian import *
 from tkdialog import WaitAlert
@@ -13,7 +16,6 @@ from tkinter.filedialog import askopenfilename
 from tkinter.scrolledtext import ScrolledText
 from ttkthemes import ThemedStyle
 from viewStructure import ViewStructure
-from webbrowser import get
 
 '''
     Python 3.7.9
@@ -72,12 +74,15 @@ class EntradaDato(ttk.Frame):
                                             title='Reading the file',
                                             message='Please wait',
                                             pause=self.esperar)  # show countdown.
+    
         if(self.Archlog == False):
             self.Archlog = None
             self.botonverfile['state'] = "disabled"
         self.SeleccionarEstructura()
     def readfile(self):
+        self.Archlog = None
         self.Archlog = read_log_gaussian(self.filename)
+        time.sleep(0.5)
         self.botonverfile['state'] = "normal"
         if(self.Archlog == None):
             self.Archlog = False
@@ -177,11 +182,13 @@ class Ejecucion:
                                      DELZPE=self.Zreact,
                                      FREQ=abs( self.Transition_Rate.frecNeg.getValue),
                                      TEMP=self.temp)
-        gibbsR1: float = self.React_1.thermalCorrectionToGibbs.getValue
-        gibbsR2: float = self.React_2.thermalCorrectionToGibbs.getValue
-        gibbsTS: float = self.Transition_Rate.thermalCorrectionToGibbs.getValue
-        gibbsP1: float = self.Product_1.thermalCorrectionToGibbs.getValue
-        gibbsP2: float = self.Product_2.thermalCorrectionToGibbs.getValue
+        
+        gibbsR1: float = self.React_1.Thermal_Free_Enthalpies.getValue
+        gibbsR2: float = self.React_2.Thermal_Free_Enthalpies.getValue
+        gibbsTS: float = self.Transition_Rate.Thermal_Free_Enthalpies.getValue
+        gibbsP1: float = self.Product_1.Thermal_Free_Enthalpies.getValue
+        gibbsP2: float = self.Product_2.Thermal_Free_Enthalpies.getValue
+
         molarV: float = 0.08206 * self.temp
         self.Greact: float = 0.0
         self.Gact: float = 0.0
@@ -189,23 +196,20 @@ class Ejecucion:
         countP: int = 1 if (gibbsP1 == 0.0 or gibbsP2 == 0.0) else 2
         deltaNr: int = countP - countR
         deltaNt: int = 1 - countR
-        cageCorr: float = (1.987 / 1000) * self.temp * \
-            ((math.log(countR * pow(10, 2 * countR - 2))) - (countR - 1))
-        corr1Mr: float = (1.987 / 1000) * self.temp * \
-            math.log(pow(molarV, deltaNr))
-        corr1Mt: float = (1.987 / 1000) * self.temp * \
-            math.log(pow(molarV, deltaNt))
+        cageCorr: float = (1.987 / 1000) * self.temp * ((math.log(countR * pow(10, 2 * countR - 2))) - (countR - 1))
+        
+        
+        corr1Mr: float = (1.987 / 1000) * self.temp *   math.log(pow(molarV, deltaNr))
+        corr1Mt: float = (1.987 / 1000) * self.temp *     math.log(pow(molarV, deltaNt))
+
         if (self.Cage_efects):
-            self.Greact = -cageCorr + corr1Mr + 627.5095 * \
-                (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
-            self.Gact = -cageCorr + corr1Mt + \
-                627.5095 * (gibbsTS - gibbsR1 - gibbsR2)
+            self.Greact = -cageCorr + corr1Mr + 627.5095 * (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
+            self.Gact = -cageCorr + corr1Mt + 627.5095 * (gibbsTS - gibbsR1 - gibbsR2)
         else:
-            self.Greact = corr1Mr + 627.5095 * \
-                (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
+            self.Greact = corr1Mr + 627.5095 *   (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
             self.Gact = corr1Mt + 627.5095 * (gibbsTS - gibbsR1 - gibbsR2)
-        self.rateCte = self.degeneracy * self.CalcularTunel.G *\
-            (2.08e10 * self.temp * math.exp(-self.Gact * 1000 / (1.987 * self.temp)))
+        
+        self.rateCte = self.degeneracy * self.CalcularTunel.G * (2.08e10 * self.temp * math.exp(-self.Gact * 1000 / (1.987 * self.temp)))
         if(self.Difusion):
             diffCoefA = (1.38E-23 * self.temp) / (6 * 3.14159 * self.Visc * self.Radius_1)
             diffCoefB = (1.38E-23 * self.temp) / (6 * 3.14159 * self.Visc * self.Radius_1)
@@ -306,7 +310,7 @@ class  EasyRate:
     def defProduct_1(self, Estruc: Estructura):
         self.Product_1.setDato(UnDato=Estruc.zpe.getValue)
     def defProduct_2(self, Estruc: Estructura):
-        self.Product_2.setDato(UnDato=Estruc.scf.getValue)
+        self.Product_2.setDato(UnDato=Estruc.zpe.getValue)
     def Seccion_Datos_2(self, pos_x=30, pos_y=300):
         SeccionDatos2 = ttk.Frame(self.Principal)
         SeccionDatos2.configure(width='200', height='50')
@@ -319,8 +323,9 @@ class  EasyRate:
         self.Temperatura.insert(0, "298.15")
         ttk.Label(SeccionDatos2, text="Tunneling").grid(
             column=0, row=0, padx=1, pady=5)
-        self.Tunneling = ttk.Entry(SeccionDatos2, width='10').grid(
-            column=1, row=0, padx=1, pady=5)
+        self.Tunneling = ttk.Entry(SeccionDatos2, width='10')
+        self.Tunneling.grid(column=1, row=0, padx=1, pady=5)
+        
         ttk.Label(SeccionDatos2, text="Reaction path degeneracy").grid(
             column=0, row=2, padx=1, pady=5)
         self.Reaction_path_degeneracy = ttk.Entry(
@@ -464,6 +469,7 @@ class  EasyRate:
             float(self.radius_react_2.get()if self.radius_react_2.get()  is not "" else "0"),
             float(self.ReactionDistance.get()if self.ReactionDistance.get()  is not "" else "0"),
             float(self.Reaction_path_degeneracy.get()if self.Reaction_path_degeneracy.get()  is not "" else "0")
+
         )
 
 
@@ -504,6 +510,11 @@ class  EasyRate:
                                   + str(round(EjecucionActual.temp, 2)) + "\n"))
         self.salida2.insert(END, ("______________________________________\n"))
         self.Ejecuciones.append(EjecucionActual)
+        self.Tunneling.insert(0, " ")
+
+        self.Tunneling.delete(0, END)
+        self.Tunneling.insert(0, str(round(EjecucionActual.CalcularTunel.G, 2)))
+        self.Tunneling['state'] = "disabled"
     def About(self):
         """
             show a windows with aabout information
