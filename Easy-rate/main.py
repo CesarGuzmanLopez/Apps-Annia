@@ -241,9 +241,9 @@ class  EasyRate:
             anchor='nw', bordermode='outside', x=str(0), y=str(0))
         self.master.title("Easy Rate 1.1")
         self.master.resizable(False, False)
-        self.master.geometry("975x600")
+        self.master.geometry("1100x600")
         self.FramePrincipal = ttk.Frame(self.Principal)
-        self.Principal.configure(width='960', height='605')
+        self.Principal.configure(width='1200', height='605')
         self.menu()
         self.Seccion_Datos_2()
         self.SeccionDifusion()
@@ -391,7 +391,7 @@ class  EasyRate:
             self.style.configure('TCombobox', fieldbackground='#f0f0f0')
     def SeccionPantalla(self, pos_x=370, pos_y=20):
         seccionPantalla = ttk.Frame(self.Principal)
-        seccionPantalla.configure(width='600', height='700')
+        seccionPantalla.configure(width='1000', height='700')
         seccionPantalla.place(x=str(pos_x), y=str(pos_y))
         self.Cage_efects = IntVar()
         self.Cage_efects.set(0)
@@ -435,7 +435,7 @@ class  EasyRate:
         FrameResultados = ttk.Frame(seccionPantalla)
         FrameResultados.place(x='0', y='70')
         self.salida = ScrolledText(
-            FrameResultados, wrap="none", width=35, height=23)
+            FrameResultados, wrap="none", width=40, height=23)
         xsb = tk.Scrollbar(FrameResultados, orient="horizontal",
                            command=self.salida.xview)
         self.salida.grid(row=1, column=0, columnspan=1)
@@ -444,7 +444,7 @@ class  EasyRate:
         self.salida.bind("<Key>", lambda e: "break")
         xsb.grid(row=2, column=0, columnspan=1, sticky=E+N+S+W)
         self.salida2 = ScrolledText(
-            FrameResultados, wrap="none", width=32, height=23)
+            FrameResultados, wrap="none", width=40, height=23)
         xsb2 = tk.Scrollbar(
             FrameResultados, orient="horizontal", command=self.salida2.xview)
         self.salida2.grid(row=1, column=1, columnspan=1)
@@ -477,10 +477,10 @@ class  EasyRate:
         EjecucionActual.Run()
         self.salida.insert(
             END, ("Pathway:  " + EjecucionActual.pathway + "\n"))
-        self.salida.insert(END, ("Gibbs Free Energy of reaction (kcal/mol):   "
-                                 + str(round(EjecucionActual.Greact, 2)) + "\n"))
-        self.salida.insert(END, ("Gibbs Free Energy of activation (kcal/mol):   "
-                                 + str(round(EjecucionActual.Gact, 2)) + "\n"))
+        self.salida.insert(END, ("Gibbs Free Energy of \n\treaction (kcal/mol):   "
+                                 + str(round(EjecucionActual.Greact, 2)) + "\n\n"))
+        self.salida.insert(END, ("Gibbs Free Energy of \n\tactivation (kcal/mol):   "
+                                 + str(round(EjecucionActual.Gact, 2)) + "\n\n"))
         self.salida.insert(END, ("Rate Constant:    "
                                  +  str(round(EjecucionActual.rateCte, 2))+ "\n\n"))
         self.salida.insert(
@@ -491,7 +491,7 @@ class  EasyRate:
             END, ("u:" + str(round(EjecucionActual.CalcularTunel.U, 2)) + "\n"))
         self.salida.insert(
             END, ("G:" + str(round(EjecucionActual.CalcularTunel.G, 2)) + "\n"))
-        self.salida.insert(END, ("\n\n\n_____________________________\n"))
+        self.salida.insert(END, ("\n_____________________________\n"))
         self.salida2.insert(
             END, ("Pathway:  " + str(EjecucionActual.pathway) + "\n"))
         self.salida2.insert(END, ("Imag. Freq. (cm-1):  \t\t\t"
@@ -507,7 +507,7 @@ class  EasyRate:
         self.salida2.insert(END, ("\tdZPE activation (kcal/mol):\t"
                                   + str(round(EjecucionActual. Zact, 2)) + "\n\n"))
         self.salida2.insert(END, ("Temperature (K):  "
-                                  + str(round(EjecucionActual.temp, 2)) + "\n"))
+                                  + str(round(EjecucionActual.temp, 2)) + "\n\n"))
         self.salida2.insert(END, ("______________________________________\n"))
         self.Ejecuciones.append(EjecucionActual)
         self.Tunneling.insert(0, " ")
