@@ -4,7 +4,7 @@
 block_cipher = None
 
 
-a = Analysis(['Molar-Fraction_1.1\\main.py'],
+a = Analysis(['..\\main.py'],
              pathex=[],
              binaries=[],
              datas=[],
