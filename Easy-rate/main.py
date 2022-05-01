@@ -1,4 +1,3 @@
-from asyncio import sleep
 import os
 import threading
 import tkinter as tk
@@ -135,9 +134,15 @@ class Ejecucion:
                  ReactionDistance: float = nan,
                  degen: float = nan,
                  ):
-        if (React_1 is None or React_2 is None or Transition_Rate is None or Product_1 is None or Product_2 is None ):
+        if (React_1 is None or Transition_Rate is None or Product_1 is None ):
             raise Exception("Please check your files are in the correct format,\n \
                 if the error persists please contact the administrator")
+        if(React_2 is None): 
+            React_2 = Estructura()
+        if(Product_2 is None):
+            Product_2 = Estructura()
+
+            
         self.pathway: string = title
         self.title = title
         self.React_1: Estructura = React_1
@@ -156,66 +161,81 @@ class Ejecucion:
         self.degeneracy: float = degen
         self.Zreact: float = nan
         self.Zact: float = nan
-        self.Hreact: float = nan
-        self.Hact: float = nan
+        self.dHreact: float = nan
+        self.dHact: float = nan
         self.Greact: float = nan
         self.Gact: float = nan
         self.rateCte: float = nan
         self.CalcularTunel: tst = tst()
         self.Ejecutable = False
- 
+    
     def Run(self) -> None:
         self.Ejecutable = True
         """
-            Run(self) -> None Aqui se hacen los calculos matematicos
-            Logica del negocio
+        Reaction enthalpies (dh)
         """
-        self.Zreact: float = 627.5095 * (self.Product_2.zpe.getValue + self.Product_1.zpe.getValue
-                                         - self.React_1.zpe.getValue-self.React_2.zpe.getValue)
-        self.Zact: float = 627.5095 * (self.Transition_Rate.zpe.getValue
-                                       - self.React_1.zpe.getValue - self.React_2.zpe.getValue)
-        self.Hreact: float = 627.5095 * (self.Product_1.eH_ts.getValue + self.Product_2.eH_ts.getValue
-                                         - self.React_1.eH_ts.getValue - self.React_2.eH_ts.getValue)
-        self.Hact: float = 627.5095 * (self.Transition_Rate.eH_ts.getValue
-                                       - self.React_1.eH_ts.getValue - self.React_2.eH_ts.getValue)
+        self.dHreact = 627.5095 * (self.Product_1.eH_ts.getValue + self.Product_2.eH_ts.no_nan_value 
+                                         - self.React_1.eH_ts.getValue - self.React_2.eH_ts.no_nan_value)
+        self.dHact   = 627.5095 * (self.Transition_Rate.eH_ts.getValue
+                                       - self.React_1.eH_ts.getValue - self.React_2.eH_ts.no_nan_value)
+        """
+            Reaction Zero_point_Energies (dh)
+        """
+        self.Zreact = 627.5095 * (self.Product_2.zpe.no_nan_value + self.Product_1.zpe.getValue
+                                         - self.React_1.zpe.getValue-self.React_2.zpe.no_nan_value)
+        self.Zact   = 627.5095 * (self.Transition_Rate.zpe.getValue
+                                       - self.React_1.zpe.getValue - self.React_2.zpe.no_nan_value)
+        """
+           Calculate Tunnel G
+        """
         self.CalcularTunel.calculate(BARRZPE=self.Zact,
                                      DELZPE=self.Zreact,
                                      FREQ=abs( self.Transition_Rate.frecNeg.getValue),
                                      TEMP=self.temp)
         
-        gibbsR1: float = self.React_1.Thermal_Free_Enthalpies.getValue
-        gibbsR2: float = self.React_2.Thermal_Free_Enthalpies.getValue
-        gibbsTS: float = self.Transition_Rate.Thermal_Free_Enthalpies.getValue
-        gibbsP1: float = self.Product_1.Thermal_Free_Enthalpies.getValue
-        gibbsP2: float = self.Product_2.Thermal_Free_Enthalpies.getValue
+        gibbsR1 = self.React_1.Thermal_Free_Enthalpies.getValue
+        gibbsR2 = self.React_2.Thermal_Free_Enthalpies.no_nan_value
+        gibbsTS = self.Transition_Rate.Thermal_Free_Enthalpies.getValue
+        gibbsP1 = self.Product_1.Thermal_Free_Enthalpies.getValue
+        gibbsP2 = self.Product_2.Thermal_Free_Enthalpies.no_nan_value
 
-        molarV: float = 0.08206 * self.temp
-        self.Greact: float = 0.0
-        self.Gact: float = 0.0
-        countR: int = 1 if gibbsR1 == 0.0 or gibbsR2 == 0.0 else 2
-        countP: int = 1 if (gibbsP1 == 0.0 or gibbsP2 == 0.0) else 2
-        deltaNr: int = countP - countR
-        deltaNt: int = 1 - countR
-        cageCorr: float = (1.987 / 1000) * self.temp * ((math.log(countR * pow(10, 2 * countR - 2))) - (countR - 1))
+        molarV = 0.08206 * self.temp
+
+        countR = 1 if gibbsR1 == 0.0 or gibbsR2 == 0.0 else 2
+        countP = 1 if gibbsP1 == 0.0 or gibbsP2 == 0.0 else 2
+
+        deltaNr = countP - countR
+        deltaNt = 1 - countR
+        
+        cageCorr = (1.987 / 1000) * self.temp * ((math.log(countR * pow(10, 2 * countR - 2))) - (countR - 1))
         
         
-        corr1Mr: float = (1.987 / 1000) * self.temp *   math.log(pow(molarV, deltaNr))
-        corr1Mt: float = (1.987 / 1000) * self.temp *     math.log(pow(molarV, deltaNt))
-
+        corr1Mr = (1.987 / 1000) * self.temp * math.log(pow(molarV, deltaNr))
+        corr1Mt = (1.987 / 1000) * self.temp * math.log(pow(molarV, deltaNt))
+        
+        self.Greact= corr1Mr + 627.5095 * (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
+        self.Gact  = corr1Mt + 627.5095 * (gibbsTS - gibbsR1 - gibbsR2)
+        
+        """
+            if use Cage Correction
+        """
         if (self.Cage_efects):
-            self.Greact = -cageCorr + corr1Mr + 627.5095 * (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
-            self.Gact = -cageCorr + corr1Mt + 627.5095 * (gibbsTS - gibbsR1 - gibbsR2)
-        else:
-            self.Greact = corr1Mr + 627.5095 *   (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
-            self.Gact = corr1Mt + 627.5095 * (gibbsTS - gibbsR1 - gibbsR2)
+            self.Greact =self.Greact -cageCorr
+            self.Gact = self.Greact -cageCorr 
+
+           
         
         self.rateCte = self.degeneracy * self.CalcularTunel.G * (2.08e10 * self.temp * math.exp(-self.Gact * 1000 / (1.987 * self.temp)))
+        
+        
+        
         if(self.Difusion):
             diffCoefA = (1.38E-23 * self.temp) / (6 * 3.14159 * self.Visc * self.Radius_1)
             diffCoefB = (1.38E-23 * self.temp) / (6 * 3.14159 * self.Visc * self.Radius_1)
             diffCoefAB = diffCoefA + diffCoefB
             kDiff = 1000 * 4 * 3.14159 * diffCoefAB * self.ReactionDistance * 6.02e23
             self.rateCte = (kDiff * self.rateCte) / (kDiff + self.rateCte)
+    
     @property
     def Visc(self) -> float:
         if(self.Solvent is "Benzene"):
@@ -302,15 +322,15 @@ class  EasyRate:
         self.Temperatura.delete(0, END)
         self.Temperatura.insert(0, str(Estruc.temp.getValue))
         self.Temperatura['state'] = "disabled"
-        self.React_1.setDato(UnDato=Estruc.zpe.getValue)
+        self.React_1.setDato(UnDato=Estruc.Thermal_Free_Enthalpies.getValue)
     def defReact_2(self, Estruc: Estructura):
-        self.React_2.setDato(UnDato=Estruc.zpe.getValue)
+        self.React_2.setDato(UnDato=Estruc.Thermal_Free_Enthalpies.getValue)
     def defTransition_Rate(self, Estruc: Estructura):
-        self.Transition_Rate.setDato(UnDato=Estruc.zpe.getValue)
+        self.Transition_Rate.setDato(UnDato=Estruc.Thermal_Free_Enthalpies.getValue)
     def defProduct_1(self, Estruc: Estructura):
-        self.Product_1.setDato(UnDato=Estruc.zpe.getValue)
+        self.Product_1.setDato(UnDato=Estruc.Thermal_Free_Enthalpies.getValue)
     def defProduct_2(self, Estruc: Estructura):
-        self.Product_2.setDato(UnDato=Estruc.zpe.getValue)
+        self.Product_2.setDato(UnDato=Estruc.Thermal_Free_Enthalpies.getValue)
     def Seccion_Datos_2(self, pos_x=30, pos_y=300):
         SeccionDatos2 = ttk.Frame(self.Principal)
         SeccionDatos2.configure(width='200', height='50')
@@ -498,9 +518,9 @@ class  EasyRate:
                                   + str(round(EjecucionActual.frequency_negative, 2)) + "\n\n"))
         self.salida2.insert(END, ("Reaction enthalpies (dH)" + "\n"))
         self.salida2.insert(END, ("\tdH reaction (kcal/mol):  \t"
-                                  + str(round(EjecucionActual.Hreact, 2)) + "\n"))
+                                  + str(round(EjecucionActual.dHreact, 2)) + "\n"))
         self.salida2.insert(END, ("\tdH activation (kcal/mol):\t"
-                                  + str(round(EjecucionActual.Hact, 2)) + "\n"))
+                                  + str(round(EjecucionActual.dHact, 2)) + "\n"))
         self.salida2.insert(END, ("Reaction ZPE (dZPE)  " + "\n"))
         self.salida2.insert(END, ("\tdZPE reaction (kcal/mol):  \t"
                                   + str(round(EjecucionActual.Zreact, 2)) + "\n"))
@@ -543,6 +563,10 @@ class  EasyRate:
             file_path = filedialog.asksaveasfilename(
                 filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
         file = open(file_path, "w+")
+
+
+        file.close()
+
     def run(self):
         self.Principal.mainloop()
 if __name__ == '__main__':
