@@ -172,7 +172,7 @@ class Ejecucion:
     def Run(self) -> None:
         self.Ejecutable = True
         """
-        Reaction enthalpies (dh)
+            Reaction enthalpies (dh)
         """
         self.dHreact = 627.5095 * (self.Product_1.eH_ts.getValue + self.Product_2.eH_ts.no_nan_value 
                                          - self.React_1.eH_ts.getValue - self.React_2.eH_ts.no_nan_value)
@@ -198,6 +198,9 @@ class Ejecucion:
         gibbsTS = self.Transition_Rate.Thermal_Free_Enthalpies.getValue
         gibbsP1 = self.Product_1.Thermal_Free_Enthalpies.getValue
         gibbsP2 = self.Product_2.Thermal_Free_Enthalpies.no_nan_value
+        
+
+
 
         molarV = 0.08206 * self.temp
 
@@ -206,27 +209,23 @@ class Ejecucion:
 
         deltaNr = countP - countR
         deltaNt = 1 - countR
-        
-        cageCorr = (1.987 / 1000) * self.temp * ((math.log(countR * pow(10, 2 * countR - 2))) - (countR - 1))
-        
-        
+
         corr1Mr = (1.987 / 1000) * self.temp * math.log(pow(molarV, deltaNr))
         corr1Mt = (1.987 / 1000) * self.temp * math.log(pow(molarV, deltaNt))
-        
+
+        #Calor de reacción
         self.Greact= corr1Mr + 627.5095 * (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
+        #Energia de activación
         self.Gact  = corr1Mt + 627.5095 * (gibbsTS - gibbsR1 - gibbsR2)
-        
+
         """
             if use Cage Correction
         """
-        if (self.Cage_efects):
-            self.Greact =self.Greact -cageCorr
-            self.Gact = self.Greact -cageCorr 
-
-           
+        if (self.Cage_efects and deltaNt != 0):
+            cageCorrAct = (1.987 / 1000) * self.temp * ((math.log(countR * pow(10, 2 * countR - 2))) - (countR - 1))
+            self.Gact = self.Gact - cageCorrAct   
         
         self.rateCte = self.degeneracy * self.CalcularTunel.G * (2.08e10 * self.temp * math.exp(-self.Gact * 1000 / (1.987 * self.temp)))
-        
         
         
         if(self.Difusion):
@@ -499,10 +498,12 @@ class  EasyRate:
             END, ("Pathway:  " + EjecucionActual.pathway + "\n"))
         self.salida.insert(END, ("Gibbs Free Energy of \n\treaction (kcal/mol):   "
                                  + str(round(EjecucionActual.Greact, 2)) + "\n\n"))
-        self.salida.insert(END, ("Gibbs Free Energy of \n\tactivation (kcal/mol):   "
+        self.salida.insert(END, ("Gibbs Free Energy of \n\tactivation "
+                                 +("with cage effects \n\t"if(EjecucionActual.Cage_efects)else "") +     
+                                 " (kcal/mol):   "
                                  + str(round(EjecucionActual.Gact, 2)) + "\n\n"))
-        self.salida.insert(END, ("Rate Constant:    "
-                                 +  str(round(EjecucionActual.rateCte, 2))+ "\n\n"))
+        self.salida.insert(END, ("Rate Constant "+("\n\twith cage effects "if(EjecucionActual.Cage_efects)else "") + ":    "
+                                 +  "{:.2e}".format(EjecucionActual.rateCte)+ "\n\n"))
         self.salida.insert(
             END, ("ALPH1:" + str(round(EjecucionActual.CalcularTunel.ALPH1, 2)) + "\n"))
         self.salida.insert(
@@ -511,7 +512,7 @@ class  EasyRate:
             END, ("u:" + str(round(EjecucionActual.CalcularTunel.U, 2)) + "\n"))
         self.salida.insert(
             END, ("G:" + str(round(EjecucionActual.CalcularTunel.G, 2)) + "\n"))
-        self.salida.insert(END, ("\n_____________________________\n"))
+        self.salida.insert(END, ("_____________________________\n"))
         self.salida2.insert(
             END, ("Pathway:  " + str(EjecucionActual.pathway) + "\n"))
         self.salida2.insert(END, ("Imag. Freq. (cm-1):  \t\t\t"
@@ -520,14 +521,14 @@ class  EasyRate:
         self.salida2.insert(END, ("\tdH reaction (kcal/mol):  \t"
                                   + str(round(EjecucionActual.dHreact, 2)) + "\n"))
         self.salida2.insert(END, ("\tdH activation (kcal/mol):\t"
-                                  + str(round(EjecucionActual.dHact, 2)) + "\n"))
+                                  + str(round(EjecucionActual.dHact, 2)) + "\n\n"))
         self.salida2.insert(END, ("Reaction ZPE (dZPE)  " + "\n"))
         self.salida2.insert(END, ("\tdZPE reaction (kcal/mol):  \t"
                                   + str(round(EjecucionActual.Zreact, 2)) + "\n"))
         self.salida2.insert(END, ("\tdZPE activation (kcal/mol):\t"
                                   + str(round(EjecucionActual. Zact, 2)) + "\n\n"))
         self.salida2.insert(END, ("Temperature (K):  "
-                                  + str(round(EjecucionActual.temp, 2)) + "\n\n"))
+                                  + str(round(EjecucionActual.temp, 2)) + ("\n\n"if(EjecucionActual.Cage_efects)else "") + "\n\n"))
         self.salida2.insert(END, ("______________________________________\n"))
         self.Ejecuciones.append(EjecucionActual)
         self.Tunneling.insert(0, " ")
