@@ -240,7 +240,7 @@ class Ejecucion:
         if(self.Solvent is "Benzene"):
             return 0.000604
         elif(self.Solvent is "Gas phase (Air)"):
-            return 0.000018
+                                                                                                                                                                                                                                                                                                                                 return 0.000018
         elif(self.Solvent is "Pentyl ethanoate"):
             return 0.000862
         elif(self.Solvent is "Water"):
