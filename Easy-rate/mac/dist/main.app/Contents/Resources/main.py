@@ -104,7 +104,7 @@ class EntradaDato(ttk.Frame):
             self.EstructuraSeleccionada = self.Archlog.Estructuras[0]
         else:
             self.a = SelectStructure(
-                parent=self, Estructuras=self.Archlog.Estructuras)
+                parent=self, estructuras=self.Archlog.Estructuras)
             if(self.a == None):
                 self.EstructuraSeleccionada = None
             else:

@@ -1,19 +1,21 @@
-from math import exp,log
+import string
+from cmath import nan
+from math import exp, log
 from os import path
-from string import string
 from threading import Thread as thTread
 from time import sleep as tsleep
-from cmath import nan
-from read_log_gaussian import Estructura
-from SeslectStructura import SelectStructure
-from CK import tst
-from read_log_gaussian.read_log_gaussian import read_log_gaussian
-from tkdialog import WaitAlert
-from tkinter import END, Button, Entry, IntVar, Label, Menu, Scrollbar, Tk, Toplevel, filedialog,E,N,S,W, ttk
+from tkinter import (END, Button, E, Entry, IntVar, Label, Menu, N, S,
+                     Scrollbar, Tk, Toplevel, W, filedialog, ttk)
 from tkinter.filedialog import askopenfilename
 from tkinter.scrolledtext import ScrolledText
+from CK import tst
+from read_log_gaussian.Estructura import Estructura
+from read_log_gaussian.read_log_gaussian import read_log_gaussian
+from SeslectStructura import SelectStructure
+from tkdialog import WaitAlert
 from ttkthemes import ThemedStyle
 from viewStructure import ViewStructure
+
 '''
     Python 3.7.9
     @author: Cesar Gerardo Guzman Lopez
@@ -27,6 +29,7 @@ class EntradaDato(ttk.Frame):
         self.__dato = dato
         self.Etiqueta = etiqueta
         self.textoButton = buttontext
+        self.Archlog =None
         self.labelEtiquetaNombre = ttk.Label(
             self, text=self.Etiqueta, width=17)
         self.datoentrada = Entry(self, width=10)
@@ -38,7 +41,6 @@ class EntradaDato(ttk.Frame):
         self.labelEtiquetaNombre.grid(row=0, column=1)
         self.datoentrada.grid(row=0, column=2)
         self.botonActivo.grid(row=0, column=3)
-        self.Archlog: read_log_gaussian = None
         self.filname = ""
         self.esperar: int = 0
         self.botonverfile = ttk.Button(
@@ -103,7 +105,7 @@ class EntradaDato(ttk.Frame):
             self.EstructuraSeleccionada = self.Archlog.Estructuras[0]
         else:
             self.a = SelectStructure(
-                parent=self, Estructuras=self.Archlog.Estructuras)
+                parent=self, estructuras=self.Archlog.Estructuras)
             if(self.a == None):
                 self.EstructuraSeleccionada = None
             else:

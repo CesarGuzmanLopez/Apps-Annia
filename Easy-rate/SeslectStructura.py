@@ -1,16 +1,13 @@
-from tkinter import *
-import tkinter as tk
-import tkinter
-from tkinter import scrolledtext
-from tkinter import ttk
-from tkinter.scrolledtext import *
-from tkinter.filedialog import *
-from pygubu import TkApplication
-from tkinter import *
+from tkinter import LEFT, Button, Frame, Label, scrolledtext
+from platform import system as pla_system
 import tkinter.simpledialog as sd
-import platform
+
+import ttkthemes
+
+
+from read_log_gaussian.Estructura import Estructura
 from viewStructure import ViewStructure
-from  read_log_gaussian.read_log_gaussian import *
+from read_log_gaussian import read_log_gaussian
 
 
 class SelectStructure(sd.Dialog):
@@ -23,9 +20,9 @@ class SelectStructure(sd.Dialog):
         pause (int): Time till inactive. (in seconds)
         show_timer (boolean): Shows countdown."""
 
-    def __init__(self, parent, Estructuras:"list[Estructura]" ):
-        self.sistema = platform.system()
-        self.Estructuras = Estructuras
+    def __init__(self, parent, estructuras:"list[Estructura]" ):
+        self.sistema = pla_system()
+        self.Estructuras = estructuras
         self.result = None
         super().__init__(parent, title="Select a Structure")
     
@@ -37,10 +34,10 @@ class SelectStructure(sd.Dialog):
 
         box = Frame(self)
 
-        labelTop = tk.Label(box,
+        label_top = Label(box,
                     text = "Choose your structure")
-        labelTop.grid(column=0, row=0)
-        self.SelectStructure = ttk.Combobox(box,values=list(map(lambda a:" Job Title: "+  a.jobtitle.getValue ,self.Estructuras )))
+        label_top.grid(column=0, row=0)
+        self.SelectStructure = ttkthemes.Combobox(box,values=list(map(lambda a:" Job Title: "+  a.jobtitle.getValue ,self.Estructuras )))
         self.SelectStructure.grid(column=0, row=1)
         self.SelectStructure.current(None)
         self.SelectStructure.size = [1200,150]
