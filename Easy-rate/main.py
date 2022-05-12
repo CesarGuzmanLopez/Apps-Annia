@@ -8,7 +8,7 @@ from tkinter import (END, Button, E, Entry, IntVar, Label, Menu, N, S,
                      Scrollbar, Tk, Toplevel, W, filedialog, ttk)
 from tkinter.filedialog import askopenfilename
 from tkinter.scrolledtext import ScrolledText
-from CK import tst
+from CK.tst import tst
 from read_log_gaussian.Estructura import Estructura
 from read_log_gaussian.read_log_gaussian import read_log_gaussian
 from SeslectStructura import SelectStructure
@@ -25,6 +25,7 @@ class EntradaDato(ttk.Frame):
     '''
     Analiza los datos que obtenidos del log gaussian
     '''
+
     def Activar(self, etiqueta="Sin nombre", buttontext="Browse", dato=0.0, info="", command=None):
         self.__dato = dato
         self.Etiqueta = etiqueta
@@ -43,16 +44,34 @@ class EntradaDato(ttk.Frame):
         self.botonActivo.grid(row=0, column=3)
         self.filname = ""
         self.esperar: int = 0
-        self.botonverfile = ttk.Button(
-            self, text="view", width=5, command=self.view)
+        self.botonverfile = ttk.Button(self, text="view", width=5, command=self.view)
         self.botonverfile.grid(row=0, column=4, padx=4)
         self.botonverfile['state'] = "disabled"
+
+        self.botonclearfile = ttk.Button(self, text="clear", width=5, command=self.clear)
+        self.botonclearfile.grid(row=0, column=5, padx=4)
+        self.botonclearfile['state'] = "disabled"
+
         self.labelEtiquetafilename = ttk.Label(self, text="")
         self.labelEtiquetafilename.grid(row=1, column=3, columnspan=2, padx=4)
         self.comando = command
         self.EstructuraSeleccionada = None
+
+
+    def clear(self):
+        self.Archlog = None
+        self.EstructuraSeleccionada = None
+        self.botonverfile['state'] = "disabled"
+        self.botonclearfile['state'] = "disabled"
+        self.labelEtiquetafilename.config(text="")
+        self.datoentrada.config(state='normal')
+        self.datoentrada.delete(0, END) # clear the entry   
+        self.datoentrada.insert(0, str("0.0"))
+        self.datoentrada.config(state='disabled')
+
     def view(self):
         ViewStructure(master=self, estructure=self.EstructuraSeleccionada)
+
     def open(self):
         filetypes = [
             ("log Gaussian file",  "*.log"),
@@ -77,22 +96,30 @@ class EntradaDato(ttk.Frame):
         if(self.Archlog == False):
             self.Archlog = None
             self.botonverfile['state'] = "disabled"
+            self.botonclearfile['state'] = "disabled"
         self.SeleccionarEstructura()
+        self.Archlog = None
     def readfile(self):
         self.Archlog = None
+        self.EstructuraSeleccionada = None   
         self.Archlog = read_log_gaussian(self.filename)
         tsleep(0.5)
         self.botonverfile['state'] = "normal"
-        if(self.Archlog == None):
+        self.botonclearfile['state'] = "normal"
+        if(self.Archlog.Estructuras.__len__ == 0):
             self.Archlog = False
+            
     @property
     def getDato(self) -> float:
         return self.__dato
+   
     @property
     def getTextValue(self) -> float:
         return float(self.datoentrada.get())
+
     def get_Estructura_Seleccionada(self):
         return self.EstructuraSeleccionada
+
     def setDato(self, un_dato: float = 0.0):
         self.__dato = un_dato
         self.datoentrada.config(state='normal')
@@ -101,6 +128,7 @@ class EntradaDato(ttk.Frame):
         self.datoentrada.config(state='disabled')
     
     def SeleccionarEstructura(self):
+        self.EstructuraSeleccionada = None        
         if(len(self.Archlog.Estructuras) == 1):
             self.EstructuraSeleccionada = self.Archlog.Estructuras[0]
         else:
@@ -119,6 +147,9 @@ class EntradaDato(ttk.Frame):
             self.filename = ""
 
 class exception_tunnel(Exception):
+    """
+    Exception for tunneling errors
+    """
     def __init__(self, message):
         super(exception_tunnel, self).__init__(message)
         self.message = message
@@ -126,6 +157,7 @@ class Ejecucion:
     '''
     Guarda la informacion de una ejecucion y se hacen los calculos
     '''
+
     def __init__(self,  title: string = "Title",
                  react_1: Estructura = None,
                  react_2: Estructura = None,
@@ -176,16 +208,16 @@ class Ejecucion:
         self.CalcularTunel: tst = tst()
         self.ejecutable: bool = False
     
-    
     def run(self) -> None:
         
         self.ejecutable = True
         """
             Reaction enthalpies (dh)
         """
-        self.dH_react:float = 627.5095 * (self.Product_1.eH_ts.getValue + self.product_2.eH_ts.no_nan_value - self.React_1.eH_ts.getValue - self.React_2.eH_ts.no_nan_value)
-                                         
-        self.dHact:float   = 627.5095 * (self.trasition_rate.eH_ts.getValue  - self.React_1.eH_ts.getValue - self.React_2.eH_ts.no_nan_value)
+        self.dH_react:float = 627.5095 * (self.Product_1.eH_ts.getValue +
+            self.product_2.eH_ts.no_nan_value - self.React_1.eH_ts.getValue - self.React_2.eH_ts.no_nan_value)
+        self.dHact:float   = 627.5095 * (self.trasition_rate.eH_ts.getValue  -
+            self.React_1.eH_ts.getValue - self.React_2.eH_ts.no_nan_value)
         """
             Reaction Zero_point_Energies (dh)
         """
@@ -201,22 +233,22 @@ class Ejecucion:
                                      FREQ=abs( self.trasition_rate.frecNeg.getValue),
                                      TEMP=self.temp)
         
-        gibbsR1 = self.React_1.Thermal_Free_Enthalpies.getValue        #NOSONAR
-        gibbsR2 = self.React_2.Thermal_Free_Enthalpies.no_nan_value    #NOSONAR
-        gibbsTS = self.trasition_rate.Thermal_Free_Enthalpies.getValue #NOSONAR
-        gibbsP1 = self.Product_1.Thermal_Free_Enthalpies.getValue      #NOSONAR
-        gibbsP2 = self.product_2.Thermal_Free_Enthalpies.no_nan_value  #NOSONAR
+        gibbsR1 = self.React_1.Thermal_Free_Enthalpies.getValue       #NOSONAR
+        gibbsR2 = self.React_2.Thermal_Free_Enthalpies.no_nan_value   #NOSONAR
+        gibbsTS = self.trasition_rate.Thermal_Free_Enthalpies.getValue#NOSONAR
+        gibbsP1 = self.Product_1.Thermal_Free_Enthalpies.getValue     #NOSONAR
+        gibbsP2 = self.product_2.Thermal_Free_Enthalpies.no_nan_value #NOSONAR
         
-        molarV = 0.08206 * self.temp       #NOSONAR
+        molarV = 0.08206 * self.temp      #NOSONAR
 
-        countR = 1 if gibbsR1 == 0.0 or gibbsR2 == 0.0 else 2       #NOSONAR
-        countP = 1 if gibbsP1 == 0.0 or gibbsP2 == 0.0 else 2       #NOSONAR
+        countR = 1 if gibbsR1 == 0.0 or gibbsR2 == 0.0 else 2      #NOSONAR
+        countP = 1 if gibbsP1 == 0.0 or gibbsP2 == 0.0 else 2      #NOSONAR
 
-        deltaNr = countP - countR       #NOSONAR
-        deltaNt = 1 - countR            #NOSONAR
-       #NOSONAR
-        corr1Mr = (1.987 / 1000) * self.temp * log(pow(molarV, deltaNr))       #NOSONAR
-        corr1Mt = (1.987 / 1000) * self.temp * log(pow(molarV, deltaNt))       #NOSONAR
+        deltaNr = countP - countR      #NOSONAR
+        deltaNt = 1 - countR           #NOSONAR
+    #NOSONAR
+        corr1Mr = (1.987 / 1000) * self.temp * log(pow(molarV, deltaNr))      #NOSONAR
+        corr1Mt = (1.987 / 1000) * self.temp * log(pow(molarV, deltaNt))      #NOSONAR
 
         #Calor de reacción
         self.Greact :float= corr1Mr + 627.5095 * (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
@@ -227,20 +259,21 @@ class Ejecucion:
             if use Cage Correction
         """
         if (self.cage_efects and deltaNt != 0):
-            cageCorrAct = (1.987 / 1000) * self.temp * ((log(countR * pow(10, 2 * countR - 2))) - (countR - 1))       #NOSONAR
+            cageCorrAct = (1.987 / 1000) * self.temp * ((log(countR * pow(10, 2 * countR - 2))) - (countR - 1))      #NOSONAR
             self.Gact:float = self.Gact - cageCorrAct   
         
         self.rateCte:float = self.degeneracy * self.CalcularTunel.G * (2.08e10 * self.temp * exp(-self.Gact * 1000 / (1.987 * self.temp)))
         
         
         if(self.difusion):
-            diffCoefA = (1.38E-23 * self.temp) / (6 * 3.14159 * self.visc * self.radius_1)      #NOSONAR
-            diffCoefB = (1.38E-23 * self.temp) / (6 * 3.14159 * self.visc * self.radius_1)      #NOSONAR
-            diffCoefAB = diffCoefA + diffCoefB                                                  #NOSONAR
-            kDiff = 1000 * 4 * 3.14159 * diffCoefAB * self.reaction_distance * 6.02e23          #NOSONAR
+            diffCoefA = (1.38E-23 * self.temp) / (6 * 3.14159 * self.visc * self.radius_1)     #NOSONAR
+            diffCoefB = (1.38E-23 * self.temp) / (6 * 3.14159 * self.visc * self.radius_1)     #NOSONAR
+            diffCoefAB = diffCoefA + diffCoefB                                                 #NOSONAR
+            kDiff = 1000 * 4 * 3.14159 * diffCoefAB * self.reaction_distance * 6.02e23         #NOSONAR
             self.rateCte :float= (kDiff * self.rateCte) / (kDiff + self.rateCte)
     
     @property
+
     def visc(self) -> float:
         if(self.solvent == "Benzene"):
             return 0.000604
@@ -253,6 +286,7 @@ class Ejecucion:
         else:
             return nan
 class  EasyRate:
+
     def __init__(self, master=None):
         self.Ejecuciones: list[Ejecucion] = list()
         self.master = Tk() if master is None else Toplevel(master)
@@ -275,6 +309,7 @@ class  EasyRate:
         self.style.set_theme('winxpblue')
         self.style.configure('.', background='#f0f0f0', font=('calibri', 9))
         self.style.configure('TCombobox', fieldbackground='#f0f0f0')
+
     def menu(self):
         menubar = Menu(self.master)
         filemenu = Menu(menubar, tearoff=0)
@@ -285,6 +320,7 @@ class  EasyRate:
         menubar.add_cascade(label="help", menu=ayuda)
         ayuda.add_command(label="About", command=self.about)
         self.master.config(menu=menubar)
+
     def seccion_leer_archivos(self, pos_x=10, pos_y=10):
         _seccion_leer_archivos = ttk.Frame(self._principal)
         _seccion_leer_archivos.configure(width='360', height='290')
@@ -320,19 +356,25 @@ class  EasyRate:
         self.product_2 .grid(row=6, column=1, columnspan=3)
         self.product_2 .Activar(etiqueta="Product-2",
                                 command=self.defproduct_2)
+
     def def_react_1(self, estruct: Estructura):
         self.Temperatura.delete(0, END)
         self.Temperatura.insert(0, str(estruct.temp.getValue))
         self.Temperatura['state'] = "disabled"
         self.React_1.setDato(un_dato=estruct.Thermal_Free_Enthalpies.getValue)
+
     def def_react_2(self, estruct: Estructura):
         self.React_2.setDato(un_dato=estruct.Thermal_Free_Enthalpies.getValue)
+
     def deftrasition_rate(self, estruct: Estructura):
         self.trasition_rate.setDato(un_dato=estruct.Thermal_Free_Enthalpies.getValue)
+
     def def_product_1(self, estruct: Estructura):
         self.Product_1.setDato(un_dato=estruct.Thermal_Free_Enthalpies.getValue)
+
     def defproduct_2(self, estruct: Estructura):
         self.product_2.setDato(un_dato=estruct.Thermal_Free_Enthalpies.getValue)
+
     def seccion_datos_2(self, pos_x=30, pos_y=300):
         _seccion_datos_2 = ttk.Frame(self._principal)
         _seccion_datos_2.configure(width='200', height='50')
@@ -353,6 +395,7 @@ class  EasyRate:
             _seccion_datos_2, width='10')
         self.Reaction_path_degeneracy.grid(column=1, row=2, padx=1, pady=5)
         self.Reaction_path_degeneracy.insert(0,"1")
+
     def seccion_difusion(self, pos_x=30, pos_y=440):
         _seccion_difusion = ttk.Frame(self._principal)
         _seccion_difusion.configure(width='400', height='400')
@@ -394,6 +437,7 @@ class  EasyRate:
             row=3, column=0)
         self.reaction_distance = Entry(frame2, width=7, state='disabled')
         self.reaction_distance.grid(row=3, column=1)
+
     def isdifusion(self):
         """
         
@@ -410,6 +454,7 @@ class  EasyRate:
             self.reaction_distance['state'] = 'disabled'
             self.solvent['state'] = 'disabled'
             self.style.configure('TCombobox', fieldbackground='#f0f0f0')
+
     def seccion_pantalla(self, pos_x=370, pos_y=20):
         _seccion_pantalla = ttk.Frame(self._principal)
         _seccion_pantalla.configure(width='1000', height='700')
@@ -452,6 +497,7 @@ class  EasyRate:
         labelphpadvertence.configure(
             text='Please note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
         labelphpadvertence.place(anchor='nw', x='300', y='500')
+
     def _scrolle_pantalla(self, _seccion_pantalla):
         frame_resultados = ttk.Frame(_seccion_pantalla)
         frame_resultados.place(x='0', y='70')
@@ -473,6 +519,7 @@ class  EasyRate:
         self.salida2.configure(xscrollcommand=xsb2.set)
         self.salida2.bind("<Key>", lambda e: "break")
         xsb2.grid(row=2, column=1, columnspan=1, sticky=E+N+S+W)
+
     def run_calc(self):
         if(not True):  # TODO #1 Verificar si los datos son correcotoss  Verificarlos
             return
@@ -534,6 +581,7 @@ class  EasyRate:
         self.Tunneling.delete(0, END)
         self.Tunneling.insert(0, str(round(ejecucion_actual.CalcularTunel.G, 2)))
         self.Tunneling['state'] = "disabled"
+
     def about(self):
         """
             show a windows with aabout information
@@ -551,10 +599,12 @@ class  EasyRate:
         label.grid(row=1, column=0)
         label = Label(window, text="Annia Galano", font=("Helvetica", 12))
         label.grid(row=1, column=1)
+
         def close():
             window.destroy()
         boton = Button(window, text="Close", command=close)
         boton.grid(row=3, column=0, columnspan=2)
+
 
     def on_save(self):
         file_path: string = None
@@ -562,12 +612,11 @@ class  EasyRate:
             file_path = filedialog.asksaveasfilename(
                 filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
         file = open(file_path, "w+")
-
-
         file.close()
 
     def run(self):
         self._principal.mainloop()
+
 if __name__ == '__main__':
     app = EasyRate()
     app.run() 

@@ -1,13 +1,12 @@
 from tkinter import LEFT, Button, Frame, Label, scrolledtext
 from platform import system as pla_system
 import tkinter.simpledialog as sd
+from tkinter.ttk import Combobox
 
-import ttkthemes
 
 
 from read_log_gaussian.Estructura import Estructura
 from viewStructure import ViewStructure
-from read_log_gaussian import read_log_gaussian
 
 
 class SelectStructure(sd.Dialog):
@@ -37,7 +36,7 @@ class SelectStructure(sd.Dialog):
         label_top = Label(box,
                     text = "Choose your structure")
         label_top.grid(column=0, row=0)
-        self.SelectStructure = ttkthemes.Combobox(box,values=list(map(lambda a:" Job Title: "+  a.jobtitle.getValue ,self.Estructuras )))
+        self.SelectStructure = Combobox(box,values=list(map(lambda a:" Job Title: "+  a.jobtitle.getValue ,self.Estructuras )))
         self.SelectStructure.grid(column=0, row=1)
         self.SelectStructure.current(None)
         self.SelectStructure.size = [1200,150]
@@ -49,6 +48,7 @@ class SelectStructure(sd.Dialog):
 
     def view(self):
         ViewStructure(self,estructure =  self.Estructuras[self.SelectStructure.current()])
+    
     def buttonbox(self):
         box = Frame(self)
         b1 = Button(box, text="OK", width=10, command=self.ok)
