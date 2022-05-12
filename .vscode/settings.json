@@ -8,5 +8,7 @@
         "./Marcus",
         "-p",
         "test_*.py"
-    ]
+    ],
+    "sonarlint.disableTelemetry": true,
+    "sonarlint.trace.server": "off"
 }
