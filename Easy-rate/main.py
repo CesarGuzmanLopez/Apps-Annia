@@ -1,4 +1,3 @@
-import string
 from cmath import nan
 from math import exp, log
 from os import path
@@ -162,15 +161,15 @@ class Ejecucion:
     Guarda la informacion de una ejecucion y se hacen los calculos
     '''
 
-    def __init__(self,  title: string = "Title",#NOSONAR
+    def __init__(self,  title: str = "Title",#NOSONAR
                  react_1: Estructura = None,
                  react_2: Estructura = None,
                  trasition_rate: Estructura = None,
                  product_1: Estructura = None,
                  product_2: Estructura = None,
                  cage_efects: bool = False,
-                 difusion: bool = False,
-                 solvent: string = "",
+                 diffusion: bool = False,
+                 solvent: str = "",
                  radius_1: float = nan,
                  radius_2: float = nan,
                  reaction_distance: float = nan,
@@ -187,7 +186,7 @@ class Ejecucion:
             react_2 = Estructura()
         if(product_2 is None):
             product_2 = Estructura()
-        self.pathway: string = title
+        self.pathway: str = title
         self.title = title
         self.React_1: Estructura = react_1
         self.React_2: Estructura = react_2
@@ -197,8 +196,8 @@ class Ejecucion:
         self.frequency_negative = self.trasition_rate.frecNeg.getValue
         self.temp = self.Product_1.temp.getValue
         self.cage_efects: bool = cage_efects
-        self.difusion: bool = difusion
-        self.solvent: string = solvent
+        self.diffusion: bool = diffusion
+        self.solvent: str = solvent
         self.radius_1: float = radius_1
         self.radius_2: float = radius_2
         self.reaction_distance: float = reaction_distance
@@ -270,7 +269,7 @@ class Ejecucion:
 
         self.rateCte: float = self.degeneracy * self.CalcularTunel.G * (2.08e10 * self.temp * exp(-self.Gact * 1000 / (1.987 * self.temp)))
 
-        if(self.difusion):
+        if(self.diffusion):
             diffCoefA = (1.38E-23 * self.temp) / (6 * 3.14159 *  self.visc * self.radius_1)   # NOSONAR
             diffCoefB = (1.38E-23 * self.temp) / (6 * 3.14159 *   self.visc * self.radius_1)   # NOSONAR
             diffCoefAB = diffCoefA + diffCoefB  # NOSONAR
@@ -309,7 +308,7 @@ class EasyRate:
         self._principal.configure(width='1200', height='605')
         self.menu()
         self.seccion_datos_2()
-        self.seccion_difusion()
+        self.seccion_diffusion()
         self.seccion_pantalla()
         self.seccion_leer_archivos()
         self.style.set_theme('winxpblue')
@@ -402,23 +401,23 @@ class EasyRate:
         self.Reaction_path_degeneracy.grid(column=1, row=2, padx=1, pady=5)
         self.Reaction_path_degeneracy.insert(0, "1")
 
-    def seccion_difusion(self, pos_x=30, pos_y=440):
-        _seccion_difusion = ttk.Frame(self._principal)
-        _seccion_difusion.configure(width='400', height='400')
-        _seccion_difusion.place(x=str(pos_x), y=str(pos_y))
-        frame1 = ttk.Frame(_seccion_difusion)
+    def seccion_diffusion(self, pos_x=30, pos_y=440):
+        _seccion_diffusion = ttk.Frame(self._principal)
+        _seccion_diffusion.configure(width='400', height='400')
+        _seccion_diffusion.place(x=str(pos_x), y=str(pos_y))
+        frame1 = ttk.Frame(_seccion_diffusion)
         frame1.place(x="1", y="10")
-        self.difusion = IntVar()
-        self.difusion.set(0)
-        ttk.Label(frame1, text="Do you want to consider difusion?").grid(
+        self.diffusion = IntVar()
+        self.diffusion.set(0)
+        ttk.Label(frame1, text="Do you want to consider diffusion?").grid(
             column=0, row=0)
         ttk.Label(frame1, text="yes").grid(column=1, row=0)
-        ttk.Radiobutton(frame1, value=1, variable=self.difusion,
-                        command=self.isdifusion).grid(column=2, row=0)
+        ttk.Radiobutton(frame1, value=1, variable=self.diffusion,
+                        command=self.isdiffusion).grid(column=2, row=0)
         ttk.Label(frame1, text="No").grid(column=4, row=0)
-        ttk.Radiobutton(frame1, value=0, variable=self.difusion,
-                        command=self.isdifusion).grid(column=5, row=0)
-        frame2a = ttk.Frame(_seccion_difusion)
+        ttk.Radiobutton(frame1, value=0, variable=self.diffusion,
+                        command=self.isdiffusion).grid(column=5, row=0)
+        frame2a = ttk.Frame(_seccion_diffusion)
         frame2a.place(x="0", y="30")
         frame2a.configure(width='200', height='200')
         ttk.Label(frame2a, text="solvent").grid(row=0, column=0)
@@ -428,7 +427,7 @@ class EasyRate:
         values = list(self.solvent["values"])
         self.solvent["values"] = values + [""] + ["Benzene"] + \
             ["Gas phase (Air)"] + ["Pentyl ethanoate"]+["Water"]
-        frame2 = ttk.Frame(_seccion_difusion)
+        frame2 = ttk.Frame(_seccion_diffusion)
         frame2.place(x="110", y="30")
         frame2.configure(width='200', height='200')
         ttk.Label(frame2, text="Radius (in Angstroms) for:").grid(
@@ -444,11 +443,11 @@ class EasyRate:
         self.reaction_distance = Entry(frame2, width=7, state='disabled')
         self.reaction_distance.grid(row=3, column=1)
 
-    def isdifusion(self):
+    def isdiffusion(self):
         """
 
         """
-        if(self.difusion.get() == 1):
+        if(self.diffusion.get() == 1):
             self.reaction_distance['state'] = 'normal'
             self.radius_react_1['state'] = 'normal'
             self.radius_react_2['state'] = 'normal'
@@ -487,6 +486,7 @@ class EasyRate:
             anchor='nw', x='390', y='10')
         ttk.Label(_seccion_pantalla, text="No").place(
             anchor='nw', x='410', y='10')
+
         ttk.Radiobutton(_seccion_pantalla, value=0, variable=self.print_data).place(
             anchor='nw', x='430', y='10')
         boton = ttk.Button(
@@ -537,7 +537,7 @@ class EasyRate:
             self.Product_1.get_Estructura_Seleccionada(),
             self.product_2.get_Estructura_Seleccionada(),
             self.cage_efects.get() == 1,
-            self.difusion.get() == 1,
+            self.diffusion.get() == 1,
             self.solvent.get(),
             float(self.radius_react_1.get()
                   if self.radius_react_1.get() != "" else "0"),
@@ -546,7 +546,9 @@ class EasyRate:
             float(self.reaction_distance.get()
                   if self.reaction_distance.get() != "" else "0"),
             float(self.Reaction_path_degeneracy.get()
-                  if self.Reaction_path_degeneracy.get() != "" else "0")
+                  if self.Reaction_path_degeneracy.get() != "" else "0"),
+            self.print_data.get() == 1
+           
         )
         ejecucion_actual.run()
         self.salida.insert(
@@ -559,6 +561,7 @@ class EasyRate:
                                  + str(round(ejecucion_actual.Gact, 2)) + "\n\n"))
         self.salida.insert(END, ("Rate Constant "+("\n\twith cage effects "if(ejecucion_actual.cage_efects)else "") + ":    "
                                  + "{:.2e}".format(ejecucion_actual.rateCte) + "\n\n"))
+        
         self.salida.insert(
             END, ("ALPH1:" + str(round(ejecucion_actual.CalcularTunel.ALPH1, 2)) + "\n"))
         self.salida.insert(
@@ -617,7 +620,7 @@ class EasyRate:
         boton.grid(row=3, column=0, columnspan=2)
 
     def on_save(self):
-        file_path: string = None
+        file_path: str = None
         if file_path is None:
             file_path = filedialog.asksaveasfilename(filetypes 
                     = (("Text files", "*.txt"), ("All files", "*.*")))
@@ -628,12 +631,20 @@ class EasyRate:
             file.write("Pathway: "+ ejecucion.pathway + "\n")
             if(ejecucion.PrintData):
                 file.write("Data entry: " + "\n")
-                file.write("\t" + "   ")
-                file.write("\tReact 1:        :"+ejecucion.React_1.Thermal_Free_Enthalpies.no_nan_value    + "\n"    ) 
-                file.write("\tReact 2:        :"+ejecucion.React_2.Thermal_Free_Enthalpies.no_nan_value    + "\n"    ) 
-                file.write("\tTransition rate :" +ejecucion.trasition_rate.Thermal_Free_Enthalpies.getValue + "\n"    ) 
-                file.write("\tProd 1          :"+ejecucion.Product_1.Thermal_Free_Enthalpies.no_nan_value  + "\n"    ) 
-                file.write("\tProd 2          :"+ejecucion.product_2.Thermal_Free_Enthalpies.no_nan_value  + "\n\n\n")
+                file.write("\tReact 1:        :"+str(ejecucion.React_1.Thermal_Free_Enthalpies.no_nan_value   ) + "\n"    )
+                file.write("\tReact 2:        :"+str(ejecucion.React_2.Thermal_Free_Enthalpies.no_nan_value   ) + "\n"    )
+                file.write("\tTransition rate :"+str(ejecucion.trasition_rate.Thermal_Free_Enthalpies.getValue) + "\n"   )
+                file.write("\tProd 1          :"+str(ejecucion.Product_1.Thermal_Free_Enthalpies.no_nan_value ) + "\n"    )
+                file.write("\tProd 2          :"+str(ejecucion.product_2.Thermal_Free_Enthalpies.no_nan_value ) + "\n")
+                file.write("\tDegeneracy      :"+str(ejecucion.degeneracy) + "\n")
+            if(ejecucion.PrintData and ejecucion.diffusion):
+                file.write("\tDiffusion considered: \n") 
+                file.write("\t\tSolvent:        "+ ejecucion.solvent +  "\n")
+                file.write("\t\tRadius React-1: "+str(ejecucion.radius_1) + "\n")
+                file.write("\t\tRadius React-2: "+str(ejecucion.radius_2) + "\n")
+                file.write("\t\tRadius Reaction distance: "+ str(ejecucion.reaction_distance) + "\n")
+            if(ejecucion.PrintData):
+                file.write("\n\n")
             file.write("Gibbs Free Energy of reaction (kcal/mol):\t\t"
                           + str(round(ejecucion.Greact, 2)) + "\n\n")
             
