@@ -220,17 +220,17 @@ class Ejecucion:
         """
             Reaction enthalpies (dh)
         """
-        self.dH_react: float = 627.5095 * (self.Product_1.eH_ts.getValue +
-                                           self.product_2.eH_ts.no_nan_value - self.React_1.eH_ts.getValue - self.React_2.eH_ts.no_nan_value)
+        self.dH_react: float = 627.5095 * (self.Product_1.eH_ts.no_nan_value +
+                                           self.product_2.eH_ts.no_nan_value - self.React_1.eH_ts.no_nan_value - self.React_2.eH_ts.no_nan_value)
         self.dHact: float = 627.5095 * (self.trasition_rate.eH_ts.getValue -
-                                        self.React_1.eH_ts.getValue - self.React_2.eH_ts.no_nan_value)
+                                        self.React_1.eH_ts.no_nan_value - self.React_2.eH_ts.no_nan_value)
         """
             Reaction Zero_point_Energies (dh)
         """
-        self.Zreact: float = 627.5095 * (self.product_2.zpe.no_nan_value + self.Product_1.zpe.getValue
-                                         - self.React_1.zpe.getValue-self.React_2.zpe.no_nan_value)
+        self.Zreact: float = 627.5095 * (self.product_2.zpe.no_nan_value + self.Product_1.zpe.no_nan_value
+                                         - self.React_1.zpe.no_nan_value-self.React_2.zpe.no_nan_value)
         self.Zact: float = 627.5095 * (self.trasition_rate.zpe.getValue
-                                       - self.React_1.zpe.getValue - self.React_2.zpe.no_nan_value)
+                                       - self.React_1.zpe.no_nan_value - self.React_2.zpe.no_nan_value)
         """
            Calculate Tunnel G
         """
