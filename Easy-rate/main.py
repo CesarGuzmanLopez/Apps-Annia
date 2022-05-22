@@ -175,7 +175,7 @@ class Ejecucion:
                  reaction_distance: float = nan,
                  degen: float = nan,
                  print_data = False):
-        if ( trasition_rate is None ):
+        if ( transition_rate is None ):
             raise exception_tunnel("Please check your files are in the correct format,\n "
                 "if the error persists please contact the administrator")
         if(react_1 is None):

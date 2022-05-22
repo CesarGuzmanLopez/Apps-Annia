@@ -10,5 +10,8 @@
         "test_*.py"
     ],
     "sonarlint.disableTelemetry": true,
-    "sonarlint.trace.server": "off"
+    "sonarlint.trace.server": "off",
+    "cSpell.words": [
+        "NOSONAR"
+    ]
 }
