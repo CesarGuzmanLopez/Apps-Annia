@@ -5,7 +5,6 @@ from tkinter import scrolledtext
 from tkinter import ttk
 from tkinter.scrolledtext import *
 from tkinter.filedialog import *
-from pygubu import TkApplication
 from tkinter import *
 import tkinter.simpledialog as sd
 import platform

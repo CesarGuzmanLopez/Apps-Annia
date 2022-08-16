@@ -4,6 +4,7 @@ from tkinter import filedialog, font, messagebox, ttk
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 import numpy as np
+from threading import Thread as thTread
 from tkinter import *
 from tkinter.filedialog import askopenfilename
 from SeslectStructura import SelectStructure
@@ -14,91 +15,136 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedStyle
-class EntradaDato(ttk.Frame) :
-    def Activar(self,Etiqueta="Sin nombre",buttontext="Browse",dato=0.0,info="",command =None):
-        self.__dato=dato
-        self.Etiqueta =Etiqueta
-        self.textoButton=buttontext
-        self.labelEtiquetaNombre = ttk.Label(self,text=self.Etiqueta,width=17)
-        self.datoentrada = tk.Entry(self,width=10)
-        self.datoentrada.insert(0,str(self.__dato))
-        self.botonActivo =ttk.Button(self,text=self.textoButton,width=7,command=self.open)
-        self.grid(pady=5)
-        self.labelEtiquetaNombre.grid(row = 0, column = 1)
-        self.datoentrada.grid(row = 0, column = 2)
-        self.botonActivo.grid(row = 0, column = 3)
-        self.Archlog:read_log_gaussian =None
-        self.filname=""
-        self.esperar:int =0
-        self.botonverfile = ttk.Button(self,text="view",width=5,command=self.view)
-        self.botonverfile.grid(row = 0, column = 4,padx=4)
-        self.botonverfile['state'] ="disabled"
-        self.labelEtiquetafilename = ttk.Label(self,text="")
-        self.labelEtiquetafilename.grid(row = 1, column = 3,columnspan = 2,padx=4)
-        self.mensajeEsperar:WaitAlert
-        self.EstructuraSeleccionada:Estructura
-        self.comando=command
-    def view(self):
-        ViewStructure(master=self, estructure =self.EstructuraSeleccionada)
-    def open(self):
-        filetypes = [ 
-            ("log Gaussian file",  "*.log"), 
-            ("txt format Gaussian","*.txt"),
-            ("out Gaussian file",  "*.out")
-            ]
-        self.mensajeEsperar:WaitAlert
-        self.filename = askopenfilename(initialdir=".",
-                           filetypes =filetypes,
-                           title = "Choose a file.")
+from time import sleep as tsleep
+from os import path
 
-        if(self.filename ==""):return
-        read  = threading.Thread(target = self.readfile)
+class EntradaDato(ttk.Frame):
+    '''
+    Analiza los datos que obtenidos del log gaussian
+    '''
+    def Activar(self, etiqueta="Sin nombre", buttontext="Browse", dato=0.0, info="", command=None):
+        self.__dato = dato
+        self.etiqueta = etiqueta
+        self.textoButton = buttontext
+        self.Archlog = None
+        self.labelEtiquetaNombre = ttk.Label(self, text=self.etiqueta, width=17)
+        self.datoentrada = Entry(self, width=10)
+        self.datoentrada.insert(0, str(self.__dato))
+        self.datoentrada["state"] = "disabled"
+        self.botonActivo = ttk.Button(
+            self, text=self.textoButton, width=7, command=self.open)
+        self.grid(pady=5)
+        self.labelEtiquetaNombre.grid(row=0, column=1)
+        self.datoentrada.grid(row=0, column=2)
+        self.botonActivo.grid(row=0, column=3)
+        self.filname = ""
+        self.esperar: int = 0
+        self.botonverfile = ttk.Button(
+            self, text="view", width=5, command=self.view)
+        self.botonverfile.grid(row=0, column=4, padx=4)
+        self.botonverfile['state'] = "disabled"
+
+        self.botonclearfile = ttk.Button(
+            self, text="clear", width=5, command=self.clear)
+        self.botonclearfile.grid(row=0, column=5, padx=4)
+        self.botonclearfile['state'] = "disabled"
+
+        self.labelEtiquetafilename = ttk.Label(self, text="")
+        self.labelEtiquetafilename.grid(row=1, column=3, columnspan=2, padx=4)
+        self.comando = command
+        self.EstructuraSeleccionada = None
+
+    def clear(self):
+        self.Archlog = None
+        self.EstructuraSeleccionada = None
+        self.botonverfile['state'] = "disabled"
+        self.botonclearfile['state'] = "disabled"
+        self.labelEtiquetafilename.config(text="")
+        self.datoentrada.config(state='normal')
+        self.datoentrada.delete(0, END)  # clear the entry
+        self.datoentrada.insert(0, str("0.0"))
+        self.datoentrada.config(state='disabled')
+
+    def view(self):
+        ViewStructure(master=self, estructure=self.EstructuraSeleccionada)
+
+    def open(self):
+        filetypes = [
+            ("log Gaussian file",  "*.log"),
+            ("txt format Gaussian", "*.txt"),
+            ("out Gaussian file",  "*.out")
+        ]
+        self.mensajeEsperar: WaitAlert
+        self.filename = askopenfilename(initialdir=".",
+                                        filetypes=filetypes,
+                                        title="Choose a file.")
+        if(self.filename == ""):
+            return
+        read = thTread(target=self.readfile)
         read.start()
         while(self.Archlog == None):
-            self.esperar =1
-            self.mensajeEsperar =  WaitAlert(parent=self,
-                title='Reading the file', 
-                message='Please wait', 
-                pause=self.esperar) # show countdown. 
+            self.esperar = 1
+            self.mensajeEsperar = WaitAlert(parent=self,
+                                            title='Reading the file',
+                                            message='Please wait',
+                                            pause=self.esperar)  # show countdown.
+
         if(self.Archlog == False):
-            self.Archlog =None
-            self.botonverfile['state'] ="disabled"
+            self.Archlog = None
+            self.botonverfile['state'] = "disabled"
+            self.botonclearfile['state'] = "disabled"
         self.SeleccionarEstructura()
-            
+        self.Archlog = None
+
     def readfile(self):
-        self.Archlog =read_log_gaussian(self.filename)
-        self.botonverfile['state'] ="normal"
-        if(self.Archlog ==None):
-            self.Archlog =False
+        self.Archlog = None
+        self.EstructuraSeleccionada = None
+        self.Archlog = read_log_gaussian(self.filename)
+        tsleep(0.5)
+        self.botonverfile['state'] = "normal"
+        self.botonclearfile['state'] = "normal"
+        if(self.Archlog.Estructuras.__len__ == 0):
+            self.Archlog = False
+
     @property
-    def getDato(self)->float:
+    def getDato(self) -> float:
         return self.__dato
+
     @property
-    def getTextValue(self)->float:
+    def getTextValue(self) -> float:
         return float(self.datoentrada.get())
-    
-    def setDato(self,UnDato:float=0.0):
-        self.__dato=UnDato
+
+    def get_Estructura_Seleccionada(self):
+        return self.EstructuraSeleccionada
+
+    def setDato(self, un_dato: float = 0.0):
+        self.__dato = un_dato
         self.datoentrada.config(state='normal')
-        self.datoentrada.delete(0,END)
-        self.datoentrada.insert(0,str(UnDato))
+        self.datoentrada.delete(0, END)
+        self.datoentrada.insert(0, str(un_dato))
         self.datoentrada.config(state='disabled')
 
     def SeleccionarEstructura(self):
-        if(len(self.Archlog.Estructuras)==1):
-            self.EstructuraSeleccionada =self.Archlog.Estructuras[0]
-        else: 
-            self.a = SelectStructure(parent=self,Estructuras=self.Archlog.Estructuras)
-            if(self.a  == None):
-                self.EstructuraSeleccionada =None
-            else:
-                self.EstructuraSeleccionada  =self.a.result
-        if(self.EstructuraSeleccionada!=None):
-            self.comando(self.EstructuraSeleccionada)
-            self.labelEtiquetafilename.config(text  = os.path.basename(self.filename))
+        self.EstructuraSeleccionada = None
+        if(len(self.Archlog.Estructuras) == 1):
+            self.EstructuraSeleccionada = self.Archlog.Estructuras[0]
         else:
-            self.labelEtiquetafilename.config(text  = "")
-            self.filename=""
+            self.a = SelectStructure(
+                parent=self, estructuras=self.Archlog.Estructuras)
+            if(self.a == None):
+                self.EstructuraSeleccionada = None
+            else:
+                self.EstructuraSeleccionada = self.a.result
+        if(self.EstructuraSeleccionada != None):
+            self.comando(self.EstructuraSeleccionada)
+            self.labelEtiquetafilename.config(
+                text=path.basename(self.filename))
+        else:
+            self.labelEtiquetafilename.config(text="")
+            self.filename = ""
+
+
+
 
 class MarcusApp:
     def __init__(self, master=None):
@@ -164,32 +210,32 @@ class MarcusApp:
         
         self.React_1        = EntradaDato(tabla)
         self.React_1       .grid(row=2,column=1,columnspan = 3) 
-        self.React_1       .Activar(Etiqueta="React-1(adiab.)"
+        self.React_1       .Activar(etiqueta="React-1(adiab.)"
                             ,command=self.defReact_1       )
         
         self.React_2        = EntradaDato(tabla)
         self.React_2       .grid(row=3,column=1,columnspan = 3) 
-        self.React_2       .Activar(Etiqueta="React-2(adiab.)"
+        self.React_2       .Activar(etiqueta="React-2(adiab.)"
                             ,command=self.defReact_2       )
         
         self.Prduct_1_adiab = EntradaDato(tabla)
         self.Prduct_1_adiab.grid(row=4,column=1,columnspan = 3) 
-        self.Prduct_1_adiab.Activar(Etiqueta="Product-1(adiab.)"
+        self.Prduct_1_adiab.Activar(etiqueta="Product-1(adiab.)"
                             ,command=self.defPrduct_1_adiab)
         
         self.Prduct_2_adiab = EntradaDato(tabla)
         self.Prduct_2_adiab.grid(row=5,column=1,columnspan = 3) 
-        self.Prduct_2_adiab.Activar(Etiqueta="Product-2(adiab.)"
+        self.Prduct_2_adiab.Activar(etiqueta="Product-2(adiab.)"
                             ,command=self.defPrduct_2_adiab)
         
         self.Prduct_1_vert  = EntradaDato(tabla)
         self.Prduct_1_vert .grid(row=6,column=1,columnspan = 3) 
-        self.Prduct_1_vert .Activar(Etiqueta="Product-1(vert.)"
+        self.Prduct_1_vert .Activar(etiqueta="Product-1(vert.)"
                             ,command=self.defPrduct_1_vert )
         
         self.Prduct_2_vert  = EntradaDato(tabla)
         self.Prduct_2_vert .grid(row=7,column=1,columnspan = 3) 
-        self.Prduct_2_vert .Activar(Etiqueta="Product-2(vert.)"
+        self.Prduct_2_vert .Activar(etiqueta="Product-2(vert.)"
                             ,command=self.defPrduct_2_vert )
 
 
@@ -197,18 +243,18 @@ class MarcusApp:
         self.Temperatura.delete(0,END)
         self.Temperatura.insert(0,str(Estruc.temp.getValue))
         self.Temperatura['state'] ="disabled"
-        self.React_1.setDato(UnDato=Estruc.zpe.getValue)
+        self.React_1.setDato(un_dato=Estruc.zpe.getValue)
         
     def defReact_2       (self,Estruc:Estructura):
-        self.React_2.setDato(UnDato=Estruc.zpe.getValue)
+        self.React_2.setDato(un_dato=Estruc.zpe.getValue)
     def defPrduct_1_adiab(self,Estruc:Estructura):
-        self.Prduct_1_adiab.setDato(UnDato=Estruc.zpe.getValue)
+        self.Prduct_1_adiab.setDato(un_dato=Estruc.zpe.getValue)
     def defPrduct_2_adiab(self,Estruc:Estructura):
-        self.Prduct_2_adiab.setDato(UnDato=Estruc.zpe.getValue)
+        self.Prduct_2_adiab.setDato(un_dato=Estruc.zpe.getValue)
     def defPrduct_1_vert (self,Estruc:Estructura):
-        self.Prduct_1_vert.setDato(UnDato=Estruc.scf.getValue)
+        self.Prduct_1_vert.setDato(un_dato=Estruc.scf.getValue)
     def defPrduct_2_vert (self,Estruc:Estructura):
-        self.Prduct_2_vert.setDato(UnDato=Estruc.scf.getValue)
+        self.Prduct_2_vert.setDato(un_dato=Estruc.scf.getValue)
 
 
     def SeecionTemperatura(self,pos_x=30,pos_y=400): 
