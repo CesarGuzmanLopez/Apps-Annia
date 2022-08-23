@@ -13,5 +13,6 @@
     "sonarlint.trace.server": "off",
     "cSpell.words": [
         "NOSONAR"
-    ]
+    ],
+    "DockerRun.DisableAutoGenerateConfig": true
 }
