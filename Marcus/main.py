@@ -23,7 +23,7 @@ class EntradaDato(ttk.Frame):
     '''
     Analiza los datos que obtenidos del log gaussian
     '''
-    def Activar(self, etiqueta="Sin nombre", buttontext="Browse", dato=0.0, dato2=NULL, info="", command=None):
+    def Activar(self, etiqueta="Sin nombre", buttontext="Browse", dato=0.0, dato2=NONE, info="", command=None):
         self.__dato = dato
         self.dato2 =dato2
         self.etiqueta = etiqueta
@@ -157,11 +157,12 @@ class MarcusApp:
         self.master = tk.Tk() if master is None else tk.Toplevel(master)
         self.Principal = ttk.Frame(self.master)
         ttk.setup_master(self.master)
+        print('{:.3e}'.format(2103354630549.83234))
         style = ThemedStyle(self.master )
         self.Principal.pack_propagate(True)
         self.Principal.place(anchor='nw', bordermode='outside', x=str(0), y=str(0))
        
-        self.master.title("Marcus 1.1")
+        self.master.title("Marcuskin 1.1")
         self.master.resizable(False, False)
         self.master.geometry("890x600")
 
@@ -173,7 +174,7 @@ class MarcusApp:
         self.SeccionPantalla() 
         self.SeccionLeerArchivos()
         self.visc = 8.91e-4 
-        self.kBoltz = 1.38E-23
+        self.kBoltz = 1.38066E-23
 
         style.set_theme('winxpblue')
         style.configure('.', background= '#f0f0f0', font=('calibri', 9))
@@ -383,7 +384,7 @@ class MarcusApp:
             return 
 
         lambda_round  = round(lam, 2)
-        barrier:float = (lam / 4) * (1 + (aEnergy_plus_correct / lam)) * (1 + (aEnergy_plus_correct / lam))
+        barrier:float = (lam / 4) * ((1 + (aEnergy_plus_correct / lam) )**2)
         barrier_round = round(barrier, 2)
         temp          =  float(self.Temperatura.get())
         try:
@@ -414,9 +415,9 @@ class MarcusApp:
         self.salida.insert(END,("Reorganization energy (kcal/mol):  " + str(round(lambda_round,2)) + "\n") )
         self.salida.insert(END,("Reaction barrier (kcal/mol):  " + str(round( barrier_round,2 ))+ "\n") )
         if self.difusion.get() == 0:
-            self.salida.insert(END,("Rate Constant:  " +'{0:.{1}f}'.format(rateCte, 2) ))
+            self.salida.insert(END,("Rate Constant:  " +'{:0.2e}'.format(rateCte) ))
         elif self.difusion.get() == 1:
-            self.salida.insert(END,("Rate Constant:  " + '{0:.{1}f}'.format(kCorrDiff,2)))
+            self.salida.insert(END,("Rate Constant:  " + '{0:.2e}'.format(kCorrDiff)))
         self.salida.insert(END, "\n\n-----------------------------------------------------\n\n\n")
     def About(self):
         pass
