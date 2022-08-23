@@ -23,18 +23,23 @@ class EntradaDato(ttk.Frame):
     '''
     Analiza los datos que obtenidos del log gaussian
     '''
-    def Activar(self, etiqueta="Sin nombre", buttontext="Browse", dato=0.0, info="", command=None):
+    def Activar(self, etiqueta="Sin nombre", buttontext="Browse", dato=0.0, dato2=NULL, info="", command=None):
         self.__dato = dato
+        self.dato2 =dato2
         self.etiqueta = etiqueta
         self.textoButton = buttontext
         self.Archlog = None
         self.labelEtiquetaNombre = ttk.Label(self, text=self.etiqueta, width=17)
+        
+        
         self.datoentrada = Entry(self, width=10)
         self.datoentrada.insert(0, str(self.__dato))
         self.datoentrada["state"] = "disabled"
         self.botonActivo = ttk.Button(
             self, text=self.textoButton, width=7, command=self.open)
         self.grid(pady=5)
+        
+        
         self.labelEtiquetaNombre.grid(row=0, column=1)
         self.datoentrada.grid(row=0, column=2)
         self.botonActivo.grid(row=0, column=3)
@@ -240,7 +245,7 @@ class MarcusApp:
         self.Temperatura.delete(0,END)
         self.Temperatura.insert(0,str(Estruc.temp.getValue))
         self.Temperatura['state'] ="disabled"
-        self.React_1.setDato(un_dato=Estruc.zpe.getValue)
+        self.React_1.setDato(un_dato=Estruc.scf.getValue)
         
     def defReact_2       (self,Estruc:Estructura):
         self.React_2.setDato(un_dato=Estruc.scf.getValue)
@@ -342,29 +347,43 @@ class MarcusApp:
         b = self.radius_react_2  .get()
         a = self.ReactionDistance.get()
      
-        react1_G =self.React_1       .getDato()
-        react2_G =self.React_2       .getDato()
-        prod1_G  =self.Prduct_1_adiab.getDato()
-        prod2_G  =self.Prduct_2_adiab.getDato()
-        prod1_Ev =self.Prduct_1_vert .getDato()
-        prod2_Ev =self.Prduct_2_vert .getDato()
- 
+        react1_G = self.React_1.getDato()
+        react2_G = self.React_2.getDato()
+             
+        react1_G_plus_correct = self.React_1.EstructuraSeleccionada.Thermal_Free_Enthalpies.getValue
+        react2_G_plus_correct = self.React_2.EstructuraSeleccionada.Thermal_Free_Enthalpies.getValue
+
+        prod1_G  = self.Prduct_1_adiab.getDato()
+        prod2_G  = self.Prduct_2_adiab.getDato()
+        
+        prod1_G_plus_correct  = self.Prduct_1_adiab.EstructuraSeleccionada.Thermal_Free_Enthalpies.getValue
+        prod2_G_plus_correct  = self.Prduct_2_adiab.EstructuraSeleccionada.Thermal_Free_Enthalpies.getValue
+        
+
+
+        prod1_Ev = self.Prduct_1_vert .getDato()
+        prod2_Ev = self.Prduct_2_vert .getDato()
+
         
         if self.difusion.get() == 1 and (a =='' or b  =='' or  c ==''  ):
             messagebox.showerror(title="It is not possible to calculate", message="Please enter the missing value(s)")
             return
         
-        aEnergy = 627.5095 * (prod1_G + prod2_G - react1_G - react2_G)
+        aEnergy =self.getEnergy(prod1_G , prod2_G , react1_G , react2_G)
         aEnergy_round = round(aEnergy, 2)
-        vEnergy = 627.5095 * (prod1_Ev + prod2_Ev - react1_G - react2_G)
+        
+        aEnergy_plus_correct = self.getEnergy(prod1_G_plus_correct, prod2_G_plus_correct, react1_G_plus_correct, react2_G_plus_correct)
+        
+        vEnergy = self.getEnergy(prod1_Ev, prod2_Ev, react1_G, react2_G)
         vEnergy_round = round(vEnergy, 2) 
-        lam = (vEnergy - aEnergy)
+        
+        lam = (vEnergy - aEnergy_plus_correct)
         if lam == 0:
             messagebox.showerror(title="It is not possible to calculate", message="Please check Reacts and products values")
             return 
 
         lambda_round  = round(lam, 2)
-        barrier:float = ((lam / 4) * (1 + (aEnergy / lam)) * (1 + (aEnergy / lam)))
+        barrier:float = (lam / 4) * (1 + (aEnergy_plus_correct / lam)) * (1 + (aEnergy_plus_correct / lam))
         barrier_round = round(barrier, 2)
         temp          =  float(self.Temperatura.get())
         try:
@@ -388,20 +407,21 @@ class MarcusApp:
         
         
         
-        self.salida.delete('1.0', END)
+        #self.salida.delete('1.0', END)
         self.salida.insert(END,("Pathway:  " + title + "\n") )
-        self.salida.insert(END,("Adiabatic energy (G) of reaction (kcal/mol):  " + str(round(aEnergy_round,2)) + "\n") )
+        self.salida.insert(END,("Adiabatic energy (G) of reaction (kcal/mol):  " + str(round(aEnergy_plus_correct,2)) + "\n") )
         self.salida.insert(END,("Vertical energy (E) of reaction (kcal/mol):  " + str(round(vEnergy_round,2)) + "\n") )
         self.salida.insert(END,("Reorganization energy (kcal/mol):  " + str(round(lambda_round,2)) + "\n") )
         self.salida.insert(END,("Reaction barrier (kcal/mol):  " + str(round( barrier_round,2 ))+ "\n") )
         if self.difusion.get() == 0:
-            self.salida.insert(END,("Rate Constant:  " + str(round(  rateCte,2)) ) )
+            self.salida.insert(END,("Rate Constant:  " +'{0:.{1}f}'.format(rateCte, 2) ))
         elif self.difusion.get() == 1:
-            self.salida.insert(END,("Rate Constant:  " + str(round(kCorrDiff,2)) ))
+            self.salida.insert(END,("Rate Constant:  " + '{0:.{1}f}'.format(kCorrDiff,2)))
         self.salida.insert(END, "\n\n-----------------------------------------------------\n\n\n")
     def About(self):
         pass
-    
+    def getEnergy(self,prod1 , prod2 , react1 , react2):
+        return 627.5095 * (prod1 + prod2 - react1 - react2)
     def onSave(self):
         file_path:string=None
         if file_path is None:
@@ -412,8 +432,8 @@ class MarcusApp:
             with open(file_path, "w+") as file: 
                 file.write(
                     "Entry Values: \n\n"+
-                    "\t\tReact-1(adiab.): "  +str(self.React_1       .getTextValue) + "\n"+
-                    "\t\tReact-2(adiab.): "  +str(self.React_2       .getTextValue) + "\n"+
+                    "\t\tReact-1: "  +str(self.React_1       .getTextValue) + "\n"+
+                    "\t\tReact-2: "  +str(self.React_2       .getTextValue) + "\n"+
                     "\t\tProduct-1(adiab.): "+str(self.Prduct_1_adiab.getTextValue) + "\n"+
                     "\t\tProduct-2(adiab.): "+str(self.Prduct_2_adiab.getTextValue) + "\n"+
                     "\t\tProduct-1(vert.): " +str(self.Prduct_1_vert .getTextValue) + "\n"+
