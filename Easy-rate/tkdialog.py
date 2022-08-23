@@ -30,7 +30,7 @@ class WaitAlert(sd.Dialog):
         "Timer function."
         if count > 0:
             if self.show_timer: b1['text'] = str(count)
-            self.after(1000, self._timer, count-1, b1)
+            self.after(2000, self._timer, count-1, b1)
         else:
             if self.show_timer: b1['text'] = "OK"
             b1['state'] = 'normal'

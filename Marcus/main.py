@@ -19,6 +19,7 @@ from time import sleep as tsleep
 from os import path
 
 class EntradaDato(ttk.Frame):
+    ruta = "."
     '''
     Analiza los datos que obtenidos del log gaussian
     '''
@@ -50,7 +51,7 @@ class EntradaDato(ttk.Frame):
         self.botonclearfile['state'] = "disabled"
 
         self.labelEtiquetafilename = ttk.Label(self, text="")
-        self.labelEtiquetafilename.grid(row=1, column=3, columnspan=2, padx=4)
+        self.labelEtiquetafilename.grid(row=1, column=2, columnspan=4, padx=4)
         self.comando = command
         self.EstructuraSeleccionada = None
 
@@ -75,11 +76,13 @@ class EntradaDato(ttk.Frame):
             ("out Gaussian file",  "*.out")
         ]
         self.mensajeEsperar: WaitAlert
-        self.filename = askopenfilename(initialdir=".",
+        self.filename = askopenfilename(initialdir=EntradaDato.ruta,
                                         filetypes=filetypes,
                                         title="Choose a file.")
         if(self.filename == ""):
             return
+        else:
+            EntradaDato.ruta = os.path.dirname(os.path.abspath(self.filename))
         read = thTread(target=self.readfile)
         read.start()
         while(self.Archlog == None):
@@ -104,9 +107,7 @@ class EntradaDato(ttk.Frame):
         self.botonverfile['state'] = "normal"
         self.botonclearfile['state'] = "normal"
         if(self.Archlog.Estructuras.__len__ == 0):
-            self.Archlog = False
-
-    @property
+            self.Archlog = False4
     def getDato(self) -> float:
         return self.__dato
 
@@ -138,7 +139,7 @@ class EntradaDato(ttk.Frame):
         if(self.EstructuraSeleccionada != None):
             self.comando(self.EstructuraSeleccionada)
             self.labelEtiquetafilename.config(
-                text=path.basename(self.filename))
+                text=(path.basename(self.filename))[:35])
         else:
             self.labelEtiquetafilename.config(text="")
             self.filename = ""
@@ -168,14 +169,10 @@ class MarcusApp:
         self.SeccionLeerArchivos()
         self.visc = 8.91e-4 
         self.kBoltz = 1.38E-23
-        ''' while(True):
-          for i in style.get_themes():
-            style.set_theme(i)
-            style.configure('.', background= '#f0f0f0', font=('calibri', 9))
-            input("inserta: "+ i)'''
+
         style.set_theme('winxpblue')
         style.configure('.', background= '#f0f0f0', font=('calibri', 9))
-        
+    
     def menu(self):
         menubar = tk.Menu(self.master)
         filemenu = tk.Menu(menubar, tearoff=0)
@@ -210,12 +207,12 @@ class MarcusApp:
         
         self.React_1        = EntradaDato(tabla)
         self.React_1       .grid(row=2,column=1,columnspan = 3) 
-        self.React_1       .Activar(etiqueta="React-1(adiab.)"
+        self.React_1       .Activar(etiqueta="React-1"
                             ,command=self.defReact_1       )
         
         self.React_2        = EntradaDato(tabla)
         self.React_2       .grid(row=3,column=1,columnspan = 3) 
-        self.React_2       .Activar(etiqueta="React-2(adiab.)"
+        self.React_2       .Activar(etiqueta="React-2"
                             ,command=self.defReact_2       )
         
         self.Prduct_1_adiab = EntradaDato(tabla)
@@ -246,11 +243,11 @@ class MarcusApp:
         self.React_1.setDato(un_dato=Estruc.zpe.getValue)
         
     def defReact_2       (self,Estruc:Estructura):
-        self.React_2.setDato(un_dato=Estruc.zpe.getValue)
+        self.React_2.setDato(un_dato=Estruc.scf.getValue)
     def defPrduct_1_adiab(self,Estruc:Estructura):
-        self.Prduct_1_adiab.setDato(un_dato=Estruc.zpe.getValue)
+        self.Prduct_1_adiab.setDato(un_dato=Estruc.scf.getValue)
     def defPrduct_2_adiab(self,Estruc:Estructura):
-        self.Prduct_2_adiab.setDato(un_dato=Estruc.zpe.getValue)
+        self.Prduct_2_adiab.setDato(un_dato=Estruc.scf.getValue)
     def defPrduct_1_vert (self,Estruc:Estructura):
         self.Prduct_1_vert.setDato(un_dato=Estruc.scf.getValue)
     def defPrduct_2_vert (self,Estruc:Estructura):
@@ -310,7 +307,10 @@ class MarcusApp:
             self.radius_react_1['state'] = 'disabled'
             self.radius_react_2['state'] = 'disabled'
             self.ReactionDistance['state'] ='disabled'
-
+    def copy_to_clipboard(self, event, *args):
+        item = self.tree.identify_row(event.y) 
+        self.clipboard_clear()
+        self.clipboard_append(item)
     def SeccionPantalla(self,pos_x=400,pos_y=10):
         seccionPantalla= ttk.Frame(self.Principal)
         seccionPantalla.configure(width='600',height='700')
@@ -320,9 +320,9 @@ class MarcusApp:
         boton.place(x="200",y="10")
         frame10 = ttk.Frame(seccionPantalla)
         frame10.place( x='0', y='55')
-        self.salida = ScrolledText(frame10, wrap = "none", width = 50, height = 25)
+        self.salida = ScrolledText(frame10, wrap = "none", width = 70, height = 35)
         xsb = tk.Scrollbar(frame10,orient="horizontal", command=self.salida.xview)        
-        
+        self.salida.bind('<Control-c>', self.copy_to_clipboard)
         self.salida.grid(row=1,column =0,columnspan=1)        
         self.salida.focus()
         self.salida.configure(xscrollcommand=xsb.set)
@@ -338,19 +338,17 @@ class MarcusApp:
         labelphpadvertence.place(anchor='nw', x='300', y='500')
 
     def run_calc(self):
-        c =self.radius_react_1.get()
-        b =self.radius_react_2.get()
-        a=self.ReactionDistance.get()
+        c = self.radius_react_1  .get()
+        b = self.radius_react_2  .get()
+        a = self.ReactionDistance.get()
      
-        react1_G =self.React_1       .getTextValue
-        react2_G =self.React_2       .getTextValue
-        prod1_G  =self.Prduct_1_adiab.getTextValue
-        prod2_G  =self.Prduct_2_adiab.getTextValue
-        prod1_Ev =self.Prduct_1_vert .getTextValue
-        prod2_Ev =self.Prduct_2_vert .getTextValue
-        react1_E =react1_G
-        react2_E =react2_G
-       
+        react1_G =self.React_1       .getDato()
+        react2_G =self.React_2       .getDato()
+        prod1_G  =self.Prduct_1_adiab.getDato()
+        prod2_G  =self.Prduct_2_adiab.getDato()
+        prod1_Ev =self.Prduct_1_vert .getDato()
+        prod2_Ev =self.Prduct_2_vert .getDato()
+ 
         
         if self.difusion.get() == 1 and (a =='' or b  =='' or  c ==''  ):
             messagebox.showerror(title="It is not possible to calculate", message="Please enter the missing value(s)")
@@ -358,7 +356,7 @@ class MarcusApp:
         
         aEnergy = 627.5095 * (prod1_G + prod2_G - react1_G - react2_G)
         aEnergy_round = round(aEnergy, 2)
-        vEnergy = 627.5095 * (prod1_Ev + prod2_Ev - react1_E - react2_E)
+        vEnergy = 627.5095 * (prod1_Ev + prod2_Ev - react1_G - react2_G)
         vEnergy_round = round(vEnergy, 2) 
         lam = (vEnergy - aEnergy)
         if lam == 0:
@@ -386,6 +384,10 @@ class MarcusApp:
             kDiff     :float  = 1000 * 4 * 3.14159 * diffCoefAB * reactDist * 6.02e23
             kCorrDiff :float  = (kDiff * rateCte) / (kDiff + rateCte)    
         title =self.Title.get()
+        
+        
+        
+        
         self.salida.delete('1.0', END)
         self.salida.insert(END,("Pathway:  " + title + "\n") )
         self.salida.insert(END,("Adiabatic energy (G) of reaction (kcal/mol):  " + str(round(aEnergy_round,2)) + "\n") )

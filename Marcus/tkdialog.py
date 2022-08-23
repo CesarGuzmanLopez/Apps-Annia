@@ -1,6 +1,6 @@
-from tkinter import *
+from tkinter import ACTIVE, LEFT, Button, Frame, Label
 import tkinter.simpledialog as sd
-import platform
+from  platform import system as  plsystem
 
 class WaitAlert(sd.Dialog):
     """An alert which will wait for a given time before user can interact.
@@ -16,7 +16,7 @@ class WaitAlert(sd.Dialog):
         self.message = message or ''
         self.pause = pause
         self.show_timer = show_timer
-        self.sistema = platform.system()
+        self.sistema = plsystem()
         super().__init__(parent, title=title)
 
     def body(self, master):
@@ -30,7 +30,7 @@ class WaitAlert(sd.Dialog):
         "Timer function."
         if count > 0:
             if self.show_timer: b1['text'] = str(count)
-            self.after(1000, self._timer, count-1, b1)
+            self.after(2000, self._timer, count-1, b1)
         else:
             if self.show_timer: b1['text'] = "OK"
             b1['state'] = 'normal'
