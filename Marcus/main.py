@@ -157,7 +157,6 @@ class MarcusApp:
         self.master = tk.Tk() if master is None else tk.Toplevel(master)
         self.Principal = ttk.Frame(self.master)
         ttk.setup_master(self.master)
-        print('{:.3e}'.format(2103354630549.83234))
         style = ThemedStyle(self.master )
         self.Principal.pack_propagate(True)
         self.Principal.place(anchor='nw', bordermode='outside', x=str(0), y=str(0))
@@ -388,7 +387,7 @@ class MarcusApp:
         barrier_round = round(barrier, 2)
         temp          =  float(self.Temperatura.get())
         try:
-            rateCte:float = 2.08e10 * temp * math.exp(-1.0*barrier * 1000 / (1.987 * temp))
+            rateCte:float = 2.08366912663558e10 * temp * math.exp(-1.0*barrier * 1000 / (1.987 * temp))
         except:
             messagebox.showerror(   title  = "Math range error.",
                                     message= "Please check you data.")
@@ -404,10 +403,6 @@ class MarcusApp:
             kDiff     :float  = 1000 * 4 * 3.14159 * diffCoefAB * reactDist * 6.02e23
             kCorrDiff :float  = (kDiff * rateCte) / (kDiff + rateCte)    
         title =self.Title.get()
-        
-        
-        
-        
         #self.salida.delete('1.0', END)
         self.salida.insert(END,("Pathway:  " + title + "\n") )
         self.salida.insert(END,("Adiabatic energy (G) of reaction (kcal/mol):  " + str(round(aEnergy_plus_correct,2)) + "\n") )
@@ -450,7 +445,6 @@ class MarcusApp:
             return
     def run(self):
         self.Principal.mainloop()
-
 if __name__ == '__main__':
     app = MarcusApp()
     app.run()
