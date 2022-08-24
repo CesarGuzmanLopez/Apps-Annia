@@ -22,6 +22,7 @@ class EntradaDato(ttk.Frame):
     ruta = "."
     '''
     Analiza los datos que obtenidos del log gaussian
+    pyinstaller ../main.py -F --onedir --onefile
     '''
     def Activar(self, etiqueta="Sin nombre", buttontext="Browse", dato=0.0, dato2=NONE, info="", command=None):
         self.__dato = dato
