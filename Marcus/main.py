@@ -175,7 +175,7 @@ class MarcusApp:
         self.SeccionLeerArchivos()
         self.visc = 8.91e-4 
         self.kBoltz = 1.38066E-23
-
+        
         style.set_theme('winxpblue')
         style.configure('.', background= '#f0f0f0', font=('calibri', 9))
     

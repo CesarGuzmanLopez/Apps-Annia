@@ -388,17 +388,26 @@ class EasyRate:
             _seccion_datos_2, text="Temperature(K)")
         label_etiqueta_temperatura.grid(row=1, column=0)
         self.Temperatura: Entry = Entry(_seccion_datos_2)
-        self.Temperatura.grid(row=1, column=1)
+        self.Temperatura.grid(row=1, column=4 )
         self.Temperatura.insert(0, "298.15")
+        self.Temperatura.configure(width='10')
         ttk.Label(_seccion_datos_2, text="Tunneling").grid(
             column=0, row=0, padx=1, pady=5)
+        ttk.Label(_seccion_datos_2, text="YES").grid(column=1, row=0)
+        self.istunneling = IntVar()
+        self.istunneling.set(1)
+        ttk.Radiobutton(_seccion_datos_2, value=1, variable=self.istunneling ).grid(column=2, row=0)
+        
+        
         self.Tunneling: Entry = Entry(_seccion_datos_2, width='10')
-        self.Tunneling.grid(column=1, row=0, padx=1, pady=5)
+        self.Tunneling.grid(column=4, row=0, padx=1, pady=5)
+        self.Tunneling['state'] = "disabled"
+        
         ttk.Label(_seccion_datos_2, text="Reaction path degeneracy").grid(
             column=0, row=2, padx=1, pady=5)
         self.Reaction_path_degeneracy: Entry = Entry(
             _seccion_datos_2, width='10')
-        self.Reaction_path_degeneracy.grid(column=1, row=2, padx=1, pady=5)
+        self.Reaction_path_degeneracy.grid(column=4, row=2, padx=1, pady=5)
         self.Reaction_path_degeneracy.insert(0, "1")
 
     def seccion_diffusion(self, pos_x=30, pos_y=440):
@@ -589,8 +598,8 @@ class EasyRate:
                             + ("\n\n"if(ejecucion_actual.cage_efects)else "") + "\n\n"))
         self.salida2.insert(END, ("______________________________________\n"))
         self.Ejecuciones.append(ejecucion_actual)
+        self.Tunneling['state'] = "enabled"
         self.Tunneling.insert(0, " ")
-
         self.Tunneling.delete(0, END)
         self.Tunneling.insert(
             0, str(round(ejecucion_actual.CalcularTunel.G, 2)))
