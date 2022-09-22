@@ -164,7 +164,7 @@ class Ejecucion:
     def __init__(self,  title: str = "Title",#NOSONAR
                  react_1: Estructura = None,
                  react_2: Estructura = None,
-                 trasition_rate: Estructura = None,
+                 transition_rate: Estructura = None,
                  product_1: Estructura = None,
                  product_2: Estructura = None,
                  cage_efects: bool = False,
@@ -190,10 +190,10 @@ class Ejecucion:
         self.title = title
         self.React_1: Estructura = react_1
         self.React_2: Estructura = react_2
-        self.trasition_rate: Estructura = trasition_rate
+        self.transition_rate: Estructura = transition_rate
         self.Product_1: Estructura = product_1
         self.product_2: Estructura = product_2
-        self.frequency_negative = self.trasition_rate.frecNeg.getValue
+        self.frequency_negative = self.transition_rate.frecNeg.getValue
         self.temp = self.Product_1.temp.getValue
         self.cage_efects: bool = cage_efects
         self.diffusion: bool = diffusion
@@ -221,26 +221,26 @@ class Ejecucion:
         """
         self.dH_react: float = 627.5095 * (self.Product_1.eH_ts.no_nan_value +
                                            self.product_2.eH_ts.no_nan_value - self.React_1.eH_ts.no_nan_value - self.React_2.eH_ts.no_nan_value)
-        self.dHact: float = 627.5095 * (self.trasition_rate.eH_ts.getValue -
+        self.dHact: float = 627.5095 * (self.transition_rate.eH_ts.getValue -
                                         self.React_1.eH_ts.no_nan_value - self.React_2.eH_ts.no_nan_value)
         """
             Reaction Zero_point_Energies (dh)
         """
         self.Zreact: float = 627.5095 * (self.product_2.zpe.no_nan_value + self.Product_1.zpe.no_nan_value
                                          - self.React_1.zpe.no_nan_value-self.React_2.zpe.no_nan_value)
-        self.Zact: float = 627.5095 * (self.trasition_rate.zpe.getValue
+        self.Zact: float = 627.5095 * (self.transition_rate.zpe.getValue
                                        - self.React_1.zpe.no_nan_value - self.React_2.zpe.no_nan_value)
         """
            Calculate Tunnel G
         """
         self.CalcularTunel.calculate(BARRZPE=self.Zact,
                                      DELZPE=self.Zreact,
-                                     FREQ=abs(self.trasition_rate.frecNeg.getValue),
+                                     FREQ=abs(self.transition_rate.frecNeg.getValue),
                                      TEMP=self.temp)
 
         gibbsR1 = self.React_1.Thermal_Free_Enthalpies.no_nan_value    # NOSONAR
         gibbsR2 = self.React_2.Thermal_Free_Enthalpies.no_nan_value    # NOSONAR
-        gibbsTS = self.trasition_rate.Thermal_Free_Enthalpies.getValue  # NOSONAR
+        gibbsTS = self.transition_rate.Thermal_Free_Enthalpies.getValue  # NOSONAR
         gibbsP1 = self.Product_1.Thermal_Free_Enthalpies.no_nan_value  # NOSONAR
         gibbsP2 = self.product_2.Thermal_Free_Enthalpies.no_nan_value  # NOSONAR
 
@@ -347,9 +347,9 @@ class EasyRate:
         self.React_2: EntradaDato = EntradaDato(tabla)
         self.React_2       .grid(row=3, column=1, columnspan=3)
         self.React_2       .Activar(etiqueta="React-2", command=self.def_react_2)
-        self.trasition_rate: EntradaDato = EntradaDato(tabla)
-        self.trasition_rate.grid(row=4, column=1, columnspan=3)
-        self.trasition_rate.Activar(etiqueta="Transition state", command=self.deftrasition_rate)
+        self.transition_rate: EntradaDato = EntradaDato(tabla)
+        self.transition_rate.grid(row=4, column=1, columnspan=3)
+        self.transition_rate.Activar(etiqueta="Transition state", command=self.deftransition_rate)
         self.Product_1: EntradaDato = EntradaDato(tabla)
         self.Product_1.grid(row=5, column=1, columnspan=3)
         self.Product_1.Activar(etiqueta="Product-1 ",
@@ -368,8 +368,8 @@ class EasyRate:
     def def_react_2(self, estruct: Estructura):
         self.React_2.setDato(un_dato=estruct.Thermal_Free_Enthalpies.getValue)
 
-    def deftrasition_rate(self, estruct: Estructura):
-        self.trasition_rate.setDato(
+    def deftransition_rate(self, estruct: Estructura):
+        self.transition_rate.setDato(
             un_dato=estruct.Thermal_Free_Enthalpies.getValue)
 
     def def_product_1(self, estruct: Estructura):
@@ -542,7 +542,7 @@ class EasyRate:
             str(self.Title.get()),
             self.React_1.get_Estructura_Seleccionada(),
             self.React_2.get_Estructura_Seleccionada(),
-            self.trasition_rate.get_Estructura_Seleccionada(),
+            self.transition_rate.get_Estructura_Seleccionada(),
             self.Product_1.get_Estructura_Seleccionada(),
             self.product_2.get_Estructura_Seleccionada(),
             self.cage_efects.get() == 1,
@@ -598,12 +598,12 @@ class EasyRate:
                             + ("\n\n"if(ejecucion_actual.cage_efects)else "") + "\n\n"))
         self.salida2.insert(END, ("______________________________________\n"))
         self.Ejecuciones.append(ejecucion_actual)
-        self.Tunneling['state'] = "enabled"
+        self.Tunneling['state'] = "normal"
         self.Tunneling.insert(0, " ")
         self.Tunneling.delete(0, END)
         self.Tunneling.insert(
             0, str(round(ejecucion_actual.CalcularTunel.G, 2)))
-        self.Tunneling['state'] = "disabled"
+        self.Tunneling['state'] = "readonly"
 
     def about(self):
         """
@@ -640,10 +640,10 @@ class EasyRate:
             file.write("Pathway: "+ ejecucion.pathway + "\n")
             if(ejecucion.PrintData):
                 file.write("Data entry: " + "\n")
-                file.write("\tReact 1:        :"+str(ejecucion.React_1.Thermal_Free_Enthalpies.no_nan_value   ) + "\n"    )
-                file.write("\tReact 2:        :"+str(ejecucion.React_2.Thermal_Free_Enthalpies.no_nan_value   ) + "\n"    )
-                file.write("\tTransition rate :"+str(ejecucion.trasition_rate.Thermal_Free_Enthalpies.getValue) + "\n"   )
-                file.write("\tProd 1          :"+str(ejecucion.Product_1.Thermal_Free_Enthalpies.no_nan_value ) + "\n"    )
+                file.write("\tReact 1:        :"+str(ejecucion.React_1.Thermal_Free_Enthalpies.no_nan_value   ) + "\n")
+                file.write("\tReact 2:        :"+str(ejecucion.React_2.Thermal_Free_Enthalpies.no_nan_value   ) + "\n")
+                file.write("\tTransition rate :"+str(ejecucion.transition_rate.Thermal_Free_Enthalpies.getValue) + "\n")
+                file.write("\tProd 1          :"+str(ejecucion.Product_1.Thermal_Free_Enthalpies.no_nan_value ) + "\n")
                 file.write("\tProd 2          :"+str(ejecucion.product_2.Thermal_Free_Enthalpies.no_nan_value ) + "\n")
                 file.write("\tDegeneracy      :"+str(ejecucion.degeneracy) + "\n")
             if(ejecucion.PrintData and ejecucion.diffusion):
