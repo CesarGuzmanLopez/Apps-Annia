@@ -15,4 +15,10 @@ Y ya se pueden ejecutar todas las apps que uno quiera:
 
 $ python Marcus/main.py
 
+Si se hicieron modificaciones se pueden regresar al repositorio
+
+git add . 
+git commit -m "Actualizar_python"
+git push
+
 

@@ -1,5 +1,4 @@
-from cmath import nan
-from math import exp, log
+from math import exp, log, isnan, nan
 from os import path
 from threading import Thread as thTread
 from time import sleep as tsleep
@@ -14,12 +13,25 @@ from SeslectStructura import SelectStructure
 from tkdialog import WaitAlert
 from ttkthemes import ThemedStyle
 from viewStructure import ViewStructure
+from tkinter import messagebox
+import os
 
 '''
     Python 3.9.*
     @author: Cesar Gerardo Guzman Lopez
     @Description:  Programa easy rate
 '''
+
+# constantes físicas / conversión (arriba del archivo)
+HARTREE_TO_KCAL = 627.5095
+R_GAS_KCAL = 1.987/1000     # kcal·mol−1·K−1
+KB = 1.380649e-23           # J/K
+NA = 6.02214076e23
+PI = 3.141592653589793
+ANGSTROM_TO_M = 1e-10
+
+LAST_DIR = None  # recuerda la última carpeta usada
+
 class EntradaDato(ttk.Frame):
     '''
     Analiza los datos que obtenidos del log gaussian
@@ -71,32 +83,37 @@ class EntradaDato(ttk.Frame):
         ViewStructure(master=self, estructure=self.EstructuraSeleccionada)
 
     def open(self):
-        filetypes = [
-            ("log Gaussian file",  "*.log"),
-            ("txt format Gaussian", "*.txt"),
-            ("out Gaussian file",  "*.out")
-        ]
-        self.mensajeEsperar: WaitAlert
-        self.filename = askopenfilename(initialdir=".",
-                                        filetypes=filetypes,
-                                        title="Choose a file.")
-        if(self.filename == ""):
-            return
-        read = thTread(target=self.readfile)
-        read.start()
-        while(self.Archlog == None):
-            self.esperar = 1
-            self.mensajeEsperar = WaitAlert(parent=self,
-                                            title='Reading the file',
-                                            message='Please wait',
-                                            pause=self.esperar)  # show countdown.
+        global LAST_DIR
+        filetypes = [("log Gaussian file","*.log"), ("txt format Gaussian","*.txt"), ("out Gaussian file","*.out")]
+        initial = LAST_DIR if (LAST_DIR and os.path.isdir(LAST_DIR)) else os.getcwd()
+        self.filename = askopenfilename(initialdir=initial,filetypes=filetypes,title="Choose a file:")
 
-        if(self.Archlog == False):
+        if not self.filename:
+            return
+        
+        LAST_DIR = os.path.dirname(self.filename)
+
+        # Lanzar hilo
+        self._worker = thTread(target=self._readfile_worker, daemon=True)
+        self._worker.start()
+
+        # Empezar polling no bloqueante
+        self.after(100, self._check_reader_done)
+
+    def _readfile_worker(self):
+        self.Archlog = read_log_gaussian(self.filename)
+
+    def _check_reader_done(self):
+        if self.Archlog is None:
+            self.after(100, self._check_reader_done)
+            return
+        
+        ok = bool(self.Archlog)
+        self.botonverfile['state']   = "normal" if ok else "disabled"
+        self.botonclearfile['state'] = "normal" if ok else "disabled"
+        if ok:
+            self.SeleccionarEstructura()
             self.Archlog = None
-            self.botonverfile['state'] = "disabled"
-            self.botonclearfile['state'] = "disabled"
-        self.SeleccionarEstructura()
-        self.Archlog = None
 
     def readfile(self):
         self.Archlog = None
@@ -105,8 +122,9 @@ class EntradaDato(ttk.Frame):
         tsleep(0.5)
         self.botonverfile['state'] = "normal"
         self.botonclearfile['state'] = "normal"
-        if(self.Archlog.Estructuras.__len__ == 0):
+        if len(self.Archlog.Estructuras) == 0:
             self.Archlog = False
+
 
     @property
     def getDato(self) -> float:
@@ -238,11 +256,11 @@ class Ejecucion:
                                      FREQ=abs(self.transition_rate.frecNeg.getValue),
                                      TEMP=self.temp)
 
-        gibbsR1 = self.React_1.Thermal_Free_Enthalpies.no_nan_value    # NOSONAR
-        gibbsR2 = self.React_2.Thermal_Free_Enthalpies.no_nan_value    # NOSONAR
-        gibbsTS = self.transition_rate.Thermal_Free_Enthalpies.getValue  # NOSONAR
-        gibbsP1 = self.Product_1.Thermal_Free_Enthalpies.no_nan_value  # NOSONAR
-        gibbsP2 = self.product_2.Thermal_Free_Enthalpies.no_nan_value  # NOSONAR
+        gibbsR1 = self.React_1.Thermal_Free_Energies.no_nan_value    # NOSONAR
+        gibbsR2 = self.React_2.Thermal_Free_Energies.no_nan_value    # NOSONAR
+        gibbsTS = self.transition_rate.Thermal_Free_Energies.getValue  # NOSONAR
+        gibbsP1 = self.Product_1.Thermal_Free_Energies.no_nan_value  # NOSONAR
+        gibbsP2 = self.product_2.Thermal_Free_Energies.no_nan_value  # NOSONAR
 
         molarV = 0.08206 * self.temp  # NOSONAR
 
@@ -251,8 +269,8 @@ class Ejecucion:
 
         deltaNr = countP - countR  # NOSONAR
         deltaNt = 1 - countR  # NOSONAR
-        corr1Mr = (1.987 / 1000) * self.temp * log(pow(molarV, deltaNr))  # NOSONAR
-        corr1Mt = (1.987 / 1000) * self.temp * log(pow(molarV, deltaNt))  # NOSONAR
+        corr1Mr = R_GAS_KCAL * self.temp * log(pow(molarV, deltaNr))  # NOSONAR
+        corr1Mt = R_GAS_KCAL * self.temp * log(pow(molarV, deltaNt))  # NOSONAR
 
         # Calor de reacción
         self.Greact: float = corr1Mr + 627.5095 * (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
@@ -263,18 +281,25 @@ class Ejecucion:
             if use Cage Correction
         """
         if (self.cage_efects and deltaNt != 0):
-            cageCorrAct = (1.987 / 1000) * self.temp * ((log(countR * # NOSONAR
+            cageCorrAct = R_GAS_KCAL * self.temp * ((log(countR * # NOSONAR
                                             pow(10, 2 * countR - 2))) - (countR - 1))  
             self.Gact: float = self.Gact - cageCorrAct
 
-        self.rateCte: float = self.degeneracy * self.CalcularTunel.G * (2.08e10 * self.temp * exp(-self.Gact * 1000 / (1.987 * self.temp)))
+        self.rateCte: float = self.degeneracy * self.CalcularTunel.G * (2.08e10 * self.temp * exp(-self.Gact / (R_GAS_KCAL * self.temp)))
 
-        if(self.diffusion):
-            diffCoefA = (1.38E-23 * self.temp) / (6 * 3.14159 *  self.visc * self.radius_1)   # NOSONAR
-            diffCoefB = (1.38E-23 * self.temp) / (6 * 3.14159 *   self.visc * self.radius_1)   # NOSONAR
-            diffCoefAB = diffCoefA + diffCoefB  # NOSONAR
-            kDiff = 1000 * 4 * 3.14159 * diffCoefAB * self.reaction_distance * 6.02e23  # NOSONAR
-            self.rateCte: float = (kDiff * self.rateCte) /  (kDiff + self.rateCte)
+        if (self.diffusion):
+            # convertir Å → m
+            rA_m = self.radius_1 * ANGSTROM_TO_M
+            rB_m = self.radius_2 * ANGSTROM_TO_M
+            Rrxn_m = self.reaction_distance * ANGSTROM_TO_M
+
+            diffCoefA = (KB * self.temp) / (6 * PI * self.visc * rA_m)
+            diffCoefB = (KB * self.temp) / (6 * PI * self.visc * rB_m)
+            diffCoefAB = diffCoefA + diffCoefB
+
+            # 4π D_AB R_rxn N_A; factor 1000 para pasar m^3 → L (M^-1 s^-1)
+            kDiff = 1000 * 4 * PI * diffCoefAB * Rrxn_m * NA
+            self.rateCte = (kDiff * self.rateCte) / (kDiff + self.rateCte)
 
     @property
     def visc(self) -> float:
@@ -301,19 +326,27 @@ class EasyRate:
         self._principal.pack_propagate(True)
         self._principal.place(
             anchor='nw', bordermode='outside', x=str(0), y=str(0))
-        self.master.title("Easy Rate 1.1")
+        self.master.title("Easy Rate 2.0")
         self.master.resizable(False, False)
-        self.master.geometry("1100x600")
+        self.master.geometry("1160x680")
         self.frame_principal = ttk.Frame(self._principal)
-        self._principal.configure(width='1200', height='605')
+        self._principal.configure(width='1500', height='800')
         self.menu()
         self.seccion_datos_2()
         self.seccion_diffusion()
         self.seccion_pantalla()
         self.seccion_leer_archivos()
-        self.style.set_theme('winxpblue')
-        self.style.configure('.', background='#f0f0f0', font=('calibri', 9))
+        self.style.set_theme('clearlooks')
+        #self.style.set_theme('winxpblue')
+        #self.style.configure('.', background='#f0f0f0', font=('calibri', 9))
+        self.style.configure('.', background='#f0f0f0', font=('Helvetica', 11)) 
         self.style.configure('TCombobox', fieldbackground='#f0f0f0')
+        # --- Estilos "card" y textos informativos ---
+        self.style.configure('Card.TLabelframe', background='#f7f7f7')
+        self.style.configure('Card.TLabelframe.Label', font=('Helvetica', 12, 'bold'))
+        self.style.configure('Info.TLabel', foreground='#555555', background='#f7f7f7', font=('Helvetica', 12))
+        self.style.configure('Small.TLabel', foreground='#666666', font=('Helvetica', 9))
+
 
     def menu(self):
         menubar = Menu(self.master)
@@ -328,7 +361,7 @@ class EasyRate:
 
     def seccion_leer_archivos(self, pos_x=10, pos_y=10):
         _seccion_leer_archivos = ttk.Frame(self._principal)
-        _seccion_leer_archivos.configure(width='360', height='290')
+        _seccion_leer_archivos.configure(width='480', height='305')
         label_data_entry = ttk.Label(
             self._principal, text="Data entry", font=('calibri', 9, "bold"))
         label_data_entry.place(x=str(pos_x), y=str(pos_y))
@@ -359,31 +392,113 @@ class EasyRate:
         self.product_2 .Activar(etiqueta="Product-2",
                                 command=self.defproduct_2)
 
+    def _get_loaded_map(self):
+        return {
+            "React-1":         self.React_1.get_Estructura_Seleccionada(),
+            "React-2":         self.React_2.get_Estructura_Seleccionada(),
+            "Transition state":self.transition_rate.get_Estructura_Seleccionada(),
+            "Product-1":       self.Product_1.get_Estructura_Seleccionada(),
+            "Product-2":       self.product_2.get_Estructura_Seleccionada(),
+        }
+
+    def _assert_all_loaded(self) -> bool:
+        loaded = self._get_loaded_map()
+        missing = [name for name, val in loaded.items() if val is None]
+        if missing:
+            messagebox.showerror("Missing data", "Please load: " + ", ".join(missing))
+            return False
+        return True
+
+
+    def _thermo_ok(self, s: Estructura) -> bool:
+        try:
+            g = s.Thermal_Free_Energies.no_nan_value
+            zpe = s.zpe.no_nan_value
+            h = s.eH_ts.no_nan_value
+            t = s.temp.getValue
+            for v in (g, zpe, h, t):
+                if v is None or (isinstance(v, float) and isnan(v)):
+                    return False
+            return True
+        except Exception:
+            return False
+
+    def _imag_count(self, s: Estructura) -> int:
+        try:
+            mf = getattr(s, "multFreqs", None)
+            # intenta contar si expone lista o contador
+            for attr in ("count", "n", "num", "length"):
+                if hasattr(mf, attr):
+                    return int(getattr(mf, attr))
+            for attr in ("values", "lista", "valores", "items"):
+                if hasattr(mf, attr):
+                    seq = getattr(mf, attr)
+                    try: return len(seq)
+                    except Exception: pass
+            # fallback a frecNeg
+            fn = s.frecNeg.getValue
+            if fn is None or fn == 0: return 0
+            return 1 if fn < 0 else 0
+        except Exception:
+            return 0
+
+    def _check_loaded(self, role: str, s: Estructura) -> bool:
+        """
+        role ∈ {"React-1","React-2","Product-1","Product-2","Transition state"}
+        Reglas:
+        - Todos: termo completa
+        - React/Product: 0 imaginarias
+        - TS: exactamente 1 imaginaria
+        """
+        if s is None:
+            messagebox.showerror("Missing data", f"Please load {role}.")
+            return False
+        if not self._thermo_ok(s):
+            messagebox.showerror("Thermo missing",
+                                f"{role}: missing/invalid thermochemical data (G, ZPE, H or T).")
+            return False
+        ic = self._imag_count(s)
+        if role == "Transition state":
+            if ic != 1:
+                messagebox.showerror("Invalid TS",
+                    f"Transition state must have exactly 1 imaginary frequency (found {ic}).")
+                return False
+        else:
+            if ic != 0:
+                messagebox.showerror("Invalid structure",
+                    f"{role} must have 0 imaginary frequencies (found {ic}).")
+                return False
+        return True
+
+
     def def_react_1(self, estruct: Estructura):
+        if not self._check_loaded("React-1", estruct): return
+        # si llega aquí, ya es válido:
         self.Temperatura.delete(0, END)
         self.Temperatura.insert(0, str(estruct.temp.getValue))
         self.Temperatura['state'] = "disabled"
-        self.React_1.setDato(un_dato=estruct.Thermal_Free_Enthalpies.getValue)
+        self.React_1.setDato(un_dato=estruct.Thermal_Free_Energies.getValue)
 
     def def_react_2(self, estruct: Estructura):
-        self.React_2.setDato(un_dato=estruct.Thermal_Free_Enthalpies.getValue)
+        if not self._check_loaded("React-2", estruct): return
+        self.React_2.setDato(un_dato=estruct.Thermal_Free_Energies.getValue)
 
     def deftransition_rate(self, estruct: Estructura):
-        self.transition_rate.setDato(
-            un_dato=estruct.Thermal_Free_Enthalpies.getValue)
+        if not self._check_loaded("Transition state", estruct): return
+        self.transition_rate.setDato(un_dato=estruct.Thermal_Free_Energies.getValue)
 
     def def_product_1(self, estruct: Estructura):
-        self.Product_1.setDato(
-            un_dato=estruct.Thermal_Free_Enthalpies.getValue)
+        if not self._check_loaded("Product-1", estruct): return
+        self.Product_1.setDato(un_dato=estruct.Thermal_Free_Energies.getValue)
 
     def defproduct_2(self, estruct: Estructura):
-        self.product_2.setDato(
-            un_dato=estruct.Thermal_Free_Enthalpies.getValue)
+        if not self._check_loaded("Product-2", estruct): return
+        self.product_2.setDato(un_dato=estruct.Thermal_Free_Energies.getValue)
 
     def seccion_datos_2(self, pos_x=30, pos_y=300):
         _seccion_datos_2 = ttk.Frame(self._principal)
         _seccion_datos_2.configure(width='200', height='50')
-        _seccion_datos_2.place(x=str(pos_x), y=str(pos_y+15))
+        _seccion_datos_2.place(x=str(pos_x), y=str(pos_y+25))
         label_etiqueta_temperatura = ttk.Label(
             _seccion_datos_2, text="Temperature(K)")
         label_etiqueta_temperatura.grid(row=1, column=0)
@@ -411,51 +526,47 @@ class EasyRate:
         self.Reaction_path_degeneracy.insert(0, "1")
 
     def seccion_diffusion(self, pos_x=30, pos_y=440):
-        _seccion_diffusion = ttk.Frame(self._principal)
-        _seccion_diffusion.configure(width='400', height='400')
-        _seccion_diffusion.place(x=str(pos_x), y=str(pos_y))
-        frame1 = ttk.Frame(_seccion_diffusion)
-        frame1.place(x="1", y="10")
-        self.diffusion = IntVar()
-        self.diffusion.set(0)
-        ttk.Label(frame1, text="Do you want to consider diffusion?").grid(
-            column=0, row=0)
-        ttk.Label(frame1, text="yes").grid(column=1, row=0)
-        ttk.Radiobutton(frame1, value=1, variable=self.diffusion,
-                        command=self.isdiffusion).grid(column=2, row=0)
-        ttk.Label(frame1, text="No").grid(column=4, row=0)
-        ttk.Radiobutton(frame1, value=0, variable=self.diffusion,
-                        command=self.isdiffusion).grid(column=5, row=0)
-        frame2a = ttk.Frame(_seccion_diffusion)
-        frame2a.place(x="0", y="30")
-        frame2a.configure(width='200', height='200')
-        ttk.Label(frame2a, text="solvent").grid(row=0, column=0)
-        self.solvent = ttk.Combobox(frame2a, state='disabled')
-        self.solvent.configure(width="14")
-        self.solvent.grid(row=1, column=0)
+        cont = ttk.LabelFrame(self._principal, text="Diffusion (optional)", style='Card.TLabelframe')
+        cont.place(x=str(pos_x), y=str(pos_y))
+        cont.configure(width='320', height='160')
+
+        # fila 0: toggle
+        row = 0
+        self.diffusion = IntVar(value=0)
+        ttk.Label(cont, text="Do you want to consider diffusion?").grid(row=row, column=0, sticky="w", padx=0, pady=(10, 2))
+        ttk.Label(cont, text="Yes").grid(row=row, padx=10, column=1, sticky="w")
+        ttk.Radiobutton(cont, value=1, variable=self.diffusion, command=self.isdiffusion).grid(row=row, padx=40, column=1, sticky="w")
+        ttk.Label(cont, text="No").grid(row=row, column=1, sticky="w", padx=(70,0))
+        ttk.Radiobutton(cont, value=0, variable=self.diffusion, command=self.isdiffusion).grid(row=row, padx=90, column=1, sticky="w")
+
+        # fila 1: solvente
+        row += 1
+        ttk.Label(cont, text="Solvent").grid(row=row, column=0, sticky="w", padx=10, pady=(6, 2))
+        self.solvent = ttk.Combobox(cont, state='disabled', width=18)
+        self.solvent.grid(row=row, column=1, columnspan=2, sticky="w", pady=(6, 2))
         values = list(self.solvent["values"])
-        self.solvent["values"] = values + [""] + ["Benzene"] + \
-            ["Gas phase (Air)"] + ["Pentyl ethanoate"]+["Water"]
-        frame2 = ttk.Frame(_seccion_diffusion)
-        frame2.place(x="110", y="30")
-        frame2.configure(width='200', height='200')
-        ttk.Label(frame2, text="Radius (in Angstroms) for:").grid(
-            row=0, column=0, columnspan=2)
-        ttk.Label(frame2, text="Reactant-1").grid(row=1, column=0)
-        self.radius_react_1 = Entry(frame2, width=7, state='disabled')
-        self.radius_react_1.grid(row=1, column=1)
-        ttk.Label(frame2, text="Reactant-2").grid(row=2, column=0)
-        self.radius_react_2 = Entry(frame2, width=7, state='disabled')
-        self.radius_react_2.grid(row=2, column=1)
-        ttk.Label(frame2, text="Reaction distance\n  (in Angstroms)").grid(
-            row=3, column=0)
-        self.reaction_distance = Entry(frame2, width=7, state='disabled')
-        self.reaction_distance.grid(row=3, column=1)
+        self.solvent["values"] = values + ["", "Benzene", "Gas phase (Air)", "Pentyl ethanoate", "Water"]
+
+        # fila 2-3: radios y distancia (dos columnas)
+        row += 1
+        ttk.Label(cont, text="Radius (Å) — Reactant-1").grid(row=row, column=0, sticky="w", padx=10, pady=(6, 2))
+        self.radius_react_1 = Entry(cont, width=10, state='disabled')
+        self.radius_react_1.grid(row=row, column=1, sticky="w", pady=(6, 2))
+        row += 1 
+        ttk.Label(cont, text="Radius (Å) — Reactant-2").grid(row=row, column=0, sticky="w", padx=10, pady=(6, 2))
+        self.radius_react_2 = Entry(cont, width=10, state='disabled')
+        self.radius_react_2.grid(row=row, column=1, sticky="w", pady=(6, 2))
+
+        row += 1
+        ttk.Label(cont, text="Reaction distance (Å)").grid(row=row, column=0, sticky="w", padx=10, pady=(2, 10))
+        self.reaction_distance = Entry(cont, width=10, state='disabled')
+        self.reaction_distance.grid(row=row, column=1, sticky="w", pady=(2, 10))
+
+        # estirar columnas bonitas
+        for c in range(5):
+            cont.columnconfigure(c, weight=1)
 
     def isdiffusion(self):
-        """
-
-        """
         if(self.diffusion.get() == 1):
             self.reaction_distance['state'] = 'normal'
             self.radius_react_1['state'] = 'normal'
@@ -469,7 +580,32 @@ class EasyRate:
             self.solvent['state'] = 'disabled'
             self.style.configure('TCombobox', fieldbackground='#f0f0f0')
 
-    def seccion_pantalla(self, pos_x=370, pos_y=20):
+    def clear_results(self):
+        try:
+            self.salida.delete('1.0', END)
+        except Exception:
+            pass
+
+    def clear_details(self):
+        try:
+            self.salida2.delete('1.0', END)
+        except Exception:
+            pass
+
+    def clear_both(self):
+        self.clear_results()
+        self.clear_details()
+
+    def _show_clear_menu(self, widget):
+        # Muestra el menú justo debajo del botón
+        try:
+            x = widget.winfo_rootx()
+            y = widget.winfo_rooty() + widget.winfo_height()
+            self._clear_menu.tk_popup(x, y)
+        finally:
+            self._clear_menu.grab_release()
+
+    def seccion_pantalla(self, pos_x=500, pos_y=25):
         _seccion_pantalla = ttk.Frame(self._principal)
         _seccion_pantalla.configure(width='1000', height='700')
         _seccion_pantalla.place(x=str(pos_x), y=str(pos_y))
@@ -477,7 +613,7 @@ class EasyRate:
         self.cage_efects.set(0)
         ttk.Label(_seccion_pantalla, text="Cage Effects?").place(
             anchor='nw', x='80', y='10')
-        ttk.Label(_seccion_pantalla, text="yes").place(
+        ttk.Label(_seccion_pantalla, text="Yes").place(
             anchor='nw', x='170', y='10')
         ttk.Radiobutton(_seccion_pantalla, value=1, variable=self.cage_efects).place(
             anchor='nw', x='190', y='10')
@@ -489,7 +625,7 @@ class EasyRate:
         self.print_data.set(0)
         ttk.Label(_seccion_pantalla, text="Print data input?").place(
             anchor='nw', x='270', y='10')
-        ttk.Label(_seccion_pantalla, text="yes").place(
+        ttk.Label(_seccion_pantalla, text="Yes").place(
             anchor='nw', x='370', y='10')
         ttk.Radiobutton(_seccion_pantalla, value=1, variable=self.print_data).place(
             anchor='nw', x='390', y='10')
@@ -498,46 +634,201 @@ class EasyRate:
 
         ttk.Radiobutton(_seccion_pantalla, value=0, variable=self.print_data).place(
             anchor='nw', x='430', y='10')
-        boton = ttk.Button(
-            _seccion_pantalla, text="Data ok, Run", command=self.run_calc)
-        boton.place(x="250", y="40")
+
+
+        
+        boton = ttk.Button(_seccion_pantalla, text="Data ok, Run", command=self.run_calc)
+        boton.place(x="180", y="40")
+
+        # --- Botón Clear con menú emergente ---
+        clear_btn = ttk.Button(_seccion_pantalla, text="Clear",
+                            command=lambda: self._show_clear_menu(clear_btn))
+        clear_btn.place(x="420", y="40")  # a la derecha del Run (ajusta si quieres)
+
+        # Menú emergente para elegir qué limpiar
+        self._clear_menu = Menu(_seccion_pantalla, tearoff=0)
+        self._clear_menu.add_command(label="Clear Results (left)",  command=self.clear_results)
+        self._clear_menu.add_command(label="Clear Details (right)", command=self.clear_details)
+        self._clear_menu.add_separator()
+        self._clear_menu.add_command(label="Clear Both",            command=self.clear_both)
+
         self._scrolle_pantalla(_seccion_pantalla)
-        labelrate = ttk.Label(_seccion_pantalla)
-        labelrate.configure(cursor='arrow', justify='left', relief='raised',
-                            text='Rate constant units:\n-For bimolecular(M-1 s-1)\n -For unimolecular reactions(s-1)')
-        labelrate.place(anchor='nw', x='0', y='500')
-        labelphpadvertence = ttk.Label(_seccion_pantalla)
-        labelphpadvertence.configure(
-            cursor='based_arrow_down', justify='center', relief='groove', takefocus=False)
-        labelphpadvertence.configure(
-            text='Please note that pH is not\nconsidered here.\n\nCheck for updates in \nthis topic')
-        labelphpadvertence.place(anchor='nw', x='300', y='500')
+
+        # Tarjeta informativa compacta
+        info = ttk.LabelFrame(_seccion_pantalla, text="Notes", style='Card.TLabelframe')
+        info.place(anchor='nw', x='0', y='520')
+        ttk.Label(info, text="Rate constant units:\n• Bimolecular:  M⁻¹ s⁻¹\n• Unimolecular: s⁻¹",
+                style='Info.TLabel', justify='left').grid(row=0, column=0, sticky="w", padx=8, pady=8)
+        ttk.Separator(info, orient='vertical').grid(row=0, column=1, sticky="ns", padx=4, pady=8)
+        ttk.Label(info, text="pH effects are not considered.\nSee About ▸ Equations for details.",
+                style='Info.TLabel', justify='left').grid(row=0, column=2, sticky="w", padx=8, pady=8)
 
     def _scrolle_pantalla(self, _seccion_pantalla):
         frame_resultados = ttk.Frame(_seccion_pantalla)
         frame_resultados.place(x='0', y='70')
-        self.salida = ScrolledText(
-            frame_resultados, wrap="none", width=40, height=23)
-        xsb = Scrollbar(frame_resultados, orient="horizontal",
-                        command=self.salida.xview)
-        self.salida.grid(row=1, column=0, columnspan=1)
-        self.salida.focus()
-        self.salida.configure(xscrollcommand=xsb.set)
-        self.salida.bind("<Key>", lambda e: "break")
-        xsb.grid(row=2, column=0, columnspan=1, sticky=E+N+S+W)
-        self.salida2 = ScrolledText(
-            frame_resultados, wrap="none", width=40, height=23)
-        xsb2 = Scrollbar(
-            frame_resultados, orient="horizontal", command=self.salida2.xview)
-        self.salida2.grid(row=1, column=1, columnspan=1)
-        self.salida2.focus()
-        self.salida2.configure(xscrollcommand=xsb2.set)
-        self.salida2.bind("<Key>", lambda e: "break")
-        xsb2.grid(row=2, column=1, columnspan=1, sticky=E+N+S+W)
+
+        # --- Left: Results (summary) ---
+        left = ttk.LabelFrame(frame_resultados, text="Results (summary)", style='Card.TLabelframe')
+        left.grid(row=0, column=0, sticky="nsew", padx=8, pady=8)
+
+        self.salida = ScrolledText(left, wrap="none", width=40, height=30)
+        self.salida.grid(row=0, column=0, sticky="nsew")
+        left.columnconfigure(0, weight=1)
+        left.rowconfigure(0, weight=1)
+
+        # Scroll horizontal Results
+        xsb_left = Scrollbar(left, orient="horizontal", command=self.salida.xview)
+        self.salida.configure(xscrollcommand=xsb_left.set)
+        xsb_left.grid(row=1, column=0, sticky="ew")
+
+        self.salida.bind("<Key>", lambda e: "break")  # read-only
+
+        # --- Right: Details ---
+        right = ttk.LabelFrame(frame_resultados, text="Details", style='Card.TLabelframe')
+        right.grid(row=0, column=1, sticky="nsew", padx=8, pady=8)
+
+        self.salida2 = ScrolledText(right, wrap="none", width=40, height=30)
+        self.salida2.grid(row=0, column=0, sticky="nsew")
+        right.columnconfigure(0, weight=1)
+        right.rowconfigure(0, weight=1)
+
+        # Scroll horizontal Details
+        xsb_right = Scrollbar(right, orient="horizontal", command=self.salida2.xview)
+        self.salida2.configure(xscrollcommand=xsb_right.set)
+        xsb_right.grid(row=1, column=0, sticky="ew")
+
+        self.salida2.bind("<Key>", lambda e: "break")  # read-only
+
+        # Expand equally
+        frame_resultados.columnconfigure(0, weight=1)
+        frame_resultados.columnconfigure(1, weight=1)
+        frame_resultados.rowconfigure(0, weight=1)
+
+    def _flash_invalid(self, widget, ms=1200):
+        """Pinta el Entry en rojo temporalmente para señalar error."""
+        try:
+            orig = widget.cget("background")
+        except Exception:
+            orig = "white"
+        widget.config(background="#ffecec")
+        widget.after(ms, lambda: widget.config(background=orig))
+
+    def _require_pos_float(self, widget, label, errors):
+        """Lee float > 0 de un Entry. Si falla, agrega a 'errors' y marca el campo."""
+        s = widget.get().strip()
+        if not s:
+            errors.append(f"{label} (empty)")
+            self._flash_invalid(widget)
+            return None
+        try:
+            v = float(s)
+            if v <= 0:
+                errors.append(f"{label} (must be > 0)")
+                self._flash_invalid(widget)
+                return None
+            return v
+        except Exception:
+            errors.append(f"{label} (not a number)")
+            self._flash_invalid(widget)
+            return None
+
+    def _append_input_summary(self, ej, text_widget):
+        """
+        Escribe un resumen de los datos de entrada en el text_widget indicado
+        (p. ej. self.salida2 para 'Details').
+        """
+        def fmt(v):
+            try: return f"{float(v):.6g}"
+            except Exception: return str(v)
+
+        def maybe_file(lbl):
+            try:
+                t = lbl.cget("text")
+                return (f" [{t}]" if t else "")
+            except Exception:
+                return ""
+
+        text_widget.insert(END, "=== Input summary ===\n")
+
+        R1, R2, TS, P1, P2 = ej.React_1, ej.React_2, ej.transition_rate, ej.Product_1, ej.product_2
+        text_widget.insert(END, f"Pathway title: {ej.title}\n\n")
+
+        text_widget.insert(END, "Species (Thermal Free Enthalpy, ZPE, eH):\n")
+        text_widget.insert(END, f"  React-1{maybe_file(self.React_1.labelEtiquetafilename)}"
+                                f"  G={fmt(R1.Thermal_Free_Energies.no_nan_value)},"
+                                f"  ZPE={fmt(R1.zpe.no_nan_value)},"
+                                f"  eH={fmt(R1.eH_ts.no_nan_value)}\n")
+        text_widget.insert(END, f"  React-2{maybe_file(self.React_2.labelEtiquetafilename)}"
+                                f"  G={fmt(R2.Thermal_Free_Energies.no_nan_value)},"
+                                f"  ZPE={fmt(R2.zpe.no_nan_value)},"
+                                f"  eH={fmt(R2.eH_ts.no_nan_value)}\n")
+        text_widget.insert(END, f"  TS     {maybe_file(self.transition_rate.labelEtiquetafilename)}"
+                                f"  G={fmt(TS.Thermal_Free_Energies.getValue)},"
+                                f"  ZPE={fmt(TS.zpe.getValue)},"
+                                f"  eH={fmt(TS.eH_ts.getValue)},"
+                                f"  |ν‡|={fmt(abs(TS.frecNeg.getValue))} cm⁻¹\n")
+        text_widget.insert(END, f"  Prod-1 {maybe_file(self.Product_1.labelEtiquetafilename)}"
+                                f"  G={fmt(P1.Thermal_Free_Energies.no_nan_value)},"
+                                f"  ZPE={fmt(P1.zpe.no_nan_value)},"
+                                f"  eH={fmt(P1.eH_ts.no_nan_value)}\n")
+        text_widget.insert(END, f"  Prod-2 {maybe_file(self.product_2.labelEtiquetafilename)}"
+                                f"  G={fmt(P2.Thermal_Free_Energies.no_nan_value)},"
+                                f"  ZPE={fmt(P2.zpe.no_nan_value)},"
+                                f"  eH={fmt(P2.eH_ts.no_nan_value)}\n\n")
+
+        text_widget.insert(END, "Conditions & options:\n")
+        text_widget.insert(END, f"  Temperature (K): {fmt(ej.temp)}\n")
+        text_widget.insert(END, f"  Tunneling:       YES (κ computed by CK.tst)\n")
+        text_widget.insert(END, f"  Degeneracy:      {fmt(ej.degeneracy)}\n")
+        text_widget.insert(END, f"  Cage effects:    {'YES' if ej.cage_efects else 'NO'}\n")
+
+        if ej.diffusion:
+            text_widget.insert(END, "  Diffusion:       YES\n")
+            text_widget.insert(END, f"    Solvent:       {ej.solvent or '(not specified)'}\n")
+            text_widget.insert(END, f"    Radius R1 (Å): {fmt(ej.radius_1)}\n")
+            text_widget.insert(END, f"    Radius R2 (Å): {fmt(ej.radius_2)}\n")
+            text_widget.insert(END, f"    Rxn dist (Å):  {fmt(ej.reaction_distance)}\n")
+        else:
+            text_widget.insert(END, "  Diffusion:       NO\n")
+
+        text_widget.insert(END, "======================\n\n")
 
     def run_calc(self):
-        if(not True):  # TODO #1 Verificar si los datos son correcotoss  Verificarlos
+        # 1) Asegurar que TODOS los archivos están cargados
+        if not self._assert_all_loaded():
             return
+
+        # --- Si Diffusion = YES, obliga solvente + radios + distancia > 0 ---
+        if self.diffusion.get() == 1:
+            errors = []
+
+            # solvente obligatorio (no vacío)
+            if not self.solvent.get().strip():
+                errors.append("Solvent")
+
+            # números > 0 (usa tu helper; devuelve float o None)
+            r1 = self._require_pos_float(self.radius_react_1, "Radius — Reactant-1 (Å)", errors)
+            r2 = self._require_pos_float(self.radius_react_2, "Radius — Reactant-2 (Å)", errors)
+            rr = self._require_pos_float(self.reaction_distance, "Reaction distance (Å)", errors)
+
+            if errors:
+                messagebox.showerror(
+                    "Missing/invalid diffusion data",
+                    "Please provide valid values for:\n- " + "\n- ".join(errors)
+                )
+                return
+
+            # guarda los floats ya validados para usarlos al crear la Ejecucion
+            self._diff_r1 = r1
+            self._diff_r2 = r2
+            self._diff_rr = rr
+        else:
+            # si no hay difusión, valores 0 “inocuos”
+            self._diff_r1 = 0.0
+            self._diff_r2 = 0.0
+            self._diff_rr = 0.0
+
+        # Si ya validas al cargar, aquí asumimos que todas las estructuras están OK.
         ejecucion_actual = Ejecucion(
             str(self.Title.get()),
             self.React_1.get_Estructura_Seleccionada(),
@@ -548,18 +839,21 @@ class EasyRate:
             self.cage_efects.get() == 1,
             self.diffusion.get() == 1,
             self.solvent.get(),
-            float(self.radius_react_1.get()
-                  if self.radius_react_1.get() != "" else "0"),
-            float(self.radius_react_2.get()
-                  if self.radius_react_2.get() != "" else "0"),
-            float(self.reaction_distance.get()
-                  if self.reaction_distance.get() != "" else "0"),
-            float(self.Reaction_path_degeneracy.get()
-                  if self.Reaction_path_degeneracy.get() != "" else "0"),
+            self._diff_r1,
+            self._diff_r2,
+            self._diff_rr,
+            float(self.Reaction_path_degeneracy.get() or "0"),
             self.print_data.get() == 1
-           
         )
+
         ejecucion_actual.run()
+
+       # Si marcaron "Print data input? = Yes", manda el resumen a Details
+        if self.print_data.get() == 1:
+            # opcional: limpiar primero Details
+            # self.salida2.delete('1.0', END)
+            self._append_input_summary(ejecucion_actual, self.salida2)
+
         self.salida.insert(
             END, ("Pathway:  " + ejecucion_actual.pathway + "\n"))
         self.salida.insert(END, ("Gibbs Free Energy of \n\treaction (kcal/mol):   "
@@ -606,97 +900,279 @@ class EasyRate:
         self.Tunneling['state'] = "readonly"
 
     def about(self):
-        """
-            show a windows with aabout information
-            with data:
-            autrhor
-            licence
-        """
-        window = Toplevel()
-        window.title("About")
-        window.geometry("300x200")
-        window.resizable(0, 0)
-        label = Label(window, text="About", font=("Helvetica", 16))
-        label.grid(row=0, column=0, columnspan=2)
-        label = Label(window, text="Author:", font=("Helvetica", 12))
-        label.grid(row=1, column=0)
-        label = Label(window, text="Annia Galano", font=("Helvetica", 12))
-        label.grid(row=1, column=1)
+        import webbrowser
+        from io import BytesIO
 
-        def close():
-            window.destroy()
-        boton = Button(window, text="Close", command=close)
-        boton.grid(row=3, column=0, columnspan=2)
+        # --- Rendering LaTeX-like formulas via Matplotlib mathtext (portable) ---
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        from PIL import Image, ImageTk
+
+        # ---------- Window ----------
+        window = Toplevel(self.master)
+        window.title("About • Easy Rate")
+        window.resizable(True, True)
+        window.geometry("700x600")
+        window.minsize(500, 200)
+        window.transient(self.master)
+        window.grab_set()
+
+        root = ttk.Frame(window, padding=12)
+        root.grid(sticky="nsew")
+        window.columnconfigure(0, weight=1)
+        window.rowconfigure(0, weight=1)
+        root.columnconfigure(0, weight=1)
+        root.rowconfigure(3, weight=1)
+
+        # ---------- Header ----------
+        header = ttk.Frame(root)
+        header.grid(row=0, column=0, sticky="ew")
+        ttk.Label(header, text="Easy Rate", font=("Helvetica", 18, "bold")).grid(row=0, column=0, sticky="w")
+        ttk.Label(header, text="Version 2.0", font=("Helvetica", 11)).grid(row=0, column=1, sticky="e")
+        header.columnconfigure(0, weight=1)
+        ttk.Separator(root).grid(row=1, column=0, sticky="ew", pady=(6, 8))
+
+        # ---------- Notebook (tabs) ----------
+        nb = ttk.Notebook(root)
+        nb.grid(row=2, column=0, sticky="nsew", pady=(0, 6))
+
+        # Helpers: create a styled ScrolledText
+        def make_text(parent, font=("Helvetica", 13)):
+            w = ScrolledText(parent, wrap="word", width=100, height=20)
+            w.configure(font=font, spacing1=2, spacing3=4)  # compact spacing before/after paragraphs
+            # Keep images referenced per-widget
+            w._eq_imgs = []
+            return w
+
+        # Math renderer
+        def render_math_to_photoimage(tex: str, dpi=170, pad_px=1, fontsize=10):
+            tex = tex.replace(r"\ddagger", "‡")   # mathtext compatibility
+            tex = tex.replace(r"\text{", r"\mathrm{")
+            fig = plt.figure(figsize=(0.01, 0.01), dpi=dpi)
+            fig.patch.set_alpha(0)
+            ax = fig.add_subplot(111)
+            ax.axis("off")
+            ax.text(0.5, 0.5, tex, fontsize=7, ha="center", va="center")
+            fig.tight_layout(pad=pad_px/72)
+            buf = BytesIO()
+            fig.savefig(buf, format="png", transparent=True, dpi=dpi, bbox_inches="tight")
+            plt.close(fig)
+            buf.seek(0)
+            im = Image.open(buf)
+            return ImageTk.PhotoImage(im)
+
+        def insert_eq(text_widget: ScrolledText, tex: str, newlines: int = 1):
+            img = render_math_to_photoimage(tex, pad_px=1, fontsize=7)
+            text_widget._eq_imgs.append(img)   # prevent GC
+            text_widget.image_create("end", image=img)
+            text_widget.insert("end", "\n" * newlines)
+
+        # ---------- TAB 1: Overview ----------
+        tab_over = ttk.Frame(nb, padding=(8, 8))
+        nb.add(tab_over, text="Overview")
+        txt_over = make_text(tab_over)
+        txt_over.grid(sticky="nsew")
+        tab_over.columnconfigure(0, weight=1)
+        tab_over.rowconfigure(0, weight=1)
+        txt_over.insert("end",
+            "Easy Rate is a scientific interface that estimates reaction rate constants from quantum-chemical data. "
+            "It parses Gaussian output files (.log/.out) to extract thermochemical quantities and computes:\n"
+            " • Reaction Gibbs free energy (ΔG)\n"
+            " • Activation Gibbs free energy (ΔG‡)\n"
+            " • Rate constants via Transition State Theory (TST / Eyring), with a tunneling correction (CK.tst)\n"
+            "Optional corrections include cage effects and the diffusion-controlled limit (Smoluchowski) for bimolecular processes.\n\n"
+            "Key Inputs per species\n"
+            " • Thermal free enthalpies (G), Zero-point energies (ZPE)\n"
+            " • Imaginary frequency of the transition state (|ν‡|)\n"
+            " • Temperature (K)\n\n"
+            "Notes\n"
+            " • Gaussian energies are converted as needed (commonly 1 Hartree = 627.5095 kcal·mol⁻¹).\n"
+            " • κ (tunneling factor) is computed by the CK.tst module from |ν‡| and the ZPE-corrected barrier.\n"
+        )
+        txt_over.configure(state="disabled")
+
+        # ---------- TAB 2: Equations ----------
+        tab_eq = ttk.Frame(nb, padding=(8, 8))
+        nb.add(tab_eq, text="Equations")
+        txt_eq = make_text(tab_eq)
+        txt_eq.grid(sticky="nsew")
+        tab_eq.columnconfigure(0, weight=1)
+        tab_eq.rowconfigure(0, weight=1)
+
+        txt_eq.insert("end", "Eyring (TST):\n")
+        insert_eq(txt_eq, r"$k_{\mathrm{TST}} \;=\; \kappa \,\frac{k_B\,T}{h}\,\exp\!\left(-\frac{\Delta G^{‡}}{R\,T}\right)$")
+
+        txt_eq.insert("end", "Standard-state correction (1 M):\n")
+        insert_eq(txt_eq, r"$\Delta G_{\mathrm{corr}} \;=\; R\,T \,\ln\!\left(V_m^{\,\Delta \nu}\right),\qquad V_m \approx 0.08206\,T$")
+
+        txt_eq.insert("end", "Diffusion and effective rate (bimolecular):\n")
+        insert_eq(txt_eq, r"$D_i \;=\; \frac{k_B\,T}{6\pi\,\eta\,r_i},\quad D_{AB}=D_A+D_B$")
+        insert_eq(txt_eq, r"$k_{\mathrm{diff}} \;=\; 4\pi\,N_A\,D_{AB}\,R_{\mathrm{rxn}}\cdot 1000$")
+        insert_eq(txt_eq, r"$k_{\mathrm{eff}} \;=\; \frac{k_{\mathrm{diff}}\;k_{\mathrm{TST}}}{k_{\mathrm{diff}}+k_{\mathrm{TST}}}$")
+
+        txt_eq.configure(state="disabled")
+
+        # ---------- TAB 3: Citations & Funding ----------
+        tab_cit = ttk.Frame(nb, padding=(8, 8))
+        nb.add(tab_cit, text="Citations & Funding")
+        txt_cit = make_text(tab_cit)
+        txt_cit.grid(sticky="nsew")
+        tab_cit.columnconfigure(0, weight=1)
+        tab_cit.rowconfigure(0, weight=1)
+
+        citations = (
+            "How to Cite (required for publications using Easy Rate)\n\n"
+            "I) CADMA-Chem:\n"
+            "   Guzman-Lopez, E.G.; Reina, M.; Perez-Gonzalez, A.; Francisco-Marquez, M.; Hernandez-Ayala, L.F.; "
+            "Castañeda-Arriaga, R.; Galano, A. CADMA-Chem: A Computational Protocol Based on Chemical Properties Aimed to Design "
+            "Multifunctional Antioxidants. Int. J. Mol. Sci. 2022, 23, 13246. https://doi.org/10.3390/ijms232113246\n\n"
+            "II) QM-ORSA methodology:\n"
+            "   Galano, A.; Alvarez-Idaboy, J.R. A computational methodology for accurate predictions of rate constants in solution: "
+            "application to the assessment of primary antioxidant activity. J. Comput. Chem. 2013, 34(28), 2430–2445. "
+            "https://onlinelibrary.wiley.com/doi/10.1002/jcc.23409  (doi:10.1002/jcc.23409)\n\n"
+            "Funding\n"
+            " • Supported by the Basic and Frontier Science Project CBF2023-2024-1141.\n"
+        )
+        txt_cit.insert("end", citations)
+        txt_cit.configure(state="disabled")
+
+        # ---------- TAB 4: Contacts & Links ----------
+        tab_links = ttk.Frame(nb, padding=(8, 8))
+        nb.add(tab_links, text="Contacts & Links")
+        txt_links = make_text(tab_links)
+        txt_links.grid(sticky="nsew")
+        tab_links.columnconfigure(0, weight=1)
+        tab_links.rowconfigure(0, weight=1)
+
+        links = (
+            "Developers & Contact\n"
+            " • César Gerardo Guzmán López   —  cesar-gerardo@guzman-lopez.com\n"
+            " • Eduardo Gabriel Guzmán López —  eggl.quimica@gmail.com\n"
+            " • Annia Galano                      \t\t     —  annia.galano@gmail.com\n\n"
+            "Repository\n"
+            " • https://github.com/CesarGuzmanLopez/Apps-Annia\n"
+        )
+        txt_links.insert("end", links)
+        txt_links.configure(state="disabled")
+
+        # ---------- Footer (actions) ----------
+        footer = ttk.Frame(root)
+        footer.grid(row=3, column=0, sticky="ew")
+        for i in range(6):
+            footer.columnconfigure(i, weight=1)
+
+        def open_repo(): webbrowser.open_new("https://github.com/CesarGuzmanLopez/Apps-Annia")
+        def open_cadma(): webbrowser.open_new("https://doi.org/10.3390/ijms232113246")
+        def open_qm_orsa(): webbrowser.open_new("https://onlinelibrary.wiley.com/doi/10.1002/jcc.23409")
+
+        def copy_citations():
+            cites = (
+                "Please cite:\n"
+                "1) Guzman-Lopez, E.G.; Reina, M.; Perez-Gonzalez, A.; Francisco-Marquez, M.; Hernandez-Ayala, L.F.; "
+                "Castañeda-Arriaga, R.; Galano, A. CADMA-Chem: A Computational Protocol Based on Chemical Properties Aimed "
+                "to Design Multifunctional Antioxidants. Int. J. Mol. Sci. 2022, 23, 13246. https://doi.org/10.3390/ijms232113246\n"
+                "2) Galano, A.; Alvarez-Idaboy, J.R. A computational methodology for accurate predictions of rate constants in solution: "
+                "application to the assessment of primary antioxidant activity. J. Comput. Chem. 2013, 34(28), 2430–2445. "
+                "doi:10.1002/jcc.23409\n"
+            )
+            window.clipboard_clear(); window.clipboard_append(cites)
+            messagebox.showinfo("Copied", "Citation text copied to clipboard.")
+
+        def copy_contacts():
+            contacts = (
+                "Contacts:\n"
+                "César:    cesar-gerardo@guzman-lopez.com\n"
+                "Gabriel:  eggl.quimica@gmail.com\n"
+                "Annia:    annia.galano@gmail.com\n"
+            )
+            window.clipboard_clear(); window.clipboard_append(contacts)
+            messagebox.showinfo("Copied", "Contact e-mails copied to clipboard.")
+
+        ttk.Button(footer, text="Open Repository", command=open_repo).grid(row=0, column=0, sticky="w")
+        ttk.Button(footer, text="Open CADMA-Chem", command=open_cadma).grid(row=0, column=1, sticky="w", padx=(8, 0))
+        ttk.Button(footer, text="Open QM-ORSA", command=open_qm_orsa).grid(row=0, column=2, sticky="w", padx=(8, 0))
+        ttk.Button(footer, text="Copy Citations", command=copy_citations).grid(row=0, column=3, sticky="w", padx=(8, 0))
+        ttk.Button(footer, text="Copy Contacts", command=copy_contacts).grid(row=0, column=4, sticky="w", padx=(8, 0))
+        ttk.Button(footer, text="Close", command=window.destroy).grid(row=0, column=5, sticky="e")
+
 
     def on_save(self):
-        file_path: str = None
-        if file_path is None:
-            file_path = filedialog.asksaveasfilename(filetypes 
-                    = (("Text files", "*.txt"), ("All files", "*.*")))
+        import os
+        initial = LAST_DIR if (LAST_DIR and os.path.isdir(LAST_DIR)) else os.getcwd()
+        file_path = filedialog.asksaveasfilename(
+            initialdir=initial,
+            filetypes=(("Text files", "*.txt"), ("All files", "*.*"))
+        )
+        if not file_path:
+            return  # usuario canceló
 
-        file = open(file_path, "w+")
-        for ejecucion in self.Ejecuciones:
-            
-            file.write("Pathway: "+ ejecucion.pathway + "\n")
-            if(ejecucion.PrintData):
-                file.write("Data entry: " + "\n")
-                file.write("\tReact 1:        :"+str(ejecucion.React_1.Thermal_Free_Enthalpies.no_nan_value   ) + "\n")
-                file.write("\tReact 2:        :"+str(ejecucion.React_2.Thermal_Free_Enthalpies.no_nan_value   ) + "\n")
-                file.write("\tTransition rate :"+str(ejecucion.transition_rate.Thermal_Free_Enthalpies.getValue) + "\n")
-                file.write("\tProd 1          :"+str(ejecucion.Product_1.Thermal_Free_Enthalpies.no_nan_value ) + "\n")
-                file.write("\tProd 2          :"+str(ejecucion.product_2.Thermal_Free_Enthalpies.no_nan_value ) + "\n")
-                file.write("\tDegeneracy      :"+str(ejecucion.degeneracy) + "\n")
-            if(ejecucion.PrintData and ejecucion.diffusion):
-                file.write("\tDiffusion considered: \n") 
-                file.write("\t\tSolvent:        "+ ejecucion.solvent +  "\n")
-                file.write("\t\tRadius React-1: "+str(ejecucion.radius_1) + "\n")
-                file.write("\t\tRadius React-2: "+str(ejecucion.radius_2) + "\n")
-                file.write("\t\tRadius Reaction distance: "+ str(ejecucion.reaction_distance) + "\n")
-            if(ejecucion.PrintData):
-                file.write("\n\n")
-            file.write("Gibbs Free Energy of reaction (kcal/mol):\t\t"
-                          + str(round(ejecucion.Greact, 2)) + "\n\n")
-            
-            file.write("Gibbs Free Energy of activation "
-                            + ("with cage effects "if(ejecucion.cage_efects)else "") +
-                            " (kcal/mol):\t"
-                            + str(round(ejecucion.Gact, 2)) + "\n\n")
-            
-            file.write("Rate Constant "+("with cage effects "if(ejecucion.cage_efects)else "") + ":    "
-                            + "{:.2e}".format(ejecucion.rateCte) + "\n\n")
-            
-            file.write("ALPH1:\t" + str(round(ejecucion.CalcularTunel.ALPH1, 2)) + "\n")  # ALPH1
-            
-            file.write("ALPH2:\t" + str(round(ejecucion.CalcularTunel.ALPH2, 2)) + "\n")  # ALPH2
-            
-            file.write("u:\t\t" + str(round(ejecucion.CalcularTunel.U, 2)) + "\n")  # u 
-            
-            file.write("Imag. Freq. (cm-1): \t"
-                            + str(round(ejecucion.frequency_negative, 2)) + "\n\n") 
-            
-            file.write("Reaction enthalpies (dH)" + "\n")
-            
-            file.write("\tdH reaction (kcal/mol):  \t"
-                            + str(round(ejecucion.dH_react, 2)) + "\n")
-            
-            file.write("\tdH activation (kcal/mol):\t"
-                            + str(round(ejecucion.dHact, 2)) + "\n\n")
-            
-            file.write("Reaction ZPE (dZPE)  " + "\n") 
-            
-            file.write("\tdZPE reaction (kcal/mol):  \t" 
-                            + str(round(ejecucion.Zreact, 2)) + "\n")   
-            
-            file.write("\tdZPE activation (kcal/mol):\t"
-                            + str(round(ejecucion. Zact, 2)) + "\n\n")  
-            
-            file.write("Temperature (K):  " + str(round(ejecucion.temp, 2))
-                            + ("\n\n") )
-            
-            file.write("______________________________________\n")
+        try:
+            with open(file_path, "w", encoding="utf-8") as file:
+                for ejecucion in self.Ejecuciones:
+                    file.write("Pathway: "+ ejecucion.pathway + "\n")
+                    if(ejecucion.PrintData):
+                        file.write("Data entry: " + "\n")
+                        file.write("\tReact 1:        :"+str(ejecucion.React_1.Thermal_Free_Energies.no_nan_value   ) + "\n")
+                        file.write("\tReact 2:        :"+str(ejecucion.React_2.Thermal_Free_Energies.no_nan_value   ) + "\n")
+                        file.write("\tTransition rate :"+str(ejecucion.transition_rate.Thermal_Free_Energies.getValue) + "\n")
+                        file.write("\tProd 1          :"+str(ejecucion.Product_1.Thermal_Free_Energies.no_nan_value ) + "\n")
+                        file.write("\tProd 2          :"+str(ejecucion.product_2.Thermal_Free_Energies.no_nan_value ) + "\n")
+                        file.write("\tDegeneracy      :"+str(ejecucion.degeneracy) + "\n")
+                    if(ejecucion.PrintData and ejecucion.diffusion):
+                        file.write("\tDiffusion considered: \n") 
+                        file.write("\t\tSolvent:        "+ ejecucion.solvent +  "\n")
+                        file.write("\t\tRadius React-1: "+str(ejecucion.radius_1) + "\n")
+                        file.write("\t\tRadius React-2: "+str(ejecucion.radius_2) + "\n")
+                        file.write("\t\tRadius Reaction distance: "+ str(ejecucion.reaction_distance) + "\n")
+                    if(ejecucion.PrintData):
+                        file.write("\n\n")
+                    file.write("Gibbs Free Energy of reaction (kcal/mol):\t\t"
+                                + str(round(ejecucion.Greact, 2)) + "\n\n")
+                    
+                    file.write("Gibbs Free Energy of activation "
+                                    + ("with cage effects "if(ejecucion.cage_efects)else "") +
+                                    " (kcal/mol):\t"
+                                    + str(round(ejecucion.Gact, 2)) + "\n\n")
+                    
+                    file.write("Rate Constant "+("with cage effects "if(ejecucion.cage_efects)else "") + ":    "
+                                    + "{:.2e}".format(ejecucion.rateCte) + "\n\n")
+                    
+                    file.write("ALPH1:\t" + str(round(ejecucion.CalcularTunel.ALPH1, 2)) + "\n")  # ALPH1
+                    
+                    file.write("ALPH2:\t" + str(round(ejecucion.CalcularTunel.ALPH2, 2)) + "\n")  # ALPH2
+                    
+                    file.write("u:\t\t" + str(round(ejecucion.CalcularTunel.U, 2)) + "\n")  # u 
+                    
+                    file.write("Imag. Freq. (cm-1): \t"
+                                    + str(round(ejecucion.frequency_negative, 2)) + "\n\n") 
+                    
+                    file.write("Reaction enthalpies (dH)" + "\n")
+                    
+                    file.write("\tdH reaction (kcal/mol):  \t"
+                                    + str(round(ejecucion.dH_react, 2)) + "\n")
+                    
+                    file.write("\tdH activation (kcal/mol):\t"
+                                    + str(round(ejecucion.dHact, 2)) + "\n\n")
+                    
+                    file.write("Reaction ZPE (dZPE)  " + "\n") 
+                    
+                    file.write("\tdZPE reaction (kcal/mol):  \t" 
+                                    + str(round(ejecucion.Zreact, 2)) + "\n")   
+                    
+                    file.write("\tdZPE activation (kcal/mol):\t"
+                                    + str(round(ejecucion. Zact, 2)) + "\n\n")  
+                    
+                    file.write("Temperature (K):  " + str(round(ejecucion.temp, 2))
+                                    + ("\n\n") )    
+                    file.write("______________________________________\n")
 
-        file.close()
+                file.close()
 
+        except Exception as e:
+            from tkinter import messagebox
+            messagebox.showerror("Save error", str(e))
+        
     def run(self):
         self._principal.mainloop()
 
