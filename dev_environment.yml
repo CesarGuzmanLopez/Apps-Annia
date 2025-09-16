@@ -1,0 +1,28 @@
+name: apps-annia-dev
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9.*
+  - pip
+  - tk
+  - numpy>=1.21,<2.0
+  - matplotlib>=3.4,<3.8
+  - pillow>=8,<11
+  - certifi
+  - ca-certificates
+  - openssl
+  - setuptools
+  - wheel
+  - sqlite
+  - zlib
+  - pip:
+      - ttkthemes>=3.2.0
+      - pygubu==0.18
+      - pygubu-designer==0.22
+      - pyinstaller>=6,<7
+      - pyinstaller-hooks-contrib>=2021.3
+      - altgraph>=0.17
+      - pefile>=2021.9; platform_system == "Windows"
+      - pywin32-ctypes==0.2.0; platform_system == "Windows"
+

@@ -16,7 +16,7 @@ from ttkthemes import ThemedStyle
 from viewStructure import ViewStructure
 
 '''
-    Python 3.7.9
+    Python 3.9.*
     @author: Cesar Gerardo Guzman Lopez
     @Description:  Programa easy rate
 '''
