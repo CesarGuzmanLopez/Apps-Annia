@@ -125,7 +125,6 @@ class EntradaDato(ttk.Frame):
         if len(self.Archlog.Estructuras) == 0:
             self.Archlog = False
 
-
     @property
     def getDato(self) -> float:
         return self.__dato
@@ -163,7 +162,6 @@ class EntradaDato(ttk.Frame):
             self.labelEtiquetafilename.config(text="")
             self.filename = ""
 
-
 class exception_tunnel(Exception):
     """
     Exception for tunneling errors
@@ -173,13 +171,12 @@ class exception_tunnel(Exception):
         super(exception_tunnel, self).__init__(message)
         self.message = message
 
-
 class Ejecucion:
     '''
     Guarda la informacion de una ejecucion y se hacen los calculos
     '''
 
-    def __init__(self,  title: str = "Title",#NOSONAR
+    def __init__(self,  title: str = "Title",
                  react_1: Estructura = None,
                  react_2: Estructura = None,
                  transition_rate: Estructura = None,
@@ -192,7 +189,11 @@ class Ejecucion:
                  radius_2: float = nan,
                  reaction_distance: float = nan,
                  degen: float = nan,
-                 print_data = False):
+                 print_data = False,
+                 visc_custom: float = nan):
+        
+        self.visc_custom: float = visc_custom
+
         if ( transition_rate is None ):
             raise exception_tunnel("Please check your files are in the correct format,\n "
                 "if the error persists please contact the administrator")
@@ -248,13 +249,6 @@ class Ejecucion:
                                          - self.React_1.zpe.no_nan_value-self.React_2.zpe.no_nan_value)
         self.Zact: float = 627.5095 * (self.transition_rate.zpe.getValue
                                        - self.React_1.zpe.no_nan_value - self.React_2.zpe.no_nan_value)
-        """
-           Calculate Tunnel G
-        """
-        self.CalcularTunel.calculate(BARRZPE=self.Zact,
-                                     DELZPE=self.Zreact,
-                                     FREQ=abs(self.transition_rate.frecNeg.getValue),
-                                     TEMP=self.temp)
 
         gibbsR1 = self.React_1.Thermal_Free_Energies.no_nan_value    # NOSONAR
         gibbsR2 = self.React_2.Thermal_Free_Energies.no_nan_value    # NOSONAR
@@ -262,15 +256,15 @@ class Ejecucion:
         gibbsP1 = self.Product_1.Thermal_Free_Energies.no_nan_value  # NOSONAR
         gibbsP2 = self.product_2.Thermal_Free_Energies.no_nan_value  # NOSONAR
 
-        molarV = 0.08206 * self.temp  # NOSONAR
+        molarV = 0.08206 * self.temp  
 
-        countR = 1 if gibbsR1 == 0.0 or gibbsR2 == 0.0 else 2  # NOSONAR
-        countP = 1 if gibbsP1 == 0.0 or gibbsP2 == 0.0 else 2  # NOSONAR
+        countR = 1 if gibbsR1 == 0.0 or gibbsR2 == 0.0 else 2  
+        countP = 1 if gibbsP1 == 0.0 or gibbsP2 == 0.0 else 2  
 
-        deltaNr = countP - countR  # NOSONAR
-        deltaNt = 1 - countR  # NOSONAR
-        corr1Mr = R_GAS_KCAL * self.temp * log(pow(molarV, deltaNr))  # NOSONAR
-        corr1Mt = R_GAS_KCAL * self.temp * log(pow(molarV, deltaNt))  # NOSONAR
+        deltaNr = countP - countR  
+        deltaNt = 1 - countR  
+        corr1Mr = R_GAS_KCAL * self.temp * log(pow(molarV, deltaNr))  
+        corr1Mt = R_GAS_KCAL * self.temp * log(pow(molarV, deltaNt))  
 
         # Calor de reacción
         self.Greact: float = corr1Mr + 627.5095 * (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
@@ -278,15 +272,49 @@ class Ejecucion:
         self.Gact: float = corr1Mt + 627.5095 * (gibbsTS - gibbsR1 - gibbsR2)
 
         """
-            if use Cage Correction
+            If Cage Correction is used:
         """
         if (self.cage_efects and deltaNt != 0):
-            cageCorrAct = R_GAS_KCAL * self.temp * ((log(countR * # NOSONAR
+            cageCorrAct = R_GAS_KCAL * self.temp * ((log(countR * 
                                             pow(10, 2 * countR - 2))) - (countR - 1))  
             self.Gact: float = self.Gact - cageCorrAct
+        """
+            Tunnel section using classes in tst.py:
+        """
+        # Casos 1 y 2 (ΔG‡ > 0):
+        # 1) ΔG‡ > 0 y Zact > 0  -> calcular Eckart como siempre
+        # 2) ΔG‡ > 0 y Zact < 0  -> fijar factor de túnel = 1.0 (sin Eckart)
+        if self.Gact > 0:
+            if self.Zact > 0:
+                self.CalcularTunel.calculate(
+                    BARRZPE=self.Zact,
+                    DELZPE=self.Zreact,
+                    FREQ=abs(self.transition_rate.frecNeg.getValue),
+                    TEMP=self.temp
+                )
+            else:
+                # Barrera ZPE ≤ 0 → sin Eckart
+                self.CalcularTunel.Kappa = 1.0
+                # opcional: calcular U solo para mostrarlo
+                try:
+                    freq = abs(self.transition_rate.frecNeg.getValue)
+                    self.CalcularTunel.U = (self.CalcularTunel.HPLANCK * self.CalcularTunel.CLUZ * freq) / (self.CalcularTunel.BOLZ * self.temp)
+                except Exception:
+                    pass
+        else:
+            # ΔG‡ ≤ 0 → TST no aplica
+            self.warn_negative_Gact = True
+            self.CalcularTunel.Kappa = 1.0  # valor neutro, pero no calculamos k
+            self.rateCte = float('nan')
+            return
+        # tomar Kappa del objeto de túnel, con fallback
+        self.Kappa = getattr(self.CalcularTunel, "Kappa", getattr(self.CalcularTunel, "kappa", 1.0))
 
-        self.rateCte: float = self.degeneracy * self.CalcularTunel.G * (2.08e10 * self.temp * exp(-self.Gact / (R_GAS_KCAL * self.temp)))
+        self.rateCte: float = self.degeneracy * self.Kappa * (2.08e10 * self.temp * exp(-self.Gact / (R_GAS_KCAL * self.temp)))
 
+        """
+            If Diffusion is used:
+        """
         if (self.diffusion):
             # convertir Å → m
             rA_m = self.radius_1 * ANGSTROM_TO_M
@@ -303,17 +331,21 @@ class Ejecucion:
 
     @property
     def visc(self) -> float:
-        if(self.solvent == "Benzene"):
+        # Si el usuario seleccionó “Other” y proporcionó viscosidad válida
+        if (self.solvent or "").strip().lower() == "other" and isinstance(self.visc_custom, (int, float)) and not (self.visc_custom != self.visc_custom) and self.visc_custom > 0:
+            return float(self.visc_custom)
+
+        # Caso contrario, mapeo estándar (Pa·s)
+        if self.solvent == "Benzene":
             return 0.000604
-        elif(self.solvent == "Gas phase (Air)"):
+        elif self.solvent == "Gas phase (Air)":
             return 0.000018
-        elif(self.solvent == "Pentyl ethanoate"):
+        elif self.solvent == "Pentyl ethanoate":
             return 0.000862
-        elif(self.solvent == "Water"):
+        elif self.solvent == "Water":
             return 0.000891
         else:
             return nan
-
 
 class EasyRate:
 
@@ -347,7 +379,6 @@ class EasyRate:
         self.style.configure('Info.TLabel', foreground='#555555', background='#f7f7f7', font=('Helvetica', 12))
         self.style.configure('Small.TLabel', foreground='#666666', font=('Helvetica', 9))
 
-
     def menu(self):
         menubar = Menu(self.master)
         filemenu = Menu(menubar, tearoff=0)
@@ -379,7 +410,7 @@ class EasyRate:
         self.React_1       .Activar(etiqueta="React-1", command=self.def_react_1)
         self.React_2: EntradaDato = EntradaDato(tabla)
         self.React_2       .grid(row=3, column=1, columnspan=3)
-        self.React_2       .Activar(etiqueta="React-2", command=self.def_react_2)
+        self.React_2       .Activar(etiqueta="React-2 (If any)", command=self.def_react_2)
         self.transition_rate: EntradaDato = EntradaDato(tabla)
         self.transition_rate.grid(row=4, column=1, columnspan=3)
         self.transition_rate.Activar(etiqueta="Transition state", command=self.deftransition_rate)
@@ -389,7 +420,7 @@ class EasyRate:
                                command=self.def_product_1)
         self.product_2: EntradaDato = EntradaDato(tabla)
         self.product_2 .grid(row=6, column=1, columnspan=3)
-        self.product_2 .Activar(etiqueta="Product-2",
+        self.product_2 .Activar(etiqueta="Product-2 (If any)",
                                 command=self.defproduct_2)
 
     def _get_loaded_map(self):
@@ -409,6 +440,21 @@ class EasyRate:
             return False
         return True
 
+    def _assert_minimum_loaded(self) -> bool:
+        m = self._get_loaded_map()
+        # TS es obligatorio
+        if m["Transition state"] is None:
+            messagebox.showerror("Missing data", "Please load: Transition state")
+            return False
+        # Al menos un reactivo
+        if m["React-1"] is None and m["React-2"] is None:
+            messagebox.showerror("Missing data", "Please load at least one reactant (React-1 or React-2).")
+            return False
+        # Al menos un producto
+        if m["Product-1"] is None and m["Product-2"] is None:
+            messagebox.showerror("Missing data", "Please load at least one product (Product-1 or Product-2).")
+            return False
+        return True
 
     def _thermo_ok(self, s: Estructura) -> bool:
         try:
@@ -470,7 +516,6 @@ class EasyRate:
                 return False
         return True
 
-
     def def_react_1(self, estruct: Estructura):
         if not self._check_loaded("React-1", estruct): return
         # si llega aquí, ya es válido:
@@ -525,34 +570,49 @@ class EasyRate:
         self.Reaction_path_degeneracy.grid(column=4, row=2, padx=1, pady=5)
         self.Reaction_path_degeneracy.insert(0, "1")
 
+    def _on_solvent_change(self, _event=None):
+        # habilita el campo de viscosidad solo si eligen "Other" y Diffusion = YES
+        if self.diffusion.get() == 1 and self.solvent.get().strip().lower() == "other":
+            self.entry_visc.config(state='normal')
+        else:
+            self.entry_visc.config(state='disabled')
+
     def seccion_diffusion(self, pos_x=30, pos_y=440):
         cont = ttk.LabelFrame(self._principal, text="Diffusion (optional)", style='Card.TLabelframe')
         cont.place(x=str(pos_x), y=str(pos_y))
-        cont.configure(width='320', height='160')
-
+        cont.configure(width='360', height='190')
         # fila 0: toggle
         row = 0
         self.diffusion = IntVar(value=0)
-        ttk.Label(cont, text="Do you want to consider diffusion?").grid(row=row, column=0, sticky="w", padx=0, pady=(10, 2))
-        ttk.Label(cont, text="Yes").grid(row=row, padx=10, column=1, sticky="w")
-        ttk.Radiobutton(cont, value=1, variable=self.diffusion, command=self.isdiffusion).grid(row=row, padx=40, column=1, sticky="w")
+        ttk.Label(cont, text="Do you want to consider diffusion?").grid(row=row, column=0, sticky="w", padx=10, pady=(10, 2))
+        ttk.Label(cont, text="Yes").grid(row=row, column=1, sticky="w")
+        ttk.Radiobutton(cont, value=1, variable=self.diffusion, command=self.isdiffusion).grid(row=row, column=1, sticky="w", padx=(35,0))
         ttk.Label(cont, text="No").grid(row=row, column=1, sticky="w", padx=(70,0))
-        ttk.Radiobutton(cont, value=0, variable=self.diffusion, command=self.isdiffusion).grid(row=row, padx=90, column=1, sticky="w")
+        ttk.Radiobutton(cont, value=0, variable=self.diffusion, command=self.isdiffusion).grid(row=row, column=1, sticky="w", padx=(95,0))
 
-        # fila 1: solvente
+        # Solvent
         row += 1
-        ttk.Label(cont, text="Solvent").grid(row=row, column=0, sticky="w", padx=10, pady=(6, 2))
+        ttk.Label(cont, text="Solvent").grid(row=row, column=0, sticky="w", padx=10, pady=(8, 2))
         self.solvent = ttk.Combobox(cont, state='disabled', width=18)
-        self.solvent.grid(row=row, column=1, columnspan=2, sticky="w", pady=(6, 2))
+        self.solvent.grid(row=row, column=1, columnspan=2, sticky="w", pady=(8, 2))
         values = list(self.solvent["values"])
-        self.solvent["values"] = values + ["", "Benzene", "Gas phase (Air)", "Pentyl ethanoate", "Water"]
+        # agrega “Other” al final
+        self.solvent["values"] = values + ["", "Benzene", "Gas phase (Air)", "Pentyl ethanoate", "Water", "Other"]
+        self.solvent.bind("<<ComboboxSelected>>", self._on_solvent_change)
 
-        # fila 2-3: radios y distancia (dos columnas)
+        # Custom viscosity (Pa·s) – solo cuando solvent == "Other"
+        row += 1
+        ttk.Label(cont, text="Viscosity (Pa·s) (If other)").grid(row=row, column=0, sticky="w", padx=10, pady=(2, 2))
+        self.entry_visc = Entry(cont, width=10, state='disabled')
+        self.entry_visc.grid(row=row, column=1, sticky="w", pady=(2, 2))
+
+        # Radii and Rxn distance
         row += 1
         ttk.Label(cont, text="Radius (Å) — Reactant-1").grid(row=row, column=0, sticky="w", padx=10, pady=(6, 2))
         self.radius_react_1 = Entry(cont, width=10, state='disabled')
         self.radius_react_1.grid(row=row, column=1, sticky="w", pady=(6, 2))
-        row += 1 
+
+        row += 1
         ttk.Label(cont, text="Radius (Å) — Reactant-2").grid(row=row, column=0, sticky="w", padx=10, pady=(6, 2))
         self.radius_react_2 = Entry(cont, width=10, state='disabled')
         self.radius_react_2.grid(row=row, column=1, sticky="w", pady=(6, 2))
@@ -562,8 +622,7 @@ class EasyRate:
         self.reaction_distance = Entry(cont, width=10, state='disabled')
         self.reaction_distance.grid(row=row, column=1, sticky="w", pady=(2, 10))
 
-        # estirar columnas bonitas
-        for c in range(5):
+        for c in range(4):
             cont.columnconfigure(c, weight=1)
 
     def isdiffusion(self):
@@ -573,11 +632,17 @@ class EasyRate:
             self.radius_react_2['state'] = 'normal'
             self.solvent['state'] = 'normal'
             self.style.configure('TCombobox', fieldbackground='white')
+            # Si Other pide viscosidad
+            if self.solvent.get().strip().lower() == "other":
+                self.entry_visc.config(state='normal')
+            else:
+                self.entry_visc.config(state='disabled')
         else:
             self.radius_react_1['state'] = 'disabled'
             self.radius_react_2['state'] = 'disabled'
             self.reaction_distance['state'] = 'disabled'
             self.solvent['state'] = 'disabled'
+            self.entry_visc.config(state='disabled')
             self.style.configure('TCombobox', fieldbackground='#f0f0f0')
 
     def clear_results(self):
@@ -795,7 +860,7 @@ class EasyRate:
 
     def run_calc(self):
         # 1) Asegurar que TODOS los archivos están cargados
-        if not self._assert_all_loaded():
+        if not self._assert_minimum_loaded():
             return
 
         # --- Si Diffusion = YES, obliga solvente + radios + distancia > 0 ---
@@ -810,6 +875,13 @@ class EasyRate:
             r1 = self._require_pos_float(self.radius_react_1, "Radius — Reactant-1 (Å)", errors)
             r2 = self._require_pos_float(self.radius_react_2, "Radius — Reactant-2 (Å)", errors)
             rr = self._require_pos_float(self.reaction_distance, "Reaction distance (Å)", errors)
+
+            #Si solvente es "Other", pedir viscosidad en Pa * s 
+            self._visc_custom = float("nan")
+            if self.solvent.get().strip().lower() == "other":
+                v = self._require_pos_float(self.entry_visc, "Viscosity (Pa·s)",errors)
+                if v is not None:
+                    self._visc_custom = v
 
             if errors:
                 messagebox.showerror(
@@ -827,8 +899,10 @@ class EasyRate:
             self._diff_r1 = 0.0
             self._diff_r2 = 0.0
             self._diff_rr = 0.0
+            self._visc_custom = float("nan")
 
         # Si ya validas al cargar, aquí asumimos que todas las estructuras están OK.
+
         ejecucion_actual = Ejecucion(
             str(self.Title.get()),
             self.React_1.get_Estructura_Seleccionada(),
@@ -843,10 +917,29 @@ class EasyRate:
             self._diff_r2,
             self._diff_rr,
             float(self.Reaction_path_degeneracy.get() or "0"),
-            self.print_data.get() == 1
+            self.print_data.get() == 1,
+            # nuevo argumento:
+            visc_custom=self._visc_custom
         )
+        try:
+            ejecucion_actual.run()
+        except exception_tunnel as e:
+            from tkinter import messagebox
+            messagebox.showerror("TST not applicable", str(e))
+            return
+        except Exception as e:
+            from tkinter import messagebox
+            messagebox.showerror("Run error", str(e))
+            return
 
-        ejecucion_actual.run()
+        # Advertencia si ΔG‡ < 0 (tu requisito)
+        if getattr(ejecucion_actual, "warn_negative_Gact", False):
+            from tkinter import messagebox
+            messagebox.showwarning(
+                "Negative free-energy barrier",
+                "ΔG‡ is negative for this pathway.\n"
+                "Conventional TST can't be used for this mechanism."
+            )
 
        # Si marcaron "Print data input? = Yes", manda el resumen a Details
         if self.print_data.get() == 1:
@@ -872,7 +965,7 @@ class EasyRate:
         self.salida.insert(
             END, ("u:" + str(round(ejecucion_actual.CalcularTunel.U, 2)) + "\n"))
         self.salida.insert(
-            END, ("G:" + str(round(ejecucion_actual.CalcularTunel.G, 2)) + "\n"))
+            END, ("Kappa:" + str(round(ejecucion_actual.CalcularTunel.Kappa, 2)) + "\n"))
         self.salida.insert(END, ("_____________________________\n"))
         self.salida2.insert(
             END, ("Pathway:  " + str(ejecucion_actual.pathway) + "\n"))
@@ -896,7 +989,7 @@ class EasyRate:
         self.Tunneling.insert(0, " ")
         self.Tunneling.delete(0, END)
         self.Tunneling.insert(
-            0, str(round(ejecucion_actual.CalcularTunel.G, 2)))
+            0, str(round(ejecucion_actual.CalcularTunel.Kappa, 2)))
         self.Tunneling['state'] = "readonly"
 
     def about(self):
@@ -1096,7 +1189,6 @@ class EasyRate:
         ttk.Button(footer, text="Copy Contacts", command=copy_contacts).grid(row=0, column=4, sticky="w", padx=(8, 0))
         ttk.Button(footer, text="Close", command=window.destroy).grid(row=0, column=5, sticky="e")
 
-
     def on_save(self):
         import os
         initial = LAST_DIR if (LAST_DIR and os.path.isdir(LAST_DIR)) else os.getcwd()
@@ -1175,7 +1267,6 @@ class EasyRate:
         
     def run(self):
         self._principal.mainloop()
-
 
 if __name__ == '__main__':
     app = EasyRate()
