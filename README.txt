@@ -1,3 +1,13 @@
+Para compilar en mac y crear el ejecutable:
+
+pyinstaller main.py --name "EasyRate" --windowed --osx-bundle-identifier com.eggl.easyrate
+
+Si tuvieras un logo:
+
+pyinstaller main.py --name "EasyRate" --windowed --icon=icon.icns --osx-bundle-identifier com.eggl.easyrate
+pyinstaller main.py --name "EasyRate" --windowed --icon=icon.ico --osx-bundle-identifier com.eggl.easyrate
+
+
 Para poder desarrollar las apps que se tienen en python es necesario primero clonar el repositorio
 
 $ git clone --recurse-submodules https://github.com/CesarGuzmanLopez/Apps-Annia
