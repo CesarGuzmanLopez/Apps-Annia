@@ -1,0 +1,12 @@
+numpy
+matplotlib
+pillow
+certifi
+setuptools
+wheel
+ttkthemes
+pygubu
+pygubu-designer
+pyinstaller
+pyinstaller-hooks-contrib
+altgraph
