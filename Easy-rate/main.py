@@ -1,11 +1,29 @@
-from math import exp, log, isnan, nan
+import os
+from math import exp, isnan, log, nan
 from os import path
 from threading import Thread as thTread
 from time import sleep as tsleep
-from tkinter import (END, Button, E, Entry, IntVar, Label, Menu, N, S,
-                     Scrollbar, Tk, Toplevel, W, filedialog, ttk)
+from tkinter import (
+    END,
+    Button,
+    E,
+    Entry,
+    IntVar,
+    Label,
+    Menu,
+    N,
+    S,
+    Scrollbar,
+    Tk,
+    Toplevel,
+    W,
+    filedialog,
+    messagebox,
+    ttk,
+)
 from tkinter.filedialog import askopenfilename
 from tkinter.scrolledtext import ScrolledText
+
 from CK.tst import tst
 from read_log_gaussian.Estructura import Estructura
 from read_log_gaussian.read_log_gaussian import read_log_gaussian
@@ -13,30 +31,37 @@ from SeslectStructura import SelectStructure
 from tkdialog import WaitAlert
 from ttkthemes import ThemedStyle
 from viewStructure import ViewStructure
-from tkinter import messagebox
-import os
 
-'''
+"""
     Python 3.9.*
     @author: Cesar Gerardo Guzman Lopez
     @Description:  Programa easy rate
-'''
+"""
 
 # constantes físicas / conversión (arriba del archivo)
 HARTREE_TO_KCAL = 627.5095
-R_GAS_KCAL = 1.987/1000     # kcal·mol−1·K−1
-KB = 1.380649e-23           # J/K
+R_GAS_KCAL = 1.987 / 1000  # kcal·mol−1·K−1
+KB = 1.380649e-23  # J/K
 NA = 6.02214076e23
 PI = 3.141592653589793
 ANGSTROM_TO_M = 1e-10
 
 LAST_DIR = None  # recuerda la última carpeta usada
 
+
 class EntradaDato(ttk.Frame):
-    '''
+    """
     Analiza los datos que obtenidos del log gaussian
-    '''
-    def Activar(self, etiqueta="Sin nombre", buttontext="Browse", dato=0.0, info="", command=None):
+    """
+
+    def Activar(
+        self,
+        etiqueta="Sin nombre",
+        buttontext="Browse",
+        dato=0.0,
+        info="",
+        command=None,
+    ):
         self.__dato = dato
         self.Etiqueta = etiqueta
         self.textoButton = buttontext
@@ -46,22 +71,23 @@ class EntradaDato(ttk.Frame):
         self.datoentrada.insert(0, str(self.__dato))
         self.datoentrada["state"] = "disabled"
         self.botonActivo = ttk.Button(
-            self, text=self.textoButton, width=7, command=self.open)
+            self, text=self.textoButton, width=7, command=self.open
+        )
         self.grid(pady=5)
         self.labelEtiquetaNombre.grid(row=0, column=1)
         self.datoentrada.grid(row=0, column=2)
         self.botonActivo.grid(row=0, column=3)
         self.filname = ""
         self.esperar: int = 0
-        self.botonverfile = ttk.Button(
-            self, text="view", width=5, command=self.view)
+        self.botonverfile = ttk.Button(self, text="view", width=5, command=self.view)
         self.botonverfile.grid(row=0, column=4, padx=4)
-        self.botonverfile['state'] = "disabled"
+        self.botonverfile["state"] = "disabled"
 
         self.botonclearfile = ttk.Button(
-            self, text="clear", width=5, command=self.clear)
+            self, text="clear", width=5, command=self.clear
+        )
         self.botonclearfile.grid(row=0, column=5, padx=4)
-        self.botonclearfile['state'] = "disabled"
+        self.botonclearfile["state"] = "disabled"
 
         self.labelEtiquetafilename = ttk.Label(self, text="")
         self.labelEtiquetafilename.grid(row=1, column=3, columnspan=2, padx=4)
@@ -71,26 +97,32 @@ class EntradaDato(ttk.Frame):
     def clear(self):
         self.Archlog = None
         self.EstructuraSeleccionada = None
-        self.botonverfile['state'] = "disabled"
-        self.botonclearfile['state'] = "disabled"
+        self.botonverfile["state"] = "disabled"
+        self.botonclearfile["state"] = "disabled"
         self.labelEtiquetafilename.config(text="")
-        self.datoentrada.config(state='normal')
+        self.datoentrada.config(state="normal")
         self.datoentrada.delete(0, END)  # clear the entry
         self.datoentrada.insert(0, str("0.0"))
-        self.datoentrada.config(state='disabled')
+        self.datoentrada.config(state="disabled")
 
     def view(self):
         ViewStructure(master=self, estructure=self.EstructuraSeleccionada)
 
     def open(self):
         global LAST_DIR
-        filetypes = [("log Gaussian file","*.log"), ("txt format Gaussian","*.txt"), ("out Gaussian file","*.out")]
+        filetypes = [
+            ("log Gaussian file", "*.log"),
+            ("txt format Gaussian", "*.txt"),
+            ("out Gaussian file", "*.out"),
+        ]
         initial = LAST_DIR if (LAST_DIR and os.path.isdir(LAST_DIR)) else os.getcwd()
-        self.filename = askopenfilename(initialdir=initial,filetypes=filetypes,title="Choose a file:")
+        self.filename = askopenfilename(
+            initialdir=initial, filetypes=filetypes, title="Choose a file:"
+        )
 
         if not self.filename:
             return
-        
+
         LAST_DIR = os.path.dirname(self.filename)
 
         # Lanzar hilo
@@ -107,10 +139,10 @@ class EntradaDato(ttk.Frame):
         if self.Archlog is None:
             self.after(100, self._check_reader_done)
             return
-        
+
         ok = bool(self.Archlog)
-        self.botonverfile['state']   = "normal" if ok else "disabled"
-        self.botonclearfile['state'] = "normal" if ok else "disabled"
+        self.botonverfile["state"] = "normal" if ok else "disabled"
+        self.botonclearfile["state"] = "normal" if ok else "disabled"
         if ok:
             self.SeleccionarEstructura()
             self.Archlog = None
@@ -120,8 +152,8 @@ class EntradaDato(ttk.Frame):
         self.EstructuraSeleccionada = None
         self.Archlog = read_log_gaussian(self.filename)
         tsleep(0.5)
-        self.botonverfile['state'] = "normal"
-        self.botonclearfile['state'] = "normal"
+        self.botonverfile["state"] = "normal"
+        self.botonclearfile["state"] = "normal"
         if len(self.Archlog.Estructuras) == 0:
             self.Archlog = False
 
@@ -138,29 +170,28 @@ class EntradaDato(ttk.Frame):
 
     def setDato(self, un_dato: float = 0.0):
         self.__dato = un_dato
-        self.datoentrada.config(state='normal')
+        self.datoentrada.config(state="normal")
         self.datoentrada.delete(0, END)
         self.datoentrada.insert(0, str(un_dato))
-        self.datoentrada.config(state='disabled')
+        self.datoentrada.config(state="disabled")
 
     def SeleccionarEstructura(self):
         self.EstructuraSeleccionada = None
-        if(len(self.Archlog.Estructuras) == 1):
+        if len(self.Archlog.Estructuras) == 1:
             self.EstructuraSeleccionada = self.Archlog.Estructuras[0]
         else:
-            self.a = SelectStructure(
-                parent=self, estructuras=self.Archlog.Estructuras)
-            if(self.a == None):
+            self.a = SelectStructure(parent=self, estructuras=self.Archlog.Estructuras)
+            if self.a == None:
                 self.EstructuraSeleccionada = None
             else:
                 self.EstructuraSeleccionada = self.a.result
-        if(self.EstructuraSeleccionada != None):
+        if self.EstructuraSeleccionada != None:
             self.comando(self.EstructuraSeleccionada)
-            self.labelEtiquetafilename.config(
-                text=path.basename(self.filename))
+            self.labelEtiquetafilename.config(text=path.basename(self.filename))
         else:
             self.labelEtiquetafilename.config(text="")
             self.filename = ""
+
 
 class exception_tunnel(Exception):
     """
@@ -171,39 +202,44 @@ class exception_tunnel(Exception):
         super(exception_tunnel, self).__init__(message)
         self.message = message
 
-class Ejecucion:
-    '''
-    Guarda la informacion de una ejecucion y se hacen los calculos
-    '''
 
-    def __init__(self,  title: str = "Title",
-                 react_1: Estructura = None,
-                 react_2: Estructura = None,
-                 transition_rate: Estructura = None,
-                 product_1: Estructura = None,
-                 product_2: Estructura = None,
-                 cage_efects: bool = False,
-                 diffusion: bool = False,
-                 solvent: str = "",
-                 radius_1: float = nan,
-                 radius_2: float = nan,
-                 reaction_distance: float = nan,
-                 degen: float = nan,
-                 print_data = False,
-                 visc_custom: float = nan):
-        
+class Ejecucion:
+    """
+    Guarda la informacion de una ejecucion y se hacen los calculos
+    """
+
+    def __init__(
+        self,
+        title: str = "Title",
+        react_1: Estructura = None,
+        react_2: Estructura = None,
+        transition_rate: Estructura = None,
+        product_1: Estructura = None,
+        product_2: Estructura = None,
+        cage_efects: bool = False,
+        diffusion: bool = False,
+        solvent: str = "",
+        radius_1: float = nan,
+        radius_2: float = nan,
+        reaction_distance: float = nan,
+        degen: float = nan,
+        print_data=False,
+        visc_custom: float = nan,
+    ):
         self.visc_custom: float = visc_custom
 
-        if ( transition_rate is None ):
-            raise exception_tunnel("Please check your files are in the correct format,\n "
-                "if the error persists please contact the administrator")
-        if(react_1 is None):
+        if transition_rate is None:
+            raise exception_tunnel(
+                "Please check your files are in the correct format,\n "
+                "if the error persists please contact the administrator"
+            )
+        if react_1 is None:
             react_1 = Estructura()
-        if(product_1 is None):
+        if product_1 is None:
             product_1 = Estructura()
-        if(react_2 is None):
+        if react_2 is None:
             react_2 = Estructura()
-        if(product_2 is None):
+        if product_2 is None:
             product_2 = Estructura()
         self.pathway: str = title
         self.title = title
@@ -233,50 +269,68 @@ class Ejecucion:
         self.PrintData: bool = print_data
 
     def run(self) -> None:
-
         self.ejecutable = True
         """
             Reaction enthalpies (dh)
         """
-        self.dH_react: float = 627.5095 * (self.Product_1.eH_ts.no_nan_value +
-                                           self.product_2.eH_ts.no_nan_value - self.React_1.eH_ts.no_nan_value - self.React_2.eH_ts.no_nan_value)
-        self.dHact: float = 627.5095 * (self.transition_rate.eH_ts.getValue -
-                                        self.React_1.eH_ts.no_nan_value - self.React_2.eH_ts.no_nan_value)
+        self.dH_react: float = 627.5095 * (
+            self.Product_1.eH_ts.no_nan_value
+            + self.product_2.eH_ts.no_nan_value
+            - self.React_1.eH_ts.no_nan_value
+            - self.React_2.eH_ts.no_nan_value
+        )
+        self.dHact: float = 627.5095 * (
+            self.transition_rate.eH_ts.getValue
+            - self.React_1.eH_ts.no_nan_value
+            - self.React_2.eH_ts.no_nan_value
+        )
         """
             Reaction Zero_point_Energies (dh)
         """
-        self.Zreact: float = 627.5095 * (self.product_2.zpe.no_nan_value + self.Product_1.zpe.no_nan_value
-                                         - self.React_1.zpe.no_nan_value-self.React_2.zpe.no_nan_value)
-        self.Zact: float = 627.5095 * (self.transition_rate.zpe.getValue
-                                       - self.React_1.zpe.no_nan_value - self.React_2.zpe.no_nan_value)
+        self.Zreact: float = 627.5095 * (
+            self.product_2.zpe.no_nan_value
+            + self.Product_1.zpe.no_nan_value
+            - self.React_1.zpe.no_nan_value
+            - self.React_2.zpe.no_nan_value
+        )
+        self.Zact: float = 627.5095 * (
+            self.transition_rate.zpe.getValue
+            - self.React_1.zpe.no_nan_value
+            - self.React_2.zpe.no_nan_value
+        )
 
-        gibbsR1 = self.React_1.Thermal_Free_Energies.no_nan_value    # NOSONAR
-        gibbsR2 = self.React_2.Thermal_Free_Energies.no_nan_value    # NOSONAR
+        gibbsR1 = self.React_1.Thermal_Free_Energies.no_nan_value  # NOSONAR
+        gibbsR2 = self.React_2.Thermal_Free_Energies.no_nan_value  # NOSONAR
         gibbsTS = self.transition_rate.Thermal_Free_Energies.getValue  # NOSONAR
         gibbsP1 = self.Product_1.Thermal_Free_Energies.no_nan_value  # NOSONAR
         gibbsP2 = self.product_2.Thermal_Free_Energies.no_nan_value  # NOSONAR
 
-        molarV = 0.08206 * self.temp  
+        molarV = 0.08206 * self.temp
 
-        countR = 1 if gibbsR1 == 0.0 or gibbsR2 == 0.0 else 2  
-        countP = 1 if gibbsP1 == 0.0 or gibbsP2 == 0.0 else 2  
+        countR = 1 if gibbsR1 == 0.0 or gibbsR2 == 0.0 else 2
+        countP = 1 if gibbsP1 == 0.0 or gibbsP2 == 0.0 else 2
 
-        deltaNr = countP - countR  
-        deltaNt = 1 - countR  
-        corr1Mr = R_GAS_KCAL * self.temp * log(pow(molarV, deltaNr))  
-        corr1Mt = R_GAS_KCAL * self.temp * log(pow(molarV, deltaNt))  
+        deltaNr = countP - countR
+        deltaNt = 1 - countR
+        corr1Mr = R_GAS_KCAL * self.temp * log(pow(molarV, deltaNr))
+        corr1Mt = R_GAS_KCAL * self.temp * log(pow(molarV, deltaNt))
 
         # Calor de reacción
-        self.Greact: float = corr1Mr + 627.5095 * (gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2)
+        self.Greact: float = corr1Mr + 627.5095 * (
+            gibbsP2 + gibbsP1 - gibbsR1 - gibbsR2
+        )
         # Energia de activación
         self.Gact: float = corr1Mt + 627.5095 * (gibbsTS - gibbsR1 - gibbsR2)
 
         """
             If Cage Correction is used:
         """
-        if (self.cage_efects and deltaNt != 0):
-            cageCorrAct = R_GAS_KCAL * self.temp * ((log(countR * 
-                                            pow(10, 2 * countR - 2))) - (countR - 1))  
+        if self.cage_efects and deltaNt != 0:
+            cageCorrAct = (
+                R_GAS_KCAL
+                * self.temp
+                * ((log(countR * pow(10, 2 * countR - 2))) - (countR - 1))
+            )
             self.Gact: float = self.Gact - cageCorrAct
         """
             Tunnel section using classes in tst.py:
@@ -290,7 +344,7 @@ class Ejecucion:
                     BARRZPE=self.Zact,
                     DELZPE=self.Zreact,
                     FREQ=abs(self.transition_rate.frecNeg.getValue),
-                    TEMP=self.temp
+                    TEMP=self.temp,
                 )
             else:
                 # Barrera ZPE ≤ 0 → sin Eckart
@@ -298,24 +352,32 @@ class Ejecucion:
                 # opcional: calcular U solo para mostrarlo
                 try:
                     freq = abs(self.transition_rate.frecNeg.getValue)
-                    self.CalcularTunel.U = (self.CalcularTunel.HPLANCK * self.CalcularTunel.CLUZ * freq) / (self.CalcularTunel.BOLZ * self.temp)
+                    self.CalcularTunel.U = (
+                        self.CalcularTunel.HPLANCK * self.CalcularTunel.CLUZ * freq
+                    ) / (self.CalcularTunel.BOLZ * self.temp)
                 except Exception:
                     pass
         else:
             # ΔG‡ ≤ 0 → TST no aplica
             self.warn_negative_Gact = True
             self.CalcularTunel.Kappa = 1.0  # valor neutro, pero no calculamos k
-            self.rateCte = float('nan')
+            self.rateCte = float("nan")
             return
         # tomar Kappa del objeto de túnel, con fallback
-        self.Kappa = getattr(self.CalcularTunel, "Kappa", getattr(self.CalcularTunel, "kappa", 1.0))
+        self.Kappa = getattr(
+            self.CalcularTunel, "Kappa", getattr(self.CalcularTunel, "kappa", 1.0)
+        )
 
-        self.rateCte: float = self.degeneracy * self.Kappa * (2.08e10 * self.temp * exp(-self.Gact / (R_GAS_KCAL * self.temp)))
+        self.rateCte: float = (
+            self.degeneracy
+            * self.Kappa
+            * (2.08e10 * self.temp * exp(-self.Gact / (R_GAS_KCAL * self.temp)))
+        )
 
         """
             If Diffusion is used:
         """
-        if (self.diffusion):
+        if self.diffusion:
             # convertir Å → m
             rA_m = self.radius_1 * ANGSTROM_TO_M
             rB_m = self.radius_2 * ANGSTROM_TO_M
@@ -332,7 +394,12 @@ class Ejecucion:
     @property
     def visc(self) -> float:
         # Si el usuario seleccionó “Other” y proporcionó viscosidad válida
-        if (self.solvent or "").strip().lower() == "other" and isinstance(self.visc_custom, (int, float)) and not (self.visc_custom != self.visc_custom) and self.visc_custom > 0:
+        if (
+            (self.solvent or "").strip().lower() == "other"
+            and isinstance(self.visc_custom, (int, float))
+            and not (self.visc_custom != self.visc_custom)
+            and self.visc_custom > 0
+        ):
             return float(self.visc_custom)
 
         # Caso contrario, mapeo estándar (Pa·s)
@@ -347,37 +414,47 @@ class Ejecucion:
         else:
             return nan
 
-class EasyRate:
 
+class EasyRate:
     def __init__(self, master=None):
         self.Ejecuciones: list[Ejecucion] = list()
         self.master = Tk() if master is None else Toplevel(master)
         self._principal = ttk.Frame(self.master)
         ttk.setup_master(self.master)
         self.style = ThemedStyle(self.master)
-        self._principal.pack_propagate(True)
-        self._principal.place(
-            anchor='nw', bordermode='outside', x=str(0), y=str(0))
+        self._principal.pack(fill="both", expand=True, padx=5, pady=5)
         self.master.title("Easy Rate 2.0")
-        self.master.resizable(False, False)
-        self.master.geometry("1160x680")
-        self.frame_principal = ttk.Frame(self._principal)
-        self._principal.configure(width='1500', height='800')
+        self.master.resizable(True, True)
+        self.master.geometry("1200x750")
+        self.master.minsize(1100, 700)
+
+        # Configurar grid para la ventana principal
+        self._principal.columnconfigure(0, weight=0)  # Columna izquierda (inputs)
+        self._principal.columnconfigure(1, weight=1)  # Columna derecha (resultados)
+        self._principal.rowconfigure(0, weight=1)
+
         self.menu()
+        self.style.set_theme("clearlooks")
+        self.style.configure(".", background="#f0f0f0", font=("Helvetica", 11))
+        self.style.configure("TCombobox", fieldbackground="#f0f0f0")
+        # --- Estilos "card" y textos informativos ---
+        self.style.configure("Card.TLabelframe", background="#f7f7f7")
+        self.style.configure("Card.TLabelframe.Label", font=("Helvetica", 12, "bold"))
+        self.style.configure(
+            "Info.TLabel",
+            foreground="#555555",
+            background="#f7f7f7",
+            font=("Helvetica", 10),
+        )
+        self.style.configure(
+            "Small.TLabel", foreground="#666666", font=("Helvetica", 9)
+        )
+
+        # Crear las secciones con el nuevo layout
+        self.seccion_leer_archivos()
         self.seccion_datos_2()
         self.seccion_diffusion()
         self.seccion_pantalla()
-        self.seccion_leer_archivos()
-        self.style.set_theme('clearlooks')
-        #self.style.set_theme('winxpblue')
-        #self.style.configure('.', background='#f0f0f0', font=('calibri', 9))
-        self.style.configure('.', background='#f0f0f0', font=('Helvetica', 11)) 
-        self.style.configure('TCombobox', fieldbackground='#f0f0f0')
-        # --- Estilos "card" y textos informativos ---
-        self.style.configure('Card.TLabelframe', background='#f7f7f7')
-        self.style.configure('Card.TLabelframe.Label', font=('Helvetica', 12, 'bold'))
-        self.style.configure('Info.TLabel', foreground='#555555', background='#f7f7f7', font=('Helvetica', 12))
-        self.style.configure('Small.TLabel', foreground='#666666', font=('Helvetica', 9))
 
     def menu(self):
         menubar = Menu(self.master)
@@ -390,46 +467,56 @@ class EasyRate:
         ayuda.add_command(label="About", command=self.about)
         self.master.config(menu=menubar)
 
-    def seccion_leer_archivos(self, pos_x=10, pos_y=10):
-        _seccion_leer_archivos = ttk.Frame(self._principal)
-        _seccion_leer_archivos.configure(width='480', height='305')
-        label_data_entry = ttk.Label(
-            self._principal, text="Data entry", font=('calibri', 9, "bold"))
-        label_data_entry.place(x=str(pos_x), y=str(pos_y))
-        _seccion_leer_archivos.place(
-            anchor='nw', bordermode='outside', x=str(pos_x), y=str(pos_y+10))
+    def seccion_leer_archivos(self):
+        # Frame izquierdo que contiene todo el panel de entrada
+        left_panel = ttk.Frame(self._principal)
+        left_panel.grid(row=0, column=0, sticky="nsew", padx=(5, 10), pady=5)
+
+        _seccion_leer_archivos = ttk.LabelFrame(
+            left_panel, text="Data entry", style="Card.TLabelframe"
+        )
+        _seccion_leer_archivos.pack(fill="x", padx=5, pady=5)
+
         tabla = ttk.Frame(_seccion_leer_archivos)
-        tabla.place(anchor='nw', bordermode='outside', x='10', y='10')
+        tabla.pack(fill="x", padx=10, pady=10)
+
         label_etiqueta_nombre = ttk.Label(tabla, text="Run title")
-        label_etiqueta_nombre.grid(row=1, column=1)
-        self.Title: Entry = Entry(tabla)
+        label_etiqueta_nombre.grid(row=0, column=0, sticky="w", pady=5)
+        self.Title: Entry = Entry(tabla, width=25)
         self.Title.insert(0, str("Title"))
-        self.Title.grid(row=1, column=2)
+        self.Title.grid(row=0, column=1, columnspan=2, sticky="ew", pady=5, padx=(5, 0))
+
         self.React_1: EntradaDato = EntradaDato(tabla)
-        self.React_1       .grid(row=2, column=1, columnspan=3)
-        self.React_1       .Activar(etiqueta="React-1", command=self.def_react_1)
+        self.React_1.grid(row=1, column=0, columnspan=3, sticky="ew")
+        self.React_1.Activar(etiqueta="React-1", command=self.def_react_1)
+
         self.React_2: EntradaDato = EntradaDato(tabla)
-        self.React_2       .grid(row=3, column=1, columnspan=3)
-        self.React_2       .Activar(etiqueta="React-2 (If any)", command=self.def_react_2)
+        self.React_2.grid(row=2, column=0, columnspan=3, sticky="ew")
+        self.React_2.Activar(etiqueta="React-2 (If any)", command=self.def_react_2)
+
         self.transition_rate: EntradaDato = EntradaDato(tabla)
-        self.transition_rate.grid(row=4, column=1, columnspan=3)
-        self.transition_rate.Activar(etiqueta="Transition state", command=self.deftransition_rate)
+        self.transition_rate.grid(row=3, column=0, columnspan=3, sticky="ew")
+        self.transition_rate.Activar(
+            etiqueta="Transition state", command=self.deftransition_rate
+        )
+
         self.Product_1: EntradaDato = EntradaDato(tabla)
-        self.Product_1.grid(row=5, column=1, columnspan=3)
-        self.Product_1.Activar(etiqueta="Product-1 ",
-                               command=self.def_product_1)
+        self.Product_1.grid(row=4, column=0, columnspan=3, sticky="ew")
+        self.Product_1.Activar(etiqueta="Product-1", command=self.def_product_1)
+
         self.product_2: EntradaDato = EntradaDato(tabla)
-        self.product_2 .grid(row=6, column=1, columnspan=3)
-        self.product_2 .Activar(etiqueta="Product-2 (If any)",
-                                command=self.defproduct_2)
+        self.product_2.grid(row=5, column=0, columnspan=3, sticky="ew")
+        self.product_2.Activar(etiqueta="Product-2 (If any)", command=self.defproduct_2)
+
+        tabla.columnconfigure(1, weight=1)
 
     def _get_loaded_map(self):
         return {
-            "React-1":         self.React_1.get_Estructura_Seleccionada(),
-            "React-2":         self.React_2.get_Estructura_Seleccionada(),
-            "Transition state":self.transition_rate.get_Estructura_Seleccionada(),
-            "Product-1":       self.Product_1.get_Estructura_Seleccionada(),
-            "Product-2":       self.product_2.get_Estructura_Seleccionada(),
+            "React-1": self.React_1.get_Estructura_Seleccionada(),
+            "React-2": self.React_2.get_Estructura_Seleccionada(),
+            "Transition state": self.transition_rate.get_Estructura_Seleccionada(),
+            "Product-1": self.Product_1.get_Estructura_Seleccionada(),
+            "Product-2": self.product_2.get_Estructura_Seleccionada(),
         }
 
     def _assert_all_loaded(self) -> bool:
@@ -448,11 +535,17 @@ class EasyRate:
             return False
         # Al menos un reactivo
         if m["React-1"] is None and m["React-2"] is None:
-            messagebox.showerror("Missing data", "Please load at least one reactant (React-1 or React-2).")
+            messagebox.showerror(
+                "Missing data",
+                "Please load at least one reactant (React-1 or React-2).",
+            )
             return False
         # Al menos un producto
         if m["Product-1"] is None and m["Product-2"] is None:
-            messagebox.showerror("Missing data", "Please load at least one product (Product-1 or Product-2).")
+            messagebox.showerror(
+                "Missing data",
+                "Please load at least one product (Product-1 or Product-2).",
+            )
             return False
         return True
 
@@ -479,11 +572,14 @@ class EasyRate:
             for attr in ("values", "lista", "valores", "items"):
                 if hasattr(mf, attr):
                     seq = getattr(mf, attr)
-                    try: return len(seq)
-                    except Exception: pass
+                    try:
+                        return len(seq)
+                    except Exception:
+                        pass
             # fallback a frecNeg
             fn = s.frecNeg.getValue
-            if fn is None or fn == 0: return 0
+            if fn is None or fn == 0:
+                return 0
             return 1 if fn < 0 else 0
         except Exception:
             return 0
@@ -500,160 +596,216 @@ class EasyRate:
             messagebox.showerror("Missing data", f"Please load {role}.")
             return False
         if not self._thermo_ok(s):
-            messagebox.showerror("Thermo missing",
-                                f"{role}: missing/invalid thermochemical data (G, ZPE, H or T).")
+            messagebox.showerror(
+                "Thermo missing",
+                f"{role}: missing/invalid thermochemical data (G, ZPE, H or T).",
+            )
             return False
         ic = self._imag_count(s)
         if role == "Transition state":
             if ic != 1:
-                messagebox.showerror("Invalid TS",
-                    f"Transition state must have exactly 1 imaginary frequency (found {ic}).")
+                messagebox.showerror(
+                    "Invalid TS",
+                    f"Transition state must have exactly 1 imaginary frequency (found {ic}).",
+                )
                 return False
         else:
             if ic != 0:
-                messagebox.showerror("Invalid structure",
-                    f"{role} must have 0 imaginary frequencies (found {ic}).")
+                messagebox.showerror(
+                    "Invalid structure",
+                    f"{role} must have 0 imaginary frequencies (found {ic}).",
+                )
                 return False
         return True
 
     def def_react_1(self, estruct: Estructura):
-        if not self._check_loaded("React-1", estruct): return
+        if not self._check_loaded("React-1", estruct):
+            return
         # si llega aquí, ya es válido:
         self.Temperatura.delete(0, END)
         self.Temperatura.insert(0, str(estruct.temp.getValue))
-        self.Temperatura['state'] = "disabled"
+        self.Temperatura["state"] = "disabled"
         self.React_1.setDato(un_dato=estruct.Thermal_Free_Energies.getValue)
 
     def def_react_2(self, estruct: Estructura):
-        if not self._check_loaded("React-2", estruct): return
+        if not self._check_loaded("React-2", estruct):
+            return
         self.React_2.setDato(un_dato=estruct.Thermal_Free_Energies.getValue)
 
     def deftransition_rate(self, estruct: Estructura):
-        if not self._check_loaded("Transition state", estruct): return
+        if not self._check_loaded("Transition state", estruct):
+            return
         self.transition_rate.setDato(un_dato=estruct.Thermal_Free_Energies.getValue)
 
     def def_product_1(self, estruct: Estructura):
-        if not self._check_loaded("Product-1", estruct): return
+        if not self._check_loaded("Product-1", estruct):
+            return
         self.Product_1.setDato(un_dato=estruct.Thermal_Free_Energies.getValue)
 
     def defproduct_2(self, estruct: Estructura):
-        if not self._check_loaded("Product-2", estruct): return
+        if not self._check_loaded("Product-2", estruct):
+            return
         self.product_2.setDato(un_dato=estruct.Thermal_Free_Energies.getValue)
 
-    def seccion_datos_2(self, pos_x=30, pos_y=300):
-        _seccion_datos_2 = ttk.Frame(self._principal)
-        _seccion_datos_2.configure(width='200', height='50')
-        _seccion_datos_2.place(x=str(pos_x), y=str(pos_y+25))
-        label_etiqueta_temperatura = ttk.Label(
-            _seccion_datos_2, text="Temperature(K)")
-        label_etiqueta_temperatura.grid(row=1, column=0)
-        self.Temperatura: Entry = Entry(_seccion_datos_2)
-        self.Temperatura.grid(row=1, column=4 )
-        self.Temperatura.insert(0, "298.15")
-        self.Temperatura.configure(width='10')
-        ttk.Label(_seccion_datos_2, text="Tunneling").grid(
-            column=0, row=0, padx=1, pady=5)
-        ttk.Label(_seccion_datos_2, text="YES").grid(column=1, row=0)
+    def seccion_datos_2(self):
+        # Obtener el panel izquierdo ya creado
+        left_panel = self._principal.grid_slaves(row=0, column=0)[0]
+
+        _seccion_datos_2 = ttk.LabelFrame(
+            left_panel, text="Parameters", style="Card.TLabelframe"
+        )
+        _seccion_datos_2.pack(fill="x", padx=5, pady=5)
+
+        frame_inner = ttk.Frame(_seccion_datos_2)
+        frame_inner.pack(fill="x", padx=10, pady=10)
+
+        # Tunneling
+        ttk.Label(frame_inner, text="Tunneling").grid(
+            column=0, row=0, sticky="w", padx=(0, 5), pady=5
+        )
+        ttk.Label(frame_inner, text="YES").grid(column=1, row=0, sticky="w")
         self.istunneling = IntVar()
         self.istunneling.set(1)
-        ttk.Radiobutton(_seccion_datos_2, value=1, variable=self.istunneling ).grid(column=2, row=0)
-        
-        
-        self.Tunneling: Entry = Entry(_seccion_datos_2, width='10')
-        self.Tunneling.grid(column=4, row=0, padx=1, pady=5)
-        self.Tunneling['state'] = "disabled"
-        
-        ttk.Label(_seccion_datos_2, text="Reaction path degeneracy").grid(
-            column=0, row=2, padx=1, pady=5)
-        self.Reaction_path_degeneracy: Entry = Entry(
-            _seccion_datos_2, width='10')
-        self.Reaction_path_degeneracy.grid(column=4, row=2, padx=1, pady=5)
+        ttk.Radiobutton(frame_inner, value=1, variable=self.istunneling).grid(
+            column=2, row=0, sticky="w", padx=(5, 0)
+        )
+
+        self.Tunneling: Entry = Entry(frame_inner, width="10")
+        self.Tunneling.grid(column=3, row=0, padx=(10, 0), pady=5, sticky="w")
+        self.Tunneling["state"] = "disabled"
+
+        # Temperature
+        label_etiqueta_temperatura = ttk.Label(frame_inner, text="Temperature(K)")
+        label_etiqueta_temperatura.grid(
+            row=1, column=0, sticky="w", padx=(0, 5), pady=5
+        )
+        self.Temperatura: Entry = Entry(frame_inner, width="10")
+        self.Temperatura.grid(row=1, column=3, sticky="w", padx=(10, 0), pady=5)
+        self.Temperatura.insert(0, "298.15")
+
+        # Degeneracy
+        ttk.Label(frame_inner, text="Reaction path degeneracy").grid(
+            column=0, row=2, sticky="w", padx=(0, 5), pady=5, columnspan=3
+        )
+        self.Reaction_path_degeneracy: Entry = Entry(frame_inner, width="10")
+        self.Reaction_path_degeneracy.grid(
+            column=3, row=2, sticky="w", padx=(10, 0), pady=5
+        )
         self.Reaction_path_degeneracy.insert(0, "1")
+
+        frame_inner.columnconfigure(3, weight=1)
 
     def _on_solvent_change(self, _event=None):
         # habilita el campo de viscosidad solo si eligen "Other" y Diffusion = YES
         if self.diffusion.get() == 1 and self.solvent.get().strip().lower() == "other":
-            self.entry_visc.config(state='normal')
+            self.entry_visc.config(state="normal")
         else:
-            self.entry_visc.config(state='disabled')
+            self.entry_visc.config(state="disabled")
 
-    def seccion_diffusion(self, pos_x=30, pos_y=440):
-        cont = ttk.LabelFrame(self._principal, text="Diffusion (optional)", style='Card.TLabelframe')
-        cont.place(x=str(pos_x), y=str(pos_y))
-        cont.configure(width='360', height='190')
+    def seccion_diffusion(self):
+        # Obtener el panel izquierdo ya creado
+        left_panel = self._principal.grid_slaves(row=0, column=0)[0]
+
+        cont = ttk.LabelFrame(
+            left_panel, text="Diffusion (optional)", style="Card.TLabelframe"
+        )
+        cont.pack(fill="x", padx=5, pady=5)
         # fila 0: toggle
         row = 0
         self.diffusion = IntVar(value=0)
-        ttk.Label(cont, text="Do you want to consider diffusion?").grid(row=row, column=0, sticky="w", padx=10, pady=(10, 2))
+        ttk.Label(cont, text="Do you want to consider diffusion?").grid(
+            row=row, column=0, sticky="w", padx=10, pady=(10, 2)
+        )
         ttk.Label(cont, text="Yes").grid(row=row, column=1, sticky="w")
-        ttk.Radiobutton(cont, value=1, variable=self.diffusion, command=self.isdiffusion).grid(row=row, column=1, sticky="w", padx=(35,0))
-        ttk.Label(cont, text="No").grid(row=row, column=1, sticky="w", padx=(70,0))
-        ttk.Radiobutton(cont, value=0, variable=self.diffusion, command=self.isdiffusion).grid(row=row, column=1, sticky="w", padx=(95,0))
+        ttk.Radiobutton(
+            cont, value=1, variable=self.diffusion, command=self.isdiffusion
+        ).grid(row=row, column=1, sticky="w", padx=(35, 0))
+        ttk.Label(cont, text="No").grid(row=row, column=1, sticky="w", padx=(70, 0))
+        ttk.Radiobutton(
+            cont, value=0, variable=self.diffusion, command=self.isdiffusion
+        ).grid(row=row, column=1, sticky="w", padx=(95, 0))
 
         # Solvent
         row += 1
-        ttk.Label(cont, text="Solvent").grid(row=row, column=0, sticky="w", padx=10, pady=(8, 2))
-        self.solvent = ttk.Combobox(cont, state='disabled', width=18)
+        ttk.Label(cont, text="Solvent").grid(
+            row=row, column=0, sticky="w", padx=10, pady=(8, 2)
+        )
+        self.solvent = ttk.Combobox(cont, state="disabled", width=18)
         self.solvent.grid(row=row, column=1, columnspan=2, sticky="w", pady=(8, 2))
         values = list(self.solvent["values"])
         # agrega “Other” al final
-        self.solvent["values"] = values + ["", "Benzene", "Gas phase (Air)", "Pentyl ethanoate", "Water", "Other"]
+        self.solvent["values"] = values + [
+            "",
+            "Benzene",
+            "Gas phase (Air)",
+            "Pentyl ethanoate",
+            "Water",
+            "Other",
+        ]
         self.solvent.bind("<<ComboboxSelected>>", self._on_solvent_change)
 
         # Custom viscosity (Pa·s) – solo cuando solvent == "Other"
         row += 1
-        ttk.Label(cont, text="Viscosity (Pa·s) (If other)").grid(row=row, column=0, sticky="w", padx=10, pady=(2, 2))
-        self.entry_visc = Entry(cont, width=10, state='disabled')
+        ttk.Label(cont, text="Viscosity (Pa·s) (If other)").grid(
+            row=row, column=0, sticky="w", padx=10, pady=(2, 2)
+        )
+        self.entry_visc = Entry(cont, width=10, state="disabled")
         self.entry_visc.grid(row=row, column=1, sticky="w", pady=(2, 2))
 
         # Radii and Rxn distance
         row += 1
-        ttk.Label(cont, text="Radius (Å) — Reactant-1").grid(row=row, column=0, sticky="w", padx=10, pady=(6, 2))
-        self.radius_react_1 = Entry(cont, width=10, state='disabled')
+        ttk.Label(cont, text="Radius (Å) — Reactant-1").grid(
+            row=row, column=0, sticky="w", padx=10, pady=(6, 2)
+        )
+        self.radius_react_1 = Entry(cont, width=10, state="disabled")
         self.radius_react_1.grid(row=row, column=1, sticky="w", pady=(6, 2))
 
         row += 1
-        ttk.Label(cont, text="Radius (Å) — Reactant-2").grid(row=row, column=0, sticky="w", padx=10, pady=(6, 2))
-        self.radius_react_2 = Entry(cont, width=10, state='disabled')
+        ttk.Label(cont, text="Radius (Å) — Reactant-2").grid(
+            row=row, column=0, sticky="w", padx=10, pady=(6, 2)
+        )
+        self.radius_react_2 = Entry(cont, width=10, state="disabled")
         self.radius_react_2.grid(row=row, column=1, sticky="w", pady=(6, 2))
 
         row += 1
-        ttk.Label(cont, text="Reaction distance (Å)").grid(row=row, column=0, sticky="w", padx=10, pady=(2, 10))
-        self.reaction_distance = Entry(cont, width=10, state='disabled')
+        ttk.Label(cont, text="Reaction distance (Å)").grid(
+            row=row, column=0, sticky="w", padx=10, pady=(2, 10)
+        )
+        self.reaction_distance = Entry(cont, width=10, state="disabled")
         self.reaction_distance.grid(row=row, column=1, sticky="w", pady=(2, 10))
 
         for c in range(4):
             cont.columnconfigure(c, weight=1)
 
     def isdiffusion(self):
-        if(self.diffusion.get() == 1):
-            self.reaction_distance['state'] = 'normal'
-            self.radius_react_1['state'] = 'normal'
-            self.radius_react_2['state'] = 'normal'
-            self.solvent['state'] = 'normal'
-            self.style.configure('TCombobox', fieldbackground='white')
+        if self.diffusion.get() == 1:
+            self.reaction_distance["state"] = "normal"
+            self.radius_react_1["state"] = "normal"
+            self.radius_react_2["state"] = "normal"
+            self.solvent["state"] = "normal"
+            self.style.configure("TCombobox", fieldbackground="white")
             # Si Other pide viscosidad
             if self.solvent.get().strip().lower() == "other":
-                self.entry_visc.config(state='normal')
+                self.entry_visc.config(state="normal")
             else:
-                self.entry_visc.config(state='disabled')
+                self.entry_visc.config(state="disabled")
         else:
-            self.radius_react_1['state'] = 'disabled'
-            self.radius_react_2['state'] = 'disabled'
-            self.reaction_distance['state'] = 'disabled'
-            self.solvent['state'] = 'disabled'
-            self.entry_visc.config(state='disabled')
-            self.style.configure('TCombobox', fieldbackground='#f0f0f0')
+            self.radius_react_1["state"] = "disabled"
+            self.radius_react_2["state"] = "disabled"
+            self.reaction_distance["state"] = "disabled"
+            self.solvent["state"] = "disabled"
+            self.entry_visc.config(state="disabled")
+            self.style.configure("TCombobox", fieldbackground="#f0f0f0")
 
     def clear_results(self):
         try:
-            self.salida.delete('1.0', END)
+            self.salida.delete("1.0", END)
         except Exception:
             pass
 
     def clear_details(self):
         try:
-            self.salida2.delete('1.0', END)
+            self.salida2.delete("1.0", END)
         except Exception:
             pass
 
@@ -670,104 +822,138 @@ class EasyRate:
         finally:
             self._clear_menu.grab_release()
 
-    def seccion_pantalla(self, pos_x=500, pos_y=25):
-        _seccion_pantalla = ttk.Frame(self._principal)
-        _seccion_pantalla.configure(width='1000', height='700')
-        _seccion_pantalla.place(x=str(pos_x), y=str(pos_y))
+    def seccion_pantalla(self):
+        # Panel derecho para resultados
+        right_panel = ttk.Frame(self._principal)
+        right_panel.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
+        right_panel.rowconfigure(2, weight=1)  # La sección de resultados se expande
+        right_panel.columnconfigure(0, weight=1)
+
+        # Frame superior con opciones
+        top_frame = ttk.Frame(right_panel)
+        top_frame.grid(row=0, column=0, sticky="ew", pady=(0, 5))
+
+        # Cage Effects
         self.cage_efects = IntVar()
         self.cage_efects.set(0)
-        ttk.Label(_seccion_pantalla, text="Cage Effects?").place(
-            anchor='nw', x='80', y='10')
-        ttk.Label(_seccion_pantalla, text="Yes").place(
-            anchor='nw', x='170', y='10')
-        ttk.Radiobutton(_seccion_pantalla, value=1, variable=self.cage_efects).place(
-            anchor='nw', x='190', y='10')
-        ttk.Label(_seccion_pantalla, text="No").place(
-            anchor='nw', x='210', y='10')
-        ttk.Radiobutton(_seccion_pantalla, value=0, variable=self.cage_efects).place(
-            anchor='nw', x='230', y='10')
+        cage_frame = ttk.Frame(top_frame)
+        cage_frame.pack(side="left", padx=(10, 20))
+        ttk.Label(cage_frame, text="Cage Effects?").pack(side="left", padx=(0, 5))
+        ttk.Label(cage_frame, text="Yes").pack(side="left", padx=(5, 0))
+        ttk.Radiobutton(cage_frame, value=1, variable=self.cage_efects).pack(
+            side="left"
+        )
+        ttk.Label(cage_frame, text="No").pack(side="left", padx=(5, 0))
+        ttk.Radiobutton(cage_frame, value=0, variable=self.cage_efects).pack(
+            side="left"
+        )
+
+        # Print data
         self.print_data = IntVar()
         self.print_data.set(0)
-        ttk.Label(_seccion_pantalla, text="Print data input?").place(
-            anchor='nw', x='270', y='10')
-        ttk.Label(_seccion_pantalla, text="Yes").place(
-            anchor='nw', x='370', y='10')
-        ttk.Radiobutton(_seccion_pantalla, value=1, variable=self.print_data).place(
-            anchor='nw', x='390', y='10')
-        ttk.Label(_seccion_pantalla, text="No").place(
-            anchor='nw', x='410', y='10')
+        print_frame = ttk.Frame(top_frame)
+        print_frame.pack(side="left", padx=(0, 20))
+        ttk.Label(print_frame, text="Print data input?").pack(side="left", padx=(0, 5))
+        ttk.Label(print_frame, text="Yes").pack(side="left", padx=(5, 0))
+        ttk.Radiobutton(print_frame, value=1, variable=self.print_data).pack(
+            side="left"
+        )
+        ttk.Label(print_frame, text="No").pack(side="left", padx=(5, 0))
+        ttk.Radiobutton(print_frame, value=0, variable=self.print_data).pack(
+            side="left"
+        )
 
-        ttk.Radiobutton(_seccion_pantalla, value=0, variable=self.print_data).place(
-            anchor='nw', x='430', y='10')
+        # Botones de acción
+        button_frame = ttk.Frame(right_panel)
+        button_frame.grid(row=1, column=0, sticky="ew", pady=5)
 
+        boton = ttk.Button(button_frame, text="Data ok, Run", command=self.run_calc)
+        boton.pack(side="left", padx=(10, 10))
 
-        
-        boton = ttk.Button(_seccion_pantalla, text="Data ok, Run", command=self.run_calc)
-        boton.place(x="180", y="40")
-
-        # --- Botón Clear con menú emergente ---
-        clear_btn = ttk.Button(_seccion_pantalla, text="Clear",
-                            command=lambda: self._show_clear_menu(clear_btn))
-        clear_btn.place(x="420", y="40")  # a la derecha del Run (ajusta si quieres)
+        clear_btn = ttk.Button(
+            button_frame, text="Clear", command=lambda: self._show_clear_menu(clear_btn)
+        )
+        clear_btn.pack(side="left", padx=(0, 10))
 
         # Menú emergente para elegir qué limpiar
-        self._clear_menu = Menu(_seccion_pantalla, tearoff=0)
-        self._clear_menu.add_command(label="Clear Results (left)",  command=self.clear_results)
-        self._clear_menu.add_command(label="Clear Details (right)", command=self.clear_details)
+        self._clear_menu = Menu(right_panel, tearoff=0)
+        self._clear_menu.add_command(
+            label="Clear Results (left)", command=self.clear_results
+        )
+        self._clear_menu.add_command(
+            label="Clear Details (right)", command=self.clear_details
+        )
         self._clear_menu.add_separator()
-        self._clear_menu.add_command(label="Clear Both",            command=self.clear_both)
+        self._clear_menu.add_command(label="Clear Both", command=self.clear_both)
 
-        self._scrolle_pantalla(_seccion_pantalla)
+        # Área de resultados
+        self._scrolle_pantalla(right_panel)
 
         # Tarjeta informativa compacta
-        info = ttk.LabelFrame(_seccion_pantalla, text="Notes", style='Card.TLabelframe')
-        info.place(anchor='nw', x='0', y='520')
-        ttk.Label(info, text="Rate constant units:\n• Bimolecular:  M⁻¹ s⁻¹\n• Unimolecular: s⁻¹",
-                style='Info.TLabel', justify='left').grid(row=0, column=0, sticky="w", padx=8, pady=8)
-        ttk.Separator(info, orient='vertical').grid(row=0, column=1, sticky="ns", padx=4, pady=8)
-        ttk.Label(info, text="pH effects are not considered.\nSee About ▸ Equations for details.",
-                style='Info.TLabel', justify='left').grid(row=0, column=2, sticky="w", padx=8, pady=8)
+        info = ttk.LabelFrame(right_panel, text="Notes", style="Card.TLabelframe")
+        info.grid(row=3, column=0, sticky="ew", pady=(5, 0))
+        info_inner = ttk.Frame(info)
+        info_inner.pack(fill="x", padx=8, pady=8)
+        ttk.Label(
+            info_inner,
+            text="Rate constant units:\n• Bimolecular:  M⁻¹ s⁻¹\n• Unimolecular: s⁻¹",
+            style="Info.TLabel",
+            justify="left",
+        ).grid(row=0, column=0, sticky="w", padx=(0, 8))
+        ttk.Separator(info_inner, orient="vertical").grid(
+            row=0, column=1, sticky="ns", padx=4
+        )
+        ttk.Label(
+            info_inner,
+            text="pH effects are not considered.\nSee About ▸ Equations for details.",
+            style="Info.TLabel",
+            justify="left",
+        ).grid(row=0, column=2, sticky="w", padx=(8, 0))
+        info_inner.columnconfigure(0, weight=1)
+        info_inner.columnconfigure(2, weight=1)
 
-    def _scrolle_pantalla(self, _seccion_pantalla):
-        frame_resultados = ttk.Frame(_seccion_pantalla)
-        frame_resultados.place(x='0', y='70')
+    def _scrolle_pantalla(self, parent_frame):
+        frame_resultados = ttk.Frame(parent_frame)
+        frame_resultados.grid(row=2, column=0, sticky="nsew", pady=5)
+        frame_resultados.columnconfigure(0, weight=1)
+        frame_resultados.columnconfigure(1, weight=1)
+        frame_resultados.rowconfigure(0, weight=1)
 
         # --- Left: Results (summary) ---
-        left = ttk.LabelFrame(frame_resultados, text="Results (summary)", style='Card.TLabelframe')
-        left.grid(row=0, column=0, sticky="nsew", padx=8, pady=8)
-
-        self.salida = ScrolledText(left, wrap="none", width=40, height=30)
-        self.salida.grid(row=0, column=0, sticky="nsew")
+        left = ttk.LabelFrame(
+            frame_resultados, text="Results (summary)", style="Card.TLabelframe"
+        )
+        left.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
         left.columnconfigure(0, weight=1)
         left.rowconfigure(0, weight=1)
+
+        self.salida = ScrolledText(left, wrap="none", width=35, height=25)
+        self.salida.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
         # Scroll horizontal Results
         xsb_left = Scrollbar(left, orient="horizontal", command=self.salida.xview)
         self.salida.configure(xscrollcommand=xsb_left.set)
-        xsb_left.grid(row=1, column=0, sticky="ew")
+        xsb_left.grid(row=1, column=0, sticky="ew", padx=5, pady=(0, 5))
 
         self.salida.bind("<Key>", lambda e: "break")  # read-only
 
         # --- Right: Details ---
-        right = ttk.LabelFrame(frame_resultados, text="Details", style='Card.TLabelframe')
-        right.grid(row=0, column=1, sticky="nsew", padx=8, pady=8)
-
-        self.salida2 = ScrolledText(right, wrap="none", width=40, height=30)
-        self.salida2.grid(row=0, column=0, sticky="nsew")
+        right = ttk.LabelFrame(
+            frame_resultados, text="Details", style="Card.TLabelframe"
+        )
+        right.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
         right.columnconfigure(0, weight=1)
         right.rowconfigure(0, weight=1)
+
+        self.salida2 = ScrolledText(right, wrap="none", width=35, height=25)
+        self.salida2.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
         # Scroll horizontal Details
         xsb_right = Scrollbar(right, orient="horizontal", command=self.salida2.xview)
         self.salida2.configure(xscrollcommand=xsb_right.set)
-        xsb_right.grid(row=1, column=0, sticky="ew")
+        xsb_right.grid(row=1, column=0, sticky="ew", padx=5, pady=(0, 5))
 
         self.salida2.bind("<Key>", lambda e: "break")  # read-only
-
-        # Expand equally
-        frame_resultados.columnconfigure(0, weight=1)
-        frame_resultados.columnconfigure(1, weight=1)
-        frame_resultados.rowconfigure(0, weight=1)
 
     def _flash_invalid(self, widget, ms=1200):
         """Pinta el Entry en rojo temporalmente para señalar error."""

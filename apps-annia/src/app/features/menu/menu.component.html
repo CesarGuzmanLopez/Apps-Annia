@@ -1,0 +1,17 @@
+<div class="menu-container">
+    <div class="header">
+        <h1>Annia Apps</h1>
+        <p class="subtitle">Suite de aplicaciones para química computacional</p>
+    </div>
+
+    <div class="apps-grid">
+        <div *ngFor="let app of apps" class="app-card" (click)="irA(app.ruta)">
+            <div class="app-icon">{{ app.icono }}</div>
+            <h3 class="app-name">{{ app.nombre }}</h3>
+            <p class="app-description">{{ app.descripcion }}</p>
+            <div class="app-footer">
+                <span class="btn-link">Abrir →</span>
+            </div>
+        </div>
+    </div>
+</div>

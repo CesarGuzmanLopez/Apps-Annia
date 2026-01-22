@@ -1,0 +1,246 @@
+<div class="easy-rate-container">
+  <!-- Header con botón de regreso -->
+  <div class="header-nav">
+    <button (click)="irAlMenu()" class="btn-back">← Menú</button>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Easy Rate 2.0</h1>
+    <p class="subtitle">Cálculo de constantes de velocidad con correcciones termodinámicas y de difusión</p>
+  </div>
+
+  <!-- Alertas -->
+  <div *ngIf="error" class="alert alert-error">
+    <span>{{ error }}</span>
+    <button (click)="error = null" class="close-btn">&times;</button>
+  </div>
+  <div *ngIf="success" class="alert alert-success">
+    <span>{{ success }}</span>
+  </div>
+
+  <!-- Contenedor Principal -->
+  <div class="main-container">
+    <!-- Panel Izquierdo - Entrada -->
+    <div class="left-panel">
+      <form [formGroup]="form">
+        <!-- Sección: Data Entry -->
+        <div class="section">
+          <h2 class="section-title">Data Entry</h2>
+
+          <!-- Título del cálculo -->
+          <div class="form-group">
+            <label for="title">Run title</label>
+            <input id="title" type="text" formControlName="title" class="form-control">
+          </div>
+
+          <!-- Entrada de archivos -->
+          <div class="file-inputs">
+            <div class="file-input-group">
+              <label>React-1 <span class="required">*</span></label>
+              <div class="file-input-wrapper">
+                <input type="file" accept=".log,.txt,.out" (change)="onFileSelected($event, 'React-1')" id="react1"
+                  class="file-input">
+                <label for="react1" class="file-label">Browse</label>
+              </div>
+              <div *ngIf="react_1" class="file-loaded">
+                ✓ {{ react_1.archivo }}
+                <button type="button" (click)="verEstructura(react_1)" class="btn-small">View</button>
+                <button type="button" (click)="limpiarEstructura('React-1')" class="btn-small btn-danger">Clear</button>
+              </div>
+            </div>
+
+            <div class="file-input-group">
+              <label>React-2 (If any)</label>
+              <div class="file-input-wrapper">
+                <input type="file" accept=".log,.txt,.out" (change)="onFileSelected($event, 'React-2')" id="react2"
+                  class="file-input">
+                <label for="react2" class="file-label">Browse</label>
+              </div>
+              <div *ngIf="react_2" class="file-loaded">
+                ✓ {{ react_2.archivo }}
+                <button type="button" (click)="verEstructura(react_2)" class="btn-small">View</button>
+                <button type="button" (click)="limpiarEstructura('React-2')" class="btn-small btn-danger">Clear</button>
+              </div>
+            </div>
+
+            <div class="file-input-group">
+              <label>Transition state <span class="required">*</span></label>
+              <div class="file-input-wrapper">
+                <input type="file" accept=".log,.txt,.out" (change)="onFileSelected($event, 'Transition state')" id="ts"
+                  class="file-input">
+                <label for="ts" class="file-label">Browse</label>
+              </div>
+              <div *ngIf="transition_rate" class="file-loaded">
+                ✓ {{ transition_rate.archivo }}
+                <button type="button" (click)="verEstructura(transition_rate)" class="btn-small">View</button>
+                <button type="button" (click)="limpiarEstructura('Transition state')"
+                  class="btn-small btn-danger">Clear</button>
+              </div>
+            </div>
+
+            <div class="file-input-group">
+              <label>Product-1 <span class="required">*</span></label>
+              <div class="file-input-wrapper">
+                <input type="file" accept=".log,.txt,.out" (change)="onFileSelected($event, 'Product-1')" id="product1"
+                  class="file-input">
+                <label for="product1" class="file-label">Browse</label>
+              </div>
+              <div *ngIf="product_1" class="file-loaded">
+                ✓ {{ product_1.archivo }}
+                <button type="button" (click)="verEstructura(product_1)" class="btn-small">View</button>
+                <button type="button" (click)="limpiarEstructura('Product-1')"
+                  class="btn-small btn-danger">Clear</button>
+              </div>
+            </div>
+
+            <div class="file-input-group">
+              <label>Product-2 (If any)</label>
+              <div class="file-input-wrapper">
+                <input type="file" accept=".log,.txt,.out" (change)="onFileSelected($event, 'Product-2')" id="product2"
+                  class="file-input">
+                <label for="product2" class="file-label">Browse</label>
+              </div>
+              <div *ngIf="product_2" class="file-loaded">
+                ✓ {{ product_2.archivo }}
+                <button type="button" (click)="verEstructura(product_2)" class="btn-small">View</button>
+                <button type="button" (click)="limpiarEstructura('Product-2')"
+                  class="btn-small btn-danger">Clear</button>
+              </div>
+            </div>
+          </div>
+
+          <p class="helper-text">Tip: mantén todos los archivos en la misma carpeta antes de cargarlos.</p>
+        </div>
+
+        <!-- Sección: Parámetros -->
+        <div class="section">
+          <h2 class="section-title">Parameters</h2>
+          <div class="param-grid">
+            <div class="param-row">
+              <label class="checkbox">
+                <input type="checkbox" formControlName="tunelamiento">
+                Tunneling
+              </label>
+            </div>
+
+            <div class="param-row">
+              <label for="temperatura">Temperature (K)</label>
+              <input id="temperatura" type="number" formControlName="temperatura" class="form-control">
+            </div>
+
+            <div class="param-row">
+              <label for="degeneracy">Reaction path degeneracy</label>
+              <input id="degeneracy" type="number" formControlName="degeneracy" class="form-control">
+            </div>
+
+            <div class="param-row">
+              <label class="checkbox">
+                <input type="checkbox" formControlName="cageEffects">
+                Cage Effects
+              </label>
+            </div>
+
+            <div class="param-row">
+              <label class="checkbox">
+                <input type="checkbox" formControlName="printData">
+                Print data input
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección: Difusión -->
+        <div class="section">
+          <h2 class="section-title">Diffusion (optional)</h2>
+          <div class="diffusion-params">
+            <div class="param-row">
+              <label class="checkbox">
+                <input type="checkbox" formControlName="diffusion">
+                Consider diffusion
+              </label>
+            </div>
+
+            <div class="param-row">
+              <label for="solvent">Solvent</label>
+              <select id="solvent" formControlName="solvent" class="form-control">
+                <option value="">Select solvent</option>
+                <option *ngFor="let s of solventes" [value]="s">{{ s }}</option>
+              </select>
+            </div>
+
+            <div class="param-row">
+              <label for="viscosity">Viscosity (Pa·s) (If other)</label>
+              <input id="viscosity" type="number" formControlName="viscosity_custom" class="form-control"
+                placeholder="Custom viscosity">
+            </div>
+
+            <div class="param-row">
+              <label for="radius1">Radius (Å) — Reactant-1</label>
+              <input id="radius1" type="number" formControlName="radius_1" class="form-control">
+            </div>
+
+            <div class="param-row">
+              <label for="radius2">Radius (Å) — Reactant-2</label>
+              <input id="radius2" type="number" formControlName="radius_2" class="form-control">
+            </div>
+
+            <div class="param-row">
+              <label for="reaction_dist">Reaction distance (Å)</label>
+              <input id="reaction_dist" type="number" formControlName="reaction_distance" class="form-control">
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Panel Derecho - Resultados -->
+    <div class="right-panel">
+      <!-- Controles -->
+      <div class="controls">
+        <button (click)="ejecutarCalculo()" [disabled]="loading" class="btn btn-primary">
+          {{ loading ? 'Calculando...' : 'Data ok, Run' }}
+        </button>
+        <button (click)="limpiarResultados()" class="btn btn-secondary">
+          Clear Results
+        </button>
+        <button (click)="limpiarTodo()" class="btn btn-warning">
+          Clear All
+        </button>
+      </div>
+
+      <!-- Resultados -->
+      <div class="results-container">
+        <!-- Resumen -->
+        <div class="result-section">
+          <h3>Results (summary)</h3>
+          <div class="result-content">
+            <pre>{{ resultadosResumen || 'Ejecute el cálculo para ver resultados...' }}</pre>
+          </div>
+        </div>
+
+        <!-- Detalles -->
+        <div class="result-section">
+          <h3>Details</h3>
+          <div class="result-content">
+            <pre>{{ resultadosDetalles || 'Los detalles aparecerán aquí...' }}</pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notas -->
+      <div class="notes">
+        <h4>Notes</h4>
+        <div class="notes-content">
+          <p><strong>Rate constant units:</strong></p>
+          <ul>
+            <li>Bimolecular: M⁻¹ s⁻¹</li>
+            <li>Unimolecular: s⁻¹</li>
+          </ul>
+          <p><strong>pH effects are not considered.</strong><br>
+            See About → Equations for details.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

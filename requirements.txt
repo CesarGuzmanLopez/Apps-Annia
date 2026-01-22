@@ -1,0 +1,48 @@
+# Requirements for Apps-Annia virtualenv
+# Generated from environment.yml and dev_environment.yml
+# Python 3.9+
+
+# Core dependencies
+numpy>=1.26.0
+matplotlib>=3.8.0
+pillow>=10.0.1
+
+# GUI and utilities
+ttkthemes>=3.2.0
+pygubu==0.18
+pygubu-designer==0.22
+appdirs>=1.4.4
+
+# Build and packaging
+altgraph>=0.17
+mako>=1.1
+markupsafe>=2.0
+python-dateutil>=2.8
+six>=1.16
+importlib-metadata>=4.8
+typing-extensions>=4.0
+zipp>=3.6
+
+# Development and distribution
+pyinstaller>=6,<7
+pyinstaller-hooks-contrib>=2021.3
+setuptools>=50.3.0
+wheel>=0.35.1
+
+# Platform-specific
+pywin32-ctypes==0.2.0; platform_system == "Windows"
+pefile>=2021.9; platform_system == "Windows"
+
+# Note: Before installing, ensure system dependencies are available:
+# Linux (Ubuntu/Debian):
+#   sudo apt-get install build-essential python3-dev python3-tk
+#   sudo apt-get install libssl-dev libffi-dev libsqlite3-dev
+# macOS:
+#   brew install python@3.9 python-tk@3.9 openssl
+# 
+# The following packages are system-level dependencies (not in pip):
+# - Python 3.9
+# - tk (Tkinter)
+# - sqlite3
+# - openssl
+# - zlib
