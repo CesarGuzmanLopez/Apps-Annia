@@ -1,20 +1,21 @@
-import tkinter as tk
-from tkinter import filedialog, ttk, scrolledtext, messagebox
-import pandas as pd
-from rdkit import Chem, rdBase
-from rdkit.Chem import PandasTools, Descriptors, rdMolDescriptors, AllChem
-import os
-import numpy as np
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-import matplotlib.pyplot as plt
-import webbrowser
-from rdkit.Chem.AllChem import GetConformerRMS
-import subprocess
 import json
-from documentation import open_notebook
+import os
+import subprocess
+import tkinter as tk
+import webbrowser
+from tkinter import filedialog, messagebox, scrolledtext, ttk
 
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from documentation import open_notebook
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.figure import Figure
+from rdkit import Chem, rdBase
+from rdkit.Chem import AllChem, Descriptors, PandasTools, rdMolDescriptors
+from rdkit.Chem.AllChem import GetConformerRMS
+
 mpl.rcParams.update({
     "font.family": "serif",      # algo tipo LaTeX
     "font.size": 10,
@@ -35,7 +36,7 @@ mpl.rcParams.update({
 #-------------------------------------------------------------------------------------------------------------------------------------------
 # CONTACT INFORMATION
 #-------------------------------------------------------------------------------------------------------------------------------------------
-'''
+r"""
 This code was developed by Eduardo Gabriel Guzmán López any comment or suggestion please contact by e-mail:
 email: eggl.quimica@gmail.com
 
@@ -59,7 +60,7 @@ Para empaquetar este software usar
  bash clean.sh
  bash package.sh
 
-'''
+"""
 #-------------------------------------------------------------------------------------------------------------------------------------------
 # Variables globales
 csv_processed = False
@@ -1719,7 +1720,9 @@ def start_main_app():
             # Create a text widget to display the ASCII logo
             logo_area = tk.Text(stats_frame, wrap=tk.WORD, width=90, height=21)
             logo_area.grid(row=0, column=1, sticky='nsew')
-            logo_area.insert(tk.END, """
+            logo_area.insert(
+                tk.END,
+                r"""
                              ..,co88oc.oo8888cc,..
   o8o.               ..,o8889689ooo888o"88888888oooc..
 .88888             .o888896888".88888888o'?888888888889ooo....
@@ -1728,7 +1731,9 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
 888t  ...coo688889"'.ooo88o88b.'86988988889 8688888'o8888896989^888o
  888888888888"..ooo888968888888  "9o688888' "888988 8888868888'o88888
   ""G8889""'ooo888888888888889 .d8o9889""'   "8688o."88888988"o888888o .
-           o8888''''''''""""''   o8688             """"88868. 888888.68988888"o8o.
+           o8888''''''''"""
+                "''   o8688             "
+                """88868. 888888.68988888"o8o.
           '88888o.            "8888ooo.           8888. 88888.8898888o"888o.
            "888888'              ""888888'          '""8o 8888.8869888oo8888o .
     "". :.:::::::::::.: .     . :.::::::::.: .   . : ::.:."8888 "888888888888o
@@ -1739,7 +1744,8 @@ a888P          ..c6888969""..,"o888888888o.?8888888888"".ooo8888oo.
  | |_| || |/ ___ \_____| |_| / ___ \| |  | || |        :.     '8888o
   \__\_\|_/_/   \_\     \___/_/   \_\_|  |_|___|        .       "8888..
                                                                    "888889,
-                                                            . : :.:::::::.: :.'""")
+                                                            . : :.:::::::.: :.'""",
+            )
 
             logo_area.configure(state='disabled')  # Make the text read-only
 
