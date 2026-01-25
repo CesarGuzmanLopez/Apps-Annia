@@ -1,0 +1,14 @@
+name: CADMA
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - tk
+  - python=3.10
+  - numpy=1.26
+  - rdkit=2023.09.4
+  - py3dmol=2.1.0
+  - pandas=2.1.4
+  - pillow
+  - matplotlib=3.8
+prefix: /Users/eduardoguzman/miniconda3/envs/CADMA
