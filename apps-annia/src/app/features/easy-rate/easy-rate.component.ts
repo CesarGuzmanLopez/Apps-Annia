@@ -10,6 +10,7 @@ import {
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { AppHeaderComponent } from '../../shared/app-header/app-header.component';
 
 /** Interfaz para datos de una estructura molecular (Gaussian output) */
 export interface Estructura {
@@ -463,7 +464,7 @@ export class EstructuraService {
 @Component({
   selector: 'app-easy-rate',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AppHeaderComponent],
   providers: [EasyRateCalculatorService, EstructuraService],
   templateUrl: './easy-rate.component.html',
   styleUrl: './easy-rate.component.scss',

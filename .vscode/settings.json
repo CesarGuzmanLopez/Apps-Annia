@@ -1,21 +1,13 @@
 {
-
     "python.testing.unittestEnabled": true,
     "python.testing.pytestEnabled": false,
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        "./Marcus",
-        "-p",
-        "test_*.py"
-    ],
+    "python.testing.unittestArgs": ["-v", "-s", "./Marcus", "-p", "test_*.py"],
     "sonarlint.disableTelemetry": true,
     "sonarlint.trace.server": "off",
-    "cSpell.words": [
-        "NOSONAR"
-    ],
+    "cSpell.words": ["NOSONAR"],
     "DockerRun.DisableAutoGenerateConfig": true,
     "python-envs.defaultEnvManager": "ms-python.python:conda",
     "python-envs.defaultPackageManager": "ms-python.python:conda",
-    "python-envs.pythonProjects": []
+    "python-envs.pythonProjects": [],
+    "gitConfigUser.selectedProfile": "Cesar"
 }

@@ -1,14 +1,8 @@
-<div class="easy-rate-container">
-  <!-- Header con botón de regreso -->
-  <div class="header-nav">
-    <button (click)="irAlMenu()" class="btn-back">← Menú</button>
-  </div>
+<app-header-nav title="Easy Rate 2.0"
+  subtitle="Cálculo de constantes de velocidad con correcciones termodinámicas y de difusión" logo="/logo_app1.png">
+</app-header-nav>
 
-  <!-- Header -->
-  <div class="header">
-    <h1>Easy Rate 2.0</h1>
-    <p class="subtitle">Cálculo de constantes de velocidad con correcciones termodinámicas y de difusión</p>
-  </div>
+<div class="easy-rate-container">
 
   <!-- Alertas -->
   <div *ngIf="error" class="alert alert-error">

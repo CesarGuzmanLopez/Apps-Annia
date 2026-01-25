@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AppHeaderComponent } from '../../shared/app-header/app-header.component';
 import { Estructura } from '../easy-rate/models/estructura.model';
 
 type MarcusRole = 'react1' | 'react2' | 'prod1Adiab' | 'prod2Adiab' | 'prod1Vert' | 'prod2Vert';
@@ -24,17 +25,16 @@ interface MarcusResult {
 @Component({
   selector: 'app-marcus',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AppHeaderComponent],
   template: `
-    <div class="marcus-container">
-      <div class="header-nav">
-        <button (click)="irAlMenu()" class="btn-back">← Menú</button>
-        <div class="title-block">
-          <h1>Marcuskin 1.1 (web)</h1>
-          <p class="subtitle">Misma lógica del script de escritorio con archivos Gaussian</p>
-        </div>
-      </div>
+    <app-header-nav
+      title="Marcuskin 1.1 (web)"
+      subtitle="Misma lógica del script de escritorio con archivos Gaussian"
+      logo="/marcus-logo.png"
+    >
+    </app-header-nav>
 
+    <div class="marcus-container">
       <section class="card">
         <header class="card-header">
           <div>

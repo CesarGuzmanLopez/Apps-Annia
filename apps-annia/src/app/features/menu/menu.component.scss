@@ -1,139 +1,524 @@
+// Variables
+$primary-color: #667eea;
+$secondary-color: #764ba2;
+$success-color: #26a65b;
+$info-color: #3498db;
+$warning-color: #f39c12;
+$danger-color: #e74c3c;
+$text-dark: #2c3e50;
+$text-light: #7f8c8d;
+$white: #ffffff;
+$shadow-light: 0 4px 15px rgba(0, 0, 0, 0.08);
+$shadow-medium: 0 10px 40px rgba(0, 0, 0, 0.15);
+$shadow-heavy: 0 20px 60px rgba(0, 0, 0, 0.25);
+$transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Animations
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .menu-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 60px 20px;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #4a235a 100%);
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+    sans-serif;
+  position: relative;
+  overflow-x: hidden;
+
+  // Background decoration
+  &::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    right: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &::after {
+    content: '';
+    position: fixed;
+    bottom: -20%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
 
   .header {
     text-align: center;
-    color: white;
-    margin-bottom: 80px;
-    animation: fadeInDown 0.6s ease-out;
+    color: $white;
+    margin-bottom: 60px;
+    animation: fadeInDown 0.7s ease-out;
+    position: relative;
+    z-index: 1;
 
-    h1 {
-      font-size: 3.5rem;
+    .header-content {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 40px 30px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .main-title {
+      font-size: clamp(2rem, 8vw, 3.5rem);
       margin: 0 0 15px 0;
       font-weight: 800;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+      letter-spacing: -1px;
     }
 
     .subtitle {
-      font-size: 1.2rem;
+      font-size: clamp(0.9rem, 3vw, 1.2rem);
       margin: 0;
       opacity: 0.95;
-      font-weight: 300;
+      font-weight: 400;
       letter-spacing: 0.5px;
+      line-height: 1.6;
     }
   }
 
-  @keyframes fadeInDown {
-    from {
-      opacity: 0;
-      transform: translateY(-30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .apps-grid {
+  .apps-grid-wrapper {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
 
     @media (max-width: 768px) {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 20px;
+      max-width: 100%;
+    }
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+      gap: 16px;
     }
   }
 
   .app-card {
-    background: white;
+    background: $white;
     border-radius: 16px;
-    padding: 40px 30px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    padding: 30px 24px;
+    box-shadow: $shadow-light;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all $transition-smooth;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     position: relative;
     overflow: hidden;
+    border: 2px solid transparent;
+    animation: slideUp 0.5s ease-out both;
+    outline: none;
 
+    &:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    &:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+    &:nth-child(4) {
+      animation-delay: 0.4s;
+    }
+
+    // Accent bar at top
     &::before {
       content: '';
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      height: 5px;
+      background: linear-gradient(90deg, $primary-color 0%, $secondary-color 100%);
       transform: scaleX(0);
       transform-origin: left;
-      transition: transform 0.3s ease;
+      transition: transform 0.4s $transition-smooth;
     }
 
-    &:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    // Hover effects
+    &:hover,
+    &:focus {
+      transform: translateY(-8px);
+      box-shadow: $shadow-heavy;
 
       &::before {
         transform: scaleX(1);
       }
 
-      .app-icon {
-        transform: scale(1.2) rotate(10deg);
+      .icon-container {
+        transform: scale(1.15);
+
+        .app-logo-img {
+          transform: scale(1.1);
+        }
+
+        .app-logo {
+          color: $secondary-color;
+        }
       }
 
       .btn-link {
-        color: #667eea;
-        transform: translateX(8px);
+        background: linear-gradient(135deg, $secondary-color 0%, $primary-color 100%);
+        transform: translateX(4px);
+
+        .arrow-icon {
+          opacity: 1;
+          transform: translateX(6px);
+        }
+      }
+
+      .app-description {
+        color: $secondary-color;
       }
     }
 
-    .app-icon {
-      font-size: 3.5rem;
-      margin-bottom: 20px;
+    // Color variants for each app
+    &.app-easy-rate {
+      border-top-color: $success-color;
+
+      &:hover {
+        border-top-color: $success-color;
+      }
+
+      .icon-container {
+        color: $success-color;
+      }
+
+      .btn-link {
+        background: linear-gradient(135deg, $success-color 0%, color-mix(in srgb, $success-color 90%, black) 100%);
+      }
+    }
+
+    &.app-marcus {
+      border-top-color: $info-color;
+
+      &:hover {
+        border-top-color: $info-color;
+      }
+
+      .icon-container {
+        color: $info-color;
+      }
+
+      .btn-link {
+        background: linear-gradient(135deg, $info-color 0%, color-mix(in srgb, $info-color 88%, black) 100%);
+      }
+    }
+
+    &.app-molar {
+      border-top-color: $warning-color;
+
+      &:hover {
+        border-top-color: $warning-color;
+      }
+
+      .icon-container {
+        color: $warning-color;
+      }
+
+      .btn-link {
+        background: linear-gradient(135deg, $warning-color 0%, color-mix(in srgb, $warning-color 90%, black) 100%);
+      }
+    }
+
+    &.app-tunnel {
+      border-top-color: $danger-color;
+
+      &:hover {
+        border-top-color: $danger-color;
+      }
+
+      .icon-container {
+        color: $danger-color;
+      }
+
+      .btn-link {
+        background: linear-gradient(135deg, $danger-color 0%, color-mix(in srgb, $danger-color 83%, black) 100%);
+      }
+    }
+
+    // Icon container with SVG
+    .icon-container {
+      width: 120px;
+      height: 120px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.3s ease;
+      margin-bottom: 20px;
+      transition: all $transition-smooth;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+      border-radius: 20px;
+      padding: 10px;
+      overflow: hidden;
+
+      .app-logo-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: all $transition-smooth;
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.12));
+      }
+
+      .app-logo {
+        width: 70%;
+        height: 70%;
+        transition: color $transition-smooth;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+    }
+
+    // Card content
+    .card-content {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
     }
 
     .app-name {
-      font-size: 1.5rem;
+      font-size: clamp(1rem, 4vw, 1.4rem);
       font-weight: 700;
-      color: #2c3e50;
-      margin: 10px 0;
+      color: $text-dark;
+      margin: 10px 0 0 0;
+      line-height: 1.3;
     }
 
     .app-description {
-      font-size: 0.95rem;
-      color: #7f8c8d;
-      line-height: 1.6;
-      margin: 15px 0;
+      font-size: 0.9rem;
+      color: $text-light;
+      line-height: 1.5;
+      margin: 12px 0 0 0;
+      transition: color $transition-smooth;
       flex: 1;
     }
 
-    .app-footer {
-      margin-top: 20px;
+    // Card footer with button
+    .card-footer {
       width: 100%;
+      margin-top: auto;
     }
 
     .btn-link {
-      display: inline-block;
-      padding: 10px 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
+      color: $white;
+      border: none;
       border-radius: 8px;
       font-weight: 600;
-      font-size: 0.9rem;
-      transition: all 0.3s ease;
+      font-size: clamp(0.85rem, 2vw, 0.95rem);
+      transition: all $transition-smooth;
+      cursor: pointer;
+      white-space: nowrap;
+
+      span {
+        transition: transform $transition-smooth;
+      }
+
+      .arrow-icon {
+        width: 18px;
+        height: 18px;
+        opacity: 0;
+        transform: translateX(-4px);
+        transition: all $transition-smooth;
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .menu-container {
+    padding: 30px 16px;
+
+    .header {
+      margin-bottom: 40px;
+
+      .header-content {
+        padding: 30px 20px;
+      }
+    }
+
+    .apps-grid-wrapper {
+      gap: 16px;
+    }
+
+    .app-card {
+      padding: 24px 18px;
+
+      .icon-container {
+        width: 90px;
+        height: 90px;
+      }
+
+      .app-name {
+        margin: 8px 0 0 0;
+      }
+
+      .app-description {
+        font-size: 0.85rem;
+        margin: 10px 0 0 0;
+      }
+
+      .btn-link {
+        padding: 10px 20px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-container {
+    padding: 20px 12px;
+
+    &::before,
+    &::after {
+      display: none;
+    }
+
+    .header {
+      margin-bottom: 30px;
+
+      .header-content {
+        padding: 25px 15px;
+        border-radius: 16px;
+      }
+
+      .main-title {
+        font-size: 2rem;
+      }
+
+      .subtitle {
+        font-size: 0.95rem;
+      }
+    }
+
+    .apps-grid-wrapper {
+      gap: 14px;
+    }
+
+    .app-card {
+      padding: 20px 16px;
+      border-radius: 14px;
+
+      .icon-container {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 16px;
+
+        .app-logo {
+          width: 65%;
+          height: 65%;
+        }
+      }
+
+      .app-name {
+        font-size: 1.1rem;
+      }
+
+      .app-description {
+        font-size: 0.8rem;
+        line-height: 1.4;
+      }
+
+      .btn-link {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+        gap: 6px;
+
+        .arrow-icon {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+}
+
+// Dark mode support (optional)
+@media (prefers-color-scheme: dark) {
+  .menu-container {
+    .app-card {
+      background: rgba(255, 255, 255, 0.95);
+
+      .app-name,
+      .app-description {
+        // Keep original colors for contrast
+      }
+    }
+  }
+}
+
+// Print styles
+@media print {
+  .menu-container {
+    background: $white;
+    padding: 20px;
+
+    .app-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
     }
   }
 }

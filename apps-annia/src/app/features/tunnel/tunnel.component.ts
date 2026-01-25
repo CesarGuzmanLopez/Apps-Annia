@@ -19,6 +19,9 @@ interface TunnelResult {
       <div class="header-nav">
         <button (click)="irAlMenu()" class="btn-back">← Menú</button>
         <div class="spacer"></div>
+        <div class="logo-section">
+          <img src="tunnel-logo.png" alt="Tunnel Logo" class="app-logo">
+        </div>
         <div class="title-block">
           <h1>Tunneling Effect Calculator</h1>
           <p class="subtitle">Eckart (CLRP) con la misma lógica del código original</p>

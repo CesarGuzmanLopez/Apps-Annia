@@ -2,6 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
+interface App {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  icono: string;
+  logo: string;
+  ruta: string;
+}
+
 @Component({
   selector: 'app-menu',
   standalone: true,
@@ -10,13 +19,14 @@ import { Router } from '@angular/router';
   styleUrl: './menu.component.scss',
 })
 export class MenuComponent {
-  apps = [
+  apps: App[] = [
     {
       id: 'easy-rate',
       nombre: 'Easy Rate 2.0',
       descripcion:
         'Cálculo de constantes de velocidad con correcciones termodinámicas y de difusión',
       icono: '⚡',
+      logo: './logo_app1.png',
       ruta: '/easy-rate',
     },
     {
@@ -24,6 +34,7 @@ export class MenuComponent {
       nombre: 'Marcus',
       descripcion: 'Teoría de Marcus para transferencia electrónica',
       icono: '🔄',
+      logo: './marcus-logo.png',
       ruta: '/marcus',
     },
     {
@@ -31,6 +42,7 @@ export class MenuComponent {
       nombre: 'Molar Fraction',
       descripcion: 'Cálculo de fracciones molares',
       icono: '⚗️',
+      logo: './logo_app3.png',
       ruta: '/molar-fraction',
     },
     {
@@ -38,6 +50,7 @@ export class MenuComponent {
       nombre: 'Tunnel',
       descripcion: 'Análisis de tunelamiento cuántico',
       icono: '🌀',
+      logo: './tunnel-logo.png',
       ruta: '/tunnel',
     },
   ];

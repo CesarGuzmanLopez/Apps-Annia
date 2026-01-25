@@ -1,4 +1,4 @@
-# Annia Apps - Suite de Aplicaciones para Química Computacional
+# - Suite de Aplicaciones para Química Computacional
 
 Una suite de aplicaciones web modernas construidas con Angular 21 para análisis y cálculos en química computacional.
 
